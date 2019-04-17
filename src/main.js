@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { Button,List,Avatar,Icon,Input,Badge,Tabs } from 'ant-design-vue';
+import { Button,List,Avatar,Icon,Input,Badge,Tabs,Textarea } from 'ant-design-vue';
 import App from './App.vue'
 import router from './router'
 
@@ -13,6 +13,8 @@ Vue.component(Input.name, Input);
 Vue.component(Badge.name, Badge);
 Vue.component(Tabs.name, Tabs);
 Vue.component(Tabs.TabPane.name, Tabs.TabPane);
+Vue.component(Input.Textarea);
+
 
 
 Vue.config.productionTip = false

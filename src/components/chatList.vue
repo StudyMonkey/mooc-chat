@@ -1,15 +1,20 @@
 <template>
     <div class="userListWrap">
         <div class="searchWrap">
-            <a-input placeholder="搜索" v-model="userName" ref="userNameInput">
+            <a-input placeholder="搜索" v-model="searchVal" ref="userNameInput">
                 <a-icon slot="prefix" type="search" />
-                <a-icon v-if="userName" slot="suffix" type="close-circle" @click="emitEmpty" />
+                <a-icon v-if="searchVal" slot="suffix" type="close-circle" @click="emitEmpty" />
             </a-input>
             <a-button icon="plus" />
         </div>
         <div class="mesListWrap">
             <ul>
-                <li v-for="(item,index) in messageList" :key="index">
+                <li 
+                    v-for="(item,index) in messageList" 
+                    :key="index"
+                    :class="isActive === index ? 'bg_active' : ''"
+                    @click="handleLiClick(index)"
+                >
                     <a-badge :count="item.mesNum" dot>
                         <a-avatar
                             shape="square" 
@@ -36,7 +41,8 @@ export default {
     name: 'chatList',
     data() {
         return {
-            userName: '',
+            searchVal: '',
+            isActive: '', // li的下标，默认不选中任何
             messageList: [
                 {title: '圈子名称圈子名称圈子名称圈子名称', time: '2018-08-12 10:54', avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', official: true, mesNum: 0},
                 {title: '圈子名称圈子名称圈子名称圈子名称', time: '2018-08-12 10:54', avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', official: false, mesNum: 0},
@@ -52,7 +58,10 @@ export default {
     },
     methods: {
         emitEmpty() {
-            this.userName = ''
+            this.searchVal = ''
+        },
+        handleLiClick(index){
+            this.isActive = index
         }
     },    
 }
@@ -86,8 +95,11 @@ export default {
                 width: 100%;
                 padding: 10px;
                 display: flex;
-                p{
-                    margin-bottom: 0;
+                &:hover{
+                    background-color: #eaeaea;
+                }
+                &.bg_active{
+                    background-color: #f3e2cb;
                 }
                 .ant-avatar{                 
                     width: 38px;

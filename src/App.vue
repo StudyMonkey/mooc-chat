@@ -86,9 +86,25 @@ export default {
 }
 </script>
 
-<style lang='less' scoped>
-p{
-  margin: 0
+<style lang='less'>
+body{
+  &::-webkit-scrollbar {
+      /*滚动条整体样式*/
+      width: 2px; /*高宽分别对应横竖滚动条的尺寸*/
+      height: 2px;
+  }
+  &::-webkit-scrollbar-thumb {
+      /*滚动条里面小方块样式*/
+      border-radius: 5px;
+      -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+      background: #06c5d2;
+  }
+  &::-webkit-scrollbar-track {
+      /*滚动条里面轨道样式*/
+      -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+      border-radius: 0;
+      background: rgba(0, 0, 0, 0.1);
+  }
 }
 .topWrap{
     width:980px;
