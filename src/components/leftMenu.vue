@@ -7,7 +7,9 @@
         />
         <ul>
           <li class="menuIconWrap" v-for="(item,index) in menuList" :key="index">
-              <a-icon :type="item.type"></a-icon>
+            <router-link :to='item.link'>
+              <a-icon :title="item.title" :type="item.type"></a-icon>
+            </router-link>
           </li>
         </ul>
     </div>
@@ -18,8 +20,13 @@ export default {
     data() {
         return {
             menuList: [
-                { type: 'github', title: '测试' },
-                { type: 'wechat', title: '测试1'}
+                { type: 'message', title: '聊天', link: '/' },
+                { type: 'team', title: '我加入的小组', link: '/about'},
+                { type: 'idcard', title: '通讯录', link: '/member'},
+                { type: 'search', title: '查找用户和小组', link: '/member'},
+                { type: 'plus', title: '创建小组', link: '/member'},
+                { type: 'mail', title: '消息', link: '/member'},
+                { type: 'setting', title: '设置', link: '/member'},
             ]
         }
     },
@@ -45,6 +52,18 @@ export default {
     line-height: 18px;
     font-size: 20px;
     margin: 0 auto 20px;
+    &:nth-child(3){
+      margin-bottom: 40px;
+    }    
+    &:nth-child(5){
+      margin-bottom: 355px;
+    }
+    a{
+      color: #66918c;
+      &:hover{
+        color: #cf8d0a
+      }
+    }
   }
 }
 </style>
