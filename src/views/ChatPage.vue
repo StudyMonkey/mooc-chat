@@ -81,12 +81,14 @@ ul,p{
             }
         }
         .card-container {
-            background: #f5f5f5;
-            padding: 0 15px;
             overflow: hidden;
             .ant-tabs-bar{
-                float: right;
+                display: flex;
+                justify-content: flex-end;
                 background-color: #f5f5f5;
+                padding-right: 15px;
+                border-bottom: none;
+                margin-bottom: 0;
                 &::after{
                     clear: both;
                     content: "";
@@ -96,17 +98,22 @@ ul,p{
             .ant-tabs.ant-tabs-card .ant-tabs-card-bar{
                 .ant-tabs-tab{
                     line-height: 25px;
+                    &:hover{
+                        background-color: #f9eedf;
+                        color: #666666;
+                    }
                 }
                 .ant-tabs-nav-container{
                     height: 27px;
                 }
                 .ant-tabs-tab-active{
-                    background-color: #f9eedf;
-                    color: #333333;
+                    background-color: #ffffff;
+                    color: #666666;
                 }
             } 
             .ant-tabs-tabpane{
                 clear: both;
+                padding-left: 15px;
             }
         }        
     }

@@ -1,8 +1,12 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from './views/Home.vue'
 import About from './views/About.vue'
 import ChatPage from './views/ChatPage.vue'
+import Message from './views/Message.vue'
+import Setting from './views/Setting.vue'
+import Member from './views/Member.vue'
+import Search from './views/Search.vue'
+
 
 Vue.use(Router)
 
@@ -19,9 +23,25 @@ export default new Router({
       component: About
     },
     {
-      path: '/menber',
+      path: '/member',
       name: 'member',
-      component: Home
-    }
+      component: Member
+    },
+    {
+      path: '/search',
+      name: 'search',
+      component: Search
+    },
+    {
+      path: '/message',
+      name: 'message',
+      component: Message
+    },
+    {
+      path: '/setting',
+      name: 'setting',
+      component: Setting
+    },    
+
   ]
 })

@@ -108,10 +108,12 @@ textarea[class='ant-input']{ resize: none }
 
 .chatMainBox{
     width: 640px;
+    margin-top: 15px;
     .chatScrollArea{
         width: 100%;
         height: 428px;
         border: 1px solid #e5e5e5;
+        border-right: none;
         padding: 12px 10px 0 10px;
         background-color: #ffffff;
         overflow-y: scroll;
