@@ -1,5 +1,6 @@
 <template>
     <div class="userListWrap">
+        <loading v-if="showLoading" />
         <div class="searchWrap">
             <a-input placeholder="搜索" v-model="searchVal" ref="userNameInput">
                 <a-icon slot="prefix" type="search" />
@@ -32,38 +33,61 @@
                 </li>                   
             </ul>         
         </div>
-        <div class="loadMoreBtn">加载更多<a-icon type="caret-down" /></div>
+        <div class="loadMoreBtn" @click="handleLoadBtnClick">加载更多<a-icon type="caret-down" /></div>
     </div>    
 </template>
 
 <script>
+import { getData } from '@/utils/utils'
+import Loading from '@/components/loading'
 export default {
     name: 'chatList',
     data() {
         return {
             searchVal: '',
             isActive: '', // li的下标，默认不选中任何
-            messageList: [
-                {title: '圈子名称圈子名称圈子名称圈子名称', time: '2018-08-12 10:54', avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', official: true, mesNum: 0},
-                {title: '圈子名称圈子名称圈子名称圈子名称', time: '2018-08-12 10:54', avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', official: false, mesNum: 0},
-                {title: '圈子名称圈子', time: '2018-08-12 10:54', avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', official: false, mesNum: 1},
-                {title: '张三', time: '2018-08-12 10:54', avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', official: false, mesNum: 2},
-                {title: '圈子名称圈子名称圈子名称圈子名称', time: '2018-08-12 10:54', avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', official: false, mesNum: 3},
-                {title: '李四', time: '2018-08-12 10:54', avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', official: false, mesNum: 3},
-                {title: '圈子名称圈子名称圈子名称圈子名称', time: '2018-08-12 10:54', avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', official: false, mesNum: 5},
-                {title: '圈子名称圈子名称圈子名称圈子名称', time: '2018-08-12 10:54', avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', official: false, mesNum: 5},
-                {title: '圈子名称圈子名称圈子名称圈子名称', time: '2018-08-12 10:54', avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', official: false, mesNum: 999}
-            ]
+            showLoading: false, // loading状态显示
+            messageList: [], // 用户列表数据
         }
     },
+    components: {
+        Loading,
+    },
     methods: {
+        // 清空搜索内容
         emitEmpty() {
             this.searchVal = ''
         },
-        handleLiClick(index){
-            this.isActive = index
+        async handleLiClick(index){
+            this.isActive = index;
+            this.showLoading = true;
+            const res = await getData('chatCon', {});
+            this.showLoading = false;
+            const { data: { data } } = res;
+            this.$store.commit('addChatConList', data);
+            console.log(this.$store);
+        },
+        /** 获取用户列表数据方法
+         *  init为布尔值，初始化请求为false，加载更多按钮点击为true
+         */
+          
+        async getUserList(init){
+            this.showLoading = true;
+            const res = await getData('userList', {});
+            this.showLoading = false
+            let { data: { data } } = res;
+            init ? this.messageList = this.messageList.concat(data) : this.messageList = data;
+            // 存储到vuex
+            this.$store.commit('addUserList', this.messageList);
+        },
+        // 加载更多按钮的点击事件处理
+        handleLoadBtnClick(){
+            this.getUserList(true)
         }
-    },    
+    }, 
+    created () {
+        this.getUserList(false)
+    },   
 }
 </script>
 
@@ -90,6 +114,26 @@ export default {
         }        
     }
     .mesListWrap{
+        height: 600px;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        &::-webkit-scrollbar {
+            /*滚动条整体样式*/
+            width: 2px; /*高宽分别对应横竖滚动条的尺寸*/
+            height: 2px;
+        }
+        &::-webkit-scrollbar-thumb {
+            /*滚动条里面小方块样式*/
+            border-radius: 5px;
+            -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+            background: #06c5d2;
+        }
+        &::-webkit-scrollbar-track {
+            /*滚动条里面轨道样式*/
+            -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+            border-radius: 0;
+            background: rgba(0, 0, 0, 0.1);
+        }        
         ul{
             li{
                 width: 100%;

@@ -6,8 +6,14 @@
             src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
         />
         <ul>
-          <li class="menuIconWrap" v-for="(item,index) in menuList" :key="index">
-            <router-link :to='item.link'>
+          <li 
+            class="menuIconWrap" 
+            v-for="(item,index) in menuList" 
+            :key="index"
+          >
+            <router-link 
+              :to='item.link' 
+            >
               <a-icon :title="item.title" :type="item.type"></a-icon>
             </router-link>
           </li>
@@ -17,19 +23,21 @@
 
 <script>
 export default {
-    data() {
-        return {
-            menuList: [
-                { type: 'message', title: '聊天', link: '/' },
-                { type: 'team', title: '我加入的小组', link: '/about'},
-                { type: 'idcard', title: '通讯录', link: '/member'},
-                { type: 'search', title: '查找用户和小组', link: '/member'},
-                { type: 'plus', title: '创建小组', link: '/member'},
-                { type: 'mail', title: '消息', link: '/member'},
-                { type: 'setting', title: '设置', link: '/member'},
-            ]
-        }
-    },
+  name: 'leftMenu',
+  data() {
+      return {
+          isActive: 0,
+          menuList: [
+              { type: 'message', title: '聊天', link: '/' },
+              { type: 'team', title: '我加入的小组', link: '/about'},
+              { type: 'idcard', title: '通讯录', link: '/member'},
+              { type: 'search', title: '查找用户和小组', link: '/search'},
+              { type: 'plus', title: '创建小组', link: '/add'},
+              { type: 'mail', title: '消息', link: '/message'},
+              { type: 'setting', title: '设置', link: '/setting'},
+          ]
+      }
+  },
 }
 </script>
 
@@ -39,8 +47,8 @@ export default {
   height: 700px;
   background-color: #024d45;
   .ant-avatar{
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     margin: 15px 16px 20px;
     border: 1px solid #bbbbbb;
     border-radius: 0;
@@ -61,7 +69,10 @@ export default {
     a{
       color: #66918c;
       &:hover{
-        color: #cf8d0a
+        color: #69ccc1
+      }
+      &.router-link-exact-active{
+        color: #f39800
       }
     }
   }

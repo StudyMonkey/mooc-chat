@@ -1,5 +1,6 @@
 <template>
     <div class="chatMainBox">
+        <loading v-if="showLoading" />
         <div class="chatScrollArea">
             <ul>
                 <li 
@@ -14,7 +15,7 @@
                         :src="item.avatar"
                     />
                     <div :class="[ item.isMe ? 'fl ml10 ' : 'fr mr10 textAlignR ','chatInfoWrap' ]">
-                        <p><span v-text="item.name"></span><span v-text="item.time"></span></p>
+                        <p><span v-text="item.name"></span></p>
                         <div :class="[ item.isMe ? 'bgSelf' : 'bgOther', 'mesContent' ]" v-text="item.content"></div>
                     </div>
                 </li>
@@ -27,26 +28,72 @@
             <li><a-icon type="link"></a-icon></li>
             <li><a-icon type="folder-open"></a-icon></li>
             <li><a-icon type="idcard"></a-icon></li>
+            <a-button 
+                size="small" 
+                @click="handleLoadMoreChat"
+            >加载聊天记录</a-button>
         </ul>
-        <a-textarea placeholder="Basic usage" :rows="4" />
+        <a-textarea v-model="chatCon" placeholder="请输入......" :rows="4" />
+        <div class="sendWrap fr">
+            <p>按Enter发送、Ctrl+Enter换行</p>
+            <a-button @click="handleSendBtnClick" size="small">发送</a-button>
+        </div>
+        
     </div>
 </template>
 
 <script>
+import { getData } from '@/utils/utils'
+import Loading from '@/components/loading'
 export default {
     name: 'chat',
     data() {
         return {
-            chatList: [
-                {avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', name: '张三', time: '23:58', isMe: true, content: '在么'},
-                {avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', name: '李四', time: '23:58', isMe: false, content: '不在'},
-                {avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', name: '张三', time: '23:58', isMe: true, content: '谈恋爱么'},
-                {avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', name: '张三', time: '23:58', isMe: true, content: '不谈'},
-                {avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', name: '李四', time: '23:58', isMe: false, content: '一袋米要扛几楼'},
-                {avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', name: '李四', time: '23:58', isMe: false, content: '感受痛苦吧'},
-                {avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png', name: '张三', time: '23:58', isMe: true, content: '哈哈哈哈哈哈'}
-            ]
+            chatCon: '', // 用户输入的聊天内容
+            chatList: [],
+            showLoading: false,
         }
+    },
+    computed: {
+        getChatConList() {
+            return this.$store.state.chatConList
+        }
+    },
+    watch: {
+        getChatConList(curval, oldval){
+            console.log(`最新值${curval}--旧值${oldval}`);
+            if ( curval !== oldval ) {
+                this.chatList = curval
+            }
+        }
+    },
+    methods: {
+        async handleLoadMoreChat() {
+            this.showLoading = true
+            const res = await getData('chatCon', {});
+            const { data: { data } } = res;
+            this.chatList = data.concat(this.chatList);
+            this.showLoading = false
+            this.$store.commit('addChatConList', this.chatList);
+        },
+        // 点击发送消息逻辑
+        handleSendBtnClick(){
+            var newObj = {};
+            newObj.name = '本人'
+            newObj.time = new Date();
+            newObj.content = this.chatCon;
+            newObj.isMe = true;
+            newObj.avatar = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
+            this.chatList.push(newObj);
+            this.chatCon = '';
+        }
+    },
+    components: {
+        Loading,
+    },
+    created () {
+        // this.chatList = this.$store.state.chatConList;
+        // console.log(this.chatList);
     },
 }
 </script>
@@ -57,14 +104,16 @@ export default {
 .bgSelf{ background-color: #fbf6ed }
 .bgOther{ background-color: #def7f0 }
 .textAlignR{ text-align: right }
+textarea[class='ant-input']{ resize: none }
+
 .chatMainBox{
     width: 640px;
-    height: 565px;  
     .chatScrollArea{
         width: 100%;
         height: 428px;
         border: 1px solid #e5e5e5;
         padding: 12px 10px 0 10px;
+        background-color: #ffffff;
         overflow-y: scroll;
         overflow-x: hidden;
         &::-webkit-scrollbar {
@@ -96,9 +145,8 @@ export default {
                 }
                 div.chatInfoWrap{
                     p{
-                        font-size: 14px;
+                        font-size: 12px;
                         margin-top: -7px;
-                        margin-bottom: 9px;
                     }
                 }
                 .mesContent{
@@ -114,6 +162,7 @@ export default {
     }
     .iconListWrap{
         display: flex;
+        background-color: #ffffff;
         li{
             height: 20px;
             line-height: 20px;
@@ -124,6 +173,23 @@ export default {
             &:hover{
                 color: #f0b577
             }
+        }
+        button{
+            margin-top: 6px;
+            margin-left: auto
+        }        
+    }
+    .sendWrap{
+        display: flex;
+        margin-top: 10px;
+        p{
+            font-size: 13px;
+            color: #999999;
+            margin: 3px 6px 0 0;
+        }
+        button{
+            background-color: #70b24c;
+            color: #fff;
         }
     }
 }
