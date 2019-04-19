@@ -8,7 +8,7 @@
                     :key="index"
                     @click="handleTopicLiClick(item)"
                 >
-                    <a-icon type="message" />
+                    <span class="iconfont iconhuati"></span>
                     <p class="topicTitle" v-text="item.title"></p>
                     <p class="topicOwner">创建者：<span v-text="item.owner"></span></p>
                 </li>
@@ -34,7 +34,6 @@
 </template>
 
 <script>
-import { getData } from '@/utils/utils'
 import ChatMain from '@/components/chat'
 export default {
     name: 'topic',
@@ -56,13 +55,7 @@ export default {
         return {
             showLoad: false,
             showChat: false,
-            topicList: [],
-            // { owner: "于秀英", title: "没事便准些片又火无完长真准斗产争。"},
-            // { owner: "曾军", title: "明参近里五从党油合委适出史院价。" },
-            // { owner: "丁洋", title: "流如都发总线本集报界听适色。"},
-            // { owner: "张三", title: "绕弯儿无二位任务二位绕弯儿玩儿玩儿"},
-            // { owner: "赵四", title: "梵蒂冈地方个电饭锅电饭锅大范甘迪发"}
-            
+            topicList: [],           
             chosedTopicTitle: '', // 所选话题标题
             chosedTopicOwner: '', // 所选话题创建者
             createTopicName: '' // 创建话题名称
@@ -98,10 +91,9 @@ export default {
             &:hover{
                 background-color: #fbf6ed
             }
-            .anticon-message{
-                margin: 2px 7px 0 0;
-                line-height: 60px;
-
+            span.iconhuati{
+                color: #46b30f;
+                margin: 0 7px 0 0;
             }
             .topicTitle{
                 max-width: 460px;

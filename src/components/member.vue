@@ -1,8 +1,9 @@
 <template>
     <div>
+        <loading v-if="showLoad" />
         <div class="memberSearchWrap">
-            <a-input placeholder="请输入用户名或昵称......" />
-            <a-button class="searchBtn" size="small">搜索</a-button>
+            <a-input v-model="searchVal" placeholder="请输入用户名或昵称......" />
+            <a-button class="searchBtn" size="small" @click="handleSearchBtn">搜索</a-button>
             <a-button class="addMember" size="small">添加成员</a-button>
         </div>
         <div class="memberContentWrap">
@@ -16,14 +17,23 @@
                             <td class="operate">操作</td>
                         </tr>
                         <tr v-for="(item,index) in memberList" :key="index">
-                            <td class="username" v-text="item.username"></td>
-                            <td class="nickname" v-text="item.nickname"></td>
+                            <td class="username">
+                                <span :class="identityClass(item.identityNum)"></span>
+                                <span v-text="item.username"></span>
+                            </td>
+                            <td class="nickname" v-text="item.nickname">
+                            </td>
                             <td v-text="item.identity"></td>
                             <td class="operate">
-                                <a-icon type="message" />
-                                <a-icon class="middleIcon" type="message" />
-                                <a-icon type="user" />
-
+                                <span class="iconfont iconsixin"></span>
+                                <span v-if="item.identityNum !== 0" class="iconfont iconyuechi"></span>
+                                <a-tooltip>
+                                    <template slot="title">
+                                        删除该小组成员                                       
+                                    </template>  
+                                    <span @click="handleDeleteMember" class="iconfont iconshanchengyuan"></span>                      
+                                </a-tooltip>
+                                
                             </td>
                         </tr>
                     </tbody>
@@ -35,6 +45,7 @@
 </template>
 
 <script>
+import Loading from '@/components/loading'
 export default {
     name: 'memberList',
     props: {
@@ -43,24 +54,63 @@ export default {
             required: true
         }
     },
+    watch: {
+        listMember(newValue, oldValue) {
+            if ( newValue !== oldValue ){
+                this.memberList = this.listMember
+            }
+        }
+    },
+    computed: {
+        identityClass(num) {
+            return function(num){
+                if ( num === 0 ) {
+                    return 'iconfont iconqunzhu'
+                } else if ( num === 1 ) {
+                    return 'iconfont iconguanliyuan'
+                } else {
+                    return 'pl22'
+                } 
+            }
+        }
+    },
+    components: {
+        Loading,
+    },
     data() {
         return {
-            memberList: [
-                {username: '43081119941024001X', nickname: '一只鱼', identity: '群主'},
-                {username: '萧涛', nickname: '一只鸡', identity: '管理员'},
-                {username: '杜五', nickname: '一只鸭', identity: '成员'},
-                {username: '张六', nickname: '一只鸟', identity: '成员'},
-                {username: '小七', nickname: '一只鲨鱼', identity: '成员'},
-                {username: '43081119941024001X', nickname: '一只鱼', identity: '群主'},
-                {username: '萧涛', nickname: '一只鸡', identity: '管理员'},
-                {username: '杜五', nickname: '一只鸭', identity: '成员'},
-                {username: '张六', nickname: '一只鸟', identity: '成员'},
-            ]
+            showLoad: false,
+            memberList: [], // 成员列表数据
+            searchVal: '', // input框输入的搜索内容
         }
     },
     methods: {
-        handlePageChange(pageNumber) {
+        // 删除小组成员事件处理
+        handleDeleteMember(){
+            let _this = this;
+            this.$confirm({
+                title: '确定删除该小组成员？',
+                onOk() {
+                    _this.showLoad = true;
+                    setTimeout( () => {
+                        _this.showLoad = false;
+                        _this.$message.success('删除小组成员成功！');
+                    }, 1500)                  
+                },
+                onCancel(){}
+            })
+        },
+        // 翻页点击事件
+        async handlePageChange(pageNumber) {
             console.log('Page: ', pageNumber);
+            this.showLoad = true;
+            const res = await this.$getData('memberList', {page: pageNumber});
+            this.showLoad = false;
+            const { data: { data } } = res;
+            this.memberList = data;         
+        },
+        handleSearchBtn(){
+            this.$message.info('开始搜索');
         }
     },
     created () {
@@ -71,6 +121,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.pl22{ padding-left: 22px }
 .memberSearchWrap{
     display: flex;
     margin: 15px 0 5px 0;
@@ -110,7 +161,8 @@ export default {
                     padding-left: 38px;
                 }
                 &.operate{
-                    padding-right: 18px
+                    padding-right: 18px;
+                    justify-content: center;
                 }
             }
         }
@@ -127,6 +179,16 @@ export default {
                 width: 200px;
                 padding-left: 20px;
                 word-break:keep-all;
+                span.iconfont{
+                    float: left;
+                    margin-right: 4px;
+                }
+                span.iconqunzhu{
+                    color: #35a8eb
+                }
+                span.iconguanliyuan{
+                    color: #43b30d;
+                }
             }
             &.nickname{
                 width: 188px;
@@ -139,14 +201,18 @@ export default {
                 width: 100px;
                 text-align: center;                
                 padding-right: 18px;
-                i{
+                display: flex;
+                span{
                     cursor: pointer;
                     &:hover{
                         color: #f1bd85;
                     }
                 }
-                .middleIcon{
-                    margin: 0 15px;
+                span.iconsixin{
+                    margin-right: auto
+                }
+                span.iconshanchengyuan{
+                    margin-left: auto
                 }
             }
         }

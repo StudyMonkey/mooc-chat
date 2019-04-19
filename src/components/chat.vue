@@ -25,15 +25,27 @@
                                 </div>
                             </div>
                             <div class="partInfoWrap">
-                                <p>单位：战略支援班96201部队通讯连三班四队</p>
+                                <p>单位：<span v-text="item.partInfo"></span></p>
                                 <p class="partIconWrap">
-                                    <span class="iconfont iconsiliao" />
-                                    <span class="iconfont iconjiahaoyou" @click="showAddFriend" />
+                                    <a-tooltip>
+                                        <template slot="title">
+                                            点击发送私聊消息
+                                        </template>
+                                        <span @click="handleChatSend" class="iconfont iconsiliao" />
+                                    </a-tooltip>                              
+                                    <a-tooltip>
+                                        <template slot="title">
+                                            {{ item.friend ? '点击删除好友' : '点击发送好友请求'}}
+                                        </template>
+                                        <span :class="[item.friend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" @click="showAddFriend" />
+                                    </a-tooltip>
+
+                                    
                                 </p>
                             </div>
                             <div class="addFriendWrap" v-if="showAddFriendWrap">
                                 <p>添加好友<span class="iconfont icondelete" @click="hideAddFriend"></span></p>
-                                <a-textarea v-model="addFriend" :rows="4" placeholder="请输入添加理由" />
+                                <a-textarea v-model="addFriend+item.name" :rows="4" placeholder="请输入添加理由" />
                                 <a-button size="small" @click="handleAddFriendSure">确定</a-button>
                             </div>
                         </template>
@@ -73,7 +85,6 @@
 </template>
 
 <script>
-import { getData } from '@/utils/utils'
 import Loading from '@/components/loading'
 export default {
     name: 'chat',
@@ -83,7 +94,7 @@ export default {
             chatList: [],
             showLoading: false,
             showAddFriendWrap: false,
-            addFriend: '', // 添加好友理由
+            addFriend: '我是', // 添加好友理由
             iconList: [
                 { type: 'iconaite', title: '' },
                 { type: 'iconbiaoqing', title: '表情'},
@@ -110,7 +121,7 @@ export default {
     methods: {
         async handleLoadMoreChat() {
             this.showLoading = true
-            const res = await getData('chatCon', {});
+            const res = await this.$getData('chatCon', {});
             const { data: { data } } = res;
             this.chatList = data.concat(this.chatList);
             this.showLoading = false
@@ -127,6 +138,10 @@ export default {
             this.chatList.push(newObj);
             this.chatCon = '';
         },
+        // 发起私聊请求
+        handleChatSend(){
+            this.$message.info('发起私聊请求');
+        },
         // 显示添加好友框
         showAddFriend(){
             this.showAddFriendWrap = true;
@@ -137,7 +152,9 @@ export default {
         },
         // 添加好友确定按钮
         handleAddFriendSure(){
-            alert('请求发送成功');
+            this.hideAddFriend();
+            this.$message.success('添加好友请求发送成功');
+            // alert('请求发送成功');
         }
     },
     components: {

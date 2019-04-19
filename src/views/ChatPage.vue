@@ -20,7 +20,9 @@
                         <chat-member :listMember="memberList" />
                     </a-tab-pane>
                     <a-tab-pane tab="文件" key="file">Content of Tab Pane 4</a-tab-pane>
-                    <a-tab-pane tab="公告" key="notice">Content of Tab Pane 5</a-tab-pane>
+                    <a-tab-pane tab="公告" key="notice">
+                        <chat-notice :listNotice="noticeList"/>
+                    </a-tab-pane>
                     <a-tab-pane tab="设置" key="setting">Content of Tab Pane 6</a-tab-pane>
                 </a-tabs>
             </div>            
@@ -29,19 +31,20 @@
 </template>
 
 <script>
-import { getData } from '@/utils/utils'
 import Loading from '@/components/loading'
 import ChatList from '@/components/chatList'
 import ChatMain from '@/components/chat'
 import ChatTopic from '@/components/topic'
 import ChatMember from '@/components/member'
+import ChatNotice from '@/components/notice'
 export default {
     name: 'member',
     data() {
         return {
             showLoad: false,
             topicList: [], // 传递给话题的数组 
-            memberList: [] // 传递给成员的数组
+            memberList: [], // 传递给成员的数组
+            noticeList: [], // 传递给公告的数组
         }
     },
     components: {
@@ -49,25 +52,34 @@ export default {
         ChatMain,
         ChatTopic,
         ChatMember,
+        ChatNotice,
         Loading
     },
     methods: {
+        async commonGetMethod(url, params, obj){
+            console.log(this);
+            console.log(obj);
+            this.showLoad = true;
+            const res = await this.$getData(url, params);
+            this.showLoad = false;
+            const { data: { data } } = res;
+            obj = data;
+            console.log(this.topicList);
+            console.log(obj);
+        },
         async handleTabsChange (key) {
             console.log(key)
+            let _this = this;
             if ( key === 'topic' ){
-                this.showLoad = true;
-                const res = await getData('topicList', {});
-                this.showLoad = false;
-                const { data: { data } } = res;
-                console.log(data);
-                this.topicList = data;
+                this.commonGetMethod('topicList', {}, _this.topicList);
             } else if ( key === 'member' ) {
+                this.commonGetMethod('memberList', {}, _this.memberList);                
+            } else if ( key === 'notice' ) {
                 this.showLoad = true;
-                const res = await getData('memberList', {});
+                const res = await this.$getData('noticeList', {});
                 this.showLoad = false;
                 const { data: { data } } = res;
-                console.log(data);
-                this.memberList = data;                
+                this.noticeList = data;
             }
         },
     },    

@@ -1,11 +1,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { Button,List,Avatar,Icon,Input,Badge,Tabs,Pagination,Popover,Tooltip } from 'ant-design-vue';
+import { Button,List,Avatar,Icon,Input,Badge,Tabs,Pagination,Popover,Tooltip,message,Modal } from 'ant-design-vue';
 import App from './App.vue'
 import router from './router'
 import '@/static/scrollbars-firefox.css'
 import store from './store/store'
 import '@/assets/font/iconfont.css'
+import { getData } from './utils/utils'
 
 Vue.component(Button.name, Button);
 Vue.component(List.name, List);
@@ -23,10 +24,9 @@ Vue.component(Popover.name, Popover); // 气泡卡片
 Vue.component(Tooltip.name, Tooltip); // 文字提示
 
 
-
-
-
-
+Vue.prototype.$getData = getData;
+Vue.prototype.$message = message;
+Vue.prototype.$confirm = Modal.confirm;
 Vue.config.productionTip = false
 Vue.use(Vuex);
 
