@@ -11,10 +11,11 @@ import Search from './views/Search.vue'
 Vue.use(Router)
 
 export default new Router({
+  mode: 'history',
   routes: [
     {
-      path: '/',
-      name: 'home',
+      path: '/chat',
+      name: 'chat',
       component: ChatPage
     },
     {
@@ -41,7 +42,8 @@ export default new Router({
       path: '/setting',
       name: 'setting',
       component: Setting
-    },    
+    },   
+    { path: '*', redirect: '/chat' } 
 
   ]
 })

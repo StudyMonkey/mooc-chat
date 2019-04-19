@@ -8,12 +8,42 @@
                     :key="index"
                     :class="[ item.isMe ? 'fl' : 'fr' ]"
                 >
-                    <a-avatar 
+                    <a-popover
+                        placement="rightBottom"
                         :class="[ item.isMe ? 'fl' : 'fr' ]"
-                        shape="square"
-                        size="default"
-                        :src="item.avatar"
-                    />
+                    >
+                        <template slot="content">
+                            <div class="personInfoWrap">
+                                <a-avatar 
+                                    shape="square"
+                                    size="default"
+                                    :src="item.avatar"
+                                />
+                                <div>
+                                    <p><span>昵称</span><span class="iconfont iconpen" /></p>
+                                    <p>用户名：<span v-text="item.name"></span></p>
+                                </div>
+                            </div>
+                            <div class="partInfoWrap">
+                                <p>单位：战略支援班96201部队通讯连三班四队</p>
+                                <p class="partIconWrap">
+                                    <span class="iconfont iconsiliao" />
+                                    <span class="iconfont iconjiahaoyou" @click="showAddFriend" />
+                                </p>
+                            </div>
+                            <div class="addFriendWrap" v-if="showAddFriendWrap">
+                                <p>添加好友<span class="iconfont icondelete" @click="hideAddFriend"></span></p>
+                                <a-textarea v-model="addFriend" :rows="4" placeholder="请输入添加理由" />
+                                <a-button size="small" @click="handleAddFriendSure">确定</a-button>
+                            </div>
+                        </template>
+                        <a-avatar 
+                            :class="[ item.isMe ? 'fl' : 'fr' ]"
+                            shape="square"
+                            size="default"
+                            :src="item.avatar"
+                        />
+                    </a-popover>
                     <div :class="[ item.isMe ? 'fl ml10 ' : 'fr mr10 textAlignR ','chatInfoWrap' ]">
                         <p><span v-text="item.name"></span></p>
                         <div :class="[ item.isMe ? 'bgSelf' : 'bgOther', 'mesContent' ]" v-text="item.content"></div>
@@ -22,16 +52,16 @@
             </ul>
         </div>
         <ul class="iconListWrap">
-            <li>@</li>
-            <li><a-icon type="smile"></a-icon></li>
-            <li><a-icon type="file-jpg"></a-icon></li>
-            <li><a-icon type="link"></a-icon></li>
-            <li><a-icon type="folder-open"></a-icon></li>
-            <li><a-icon type="idcard"></a-icon></li>
-            <a-button 
-                size="small" 
-                @click="handleLoadMoreChat"
-            >加载聊天记录</a-button>
+            <li v-for="(item,index) in iconList" :key="index">
+                <span :class="[item.type, 'iconfont']" :title="item.title"></span>
+            </li>
+            <a-tooltip>
+                <template slot="title">
+                    点击加载历史记录
+                </template>
+                <span class="iconfont fr iconliaotianjilu"></span>
+            </a-tooltip>
+            
         </ul>
         <a-textarea v-model="chatCon" placeholder="请输入......" :rows="4" />
         <div class="sendWrap fr">
@@ -52,6 +82,16 @@ export default {
             chatCon: '', // 用户输入的聊天内容
             chatList: [],
             showLoading: false,
+            showAddFriendWrap: false,
+            addFriend: '', // 添加好友理由
+            iconList: [
+                { type: 'iconaite', title: '' },
+                { type: 'iconbiaoqing', title: '表情'},
+                { type: 'icontupian', title: '发送图片'},
+                { type: 'iconlianjie', title: '发送链接'},
+                { type: 'iconwenjian', title: '发送文件'},
+                { type: 'iconmingpian', title: '发送名片'},
+            ]            
         }
     },
     computed: {
@@ -86,6 +126,18 @@ export default {
             newObj.avatar = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
             this.chatList.push(newObj);
             this.chatCon = '';
+        },
+        // 显示添加好友框
+        showAddFriend(){
+            this.showAddFriendWrap = true;
+        },
+        // 隐藏添加好友框
+        hideAddFriend(){
+            this.showAddFriendWrap = false;
+        },
+        // 添加好友确定按钮
+        handleAddFriendSure(){
+            alert('请求发送成功');
         }
     },
     components: {
@@ -105,6 +157,58 @@ export default {
 .bgOther{ background-color: #def7f0 }
 .textAlignR{ text-align: right }
 textarea[class='ant-input']{ resize: none }
+
+.ant-popover{
+    div.ant-popover-inner-content{
+        padding: 0;
+        width: 252px;
+        .personInfoWrap{
+            display: flex;
+            background-color: #f5f5f5;
+            font-size: 14px;
+            color: #333333;
+            margin-bottom: 13px;
+            .ant-avatar{
+                width: 38px;
+                height: 38px;
+                border-radius: 0;
+                border: 1px solid #bbbbbb;
+                margin-right: 10px;
+            }
+            span{
+                cursor: pointer;
+            }
+        }
+        .partInfoWrap{
+            font-size: 14px;
+            color: #333333;
+            .partIconWrap{
+                text-align: right;
+                span{
+                    cursor: pointer;
+                    margin-left: 9px;
+                }
+            }
+        }
+        .addFriendWrap{
+            overflow: hidden;
+            p{
+                padding: 9px 0;
+            }
+            span{
+                float: right;
+                cursor: pointer;
+            }
+            button{
+                margin-top: 10px;
+                float: right;
+                background-color: #70b24c;
+                color: #fff;                
+            }
+        }
+    }
+}
+
 
 .chatMainBox{
     width: 640px;
@@ -175,11 +279,16 @@ textarea[class='ant-input']{ resize: none }
             &:hover{
                 color: #f0b577
             }
+            span{
+                font-size: 18px;
+            }
         }
-        button{
-            margin-top: 6px;
-            margin-left: auto
-        }        
+        span.fr{
+            margin: 0 8px 0 auto;
+            font-size: 20px;
+            line-height: 36px;
+            cursor: pointer;
+        }       
     }
     .sendWrap{
         display: flex;

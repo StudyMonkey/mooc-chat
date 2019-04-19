@@ -16,7 +16,7 @@
                     :class="isActive === index ? 'bg_active' : ''"
                     @click="handleLiClick(index)"
                 >
-                    <a-badge :count="item.mesNum" dot>
+                    <a-badge :count="item.mesNum" :dot="item.groupType === 1">
                         <a-avatar
                             shape="square" 
                             size="default"

@@ -14,7 +14,7 @@
             <router-link 
               :to='item.link' 
             >
-              <a-icon :title="item.title" :type="item.type"></a-icon>
+              <span :class="[item.type, 'iconfont']" :title="item.title"></span>
             </router-link>
           </li>
         </ul>
@@ -26,15 +26,14 @@ export default {
   name: 'leftMenu',
   data() {
       return {
-          isActive: 0,
           menuList: [
-              { type: 'message', title: '聊天', link: '/' },
-              { type: 'team', title: '我加入的小组', link: '/about'},
-              { type: 'idcard', title: '通讯录', link: '/member'},
-              { type: 'search', title: '查找用户和小组', link: '/search'},
-              { type: 'plus', title: '创建小组', link: '/add'},
-              { type: 'mail', title: '消息', link: '/message'},
-              { type: 'setting', title: '设置', link: '/setting'},
+            { type: 'iconsiliao', title: '聊天', link: '/chat' },
+            { type: 'iconqunliao', title: '我加入的小组', link: '/about'},
+            { type: 'icontongxunlu', title: '通讯录', link: '/member'},
+            { type: 'iconsousuo', title: '查找用户和小组', link: '/search'},
+            { type: 'iconincrease', title: '创建小组', link: '/add'},
+            { type: 'iconxinfeng', title: '消息', link: '/message'},
+            { type: 'iconshezhi', title: '设置', link: '/setting'},
           ]
       }
   },
@@ -42,6 +41,7 @@ export default {
 </script>
 
 <style lang='less' scoped>
+a{ text-decoration: none }
 .leftMenu{
   width: 60px;
   height: 700px;
@@ -71,8 +71,11 @@ export default {
       &:hover{
         color: #69ccc1
       }
-      &.router-link-exact-active{
+      &.router-link-active{
         color: #f39800
+      }
+      span.iconfont{
+        font-size: 20px;
       }
     }
   }

@@ -34,22 +34,35 @@
 </template>
 
 <script>
+import { getData } from '@/utils/utils'
 import ChatMain from '@/components/chat'
 export default {
     name: 'topic',
     components: {
-        ChatMain,
+        ChatMain
+    },
+    props: {
+        listTopic: {
+            type: Array,
+            required: true
+        }
+    },
+    watch: {
+        listTopic(n,o){
+            this.topicList = this.listTopic;
+        }
     },
     data() {
         return {
+            showLoad: false,
             showChat: false,
-            topicList: [
-                {title: '话题名称话题名称话题名称话题名称话题名称', owner: '张三三'},
-                {title: '话题名称话题名称话题名称话', owner: '张三三'},
-                {title: '话题名称话题名称话题名称话题名称话题名称题名称话题名称话题名称话题名称话题名称话题名称话题名称题名称话题名称话题名称话题名称话题名称话题名称话题名称题名称话题名称', owner: '张三三'},
-                {title: '话题名称话题名称话题名称话题名称话题名称', owner: '刘五五'},
-                {title: '话题名称话题名称话题名称话题名称话题名称题名称话题名称题名称话题名称', owner: '李四四'},
-            ],
+            topicList: [],
+            // { owner: "于秀英", title: "没事便准些片又火无完长真准斗产争。"},
+            // { owner: "曾军", title: "明参近里五从党油合委适出史院价。" },
+            // { owner: "丁洋", title: "流如都发总线本集报界听适色。"},
+            // { owner: "张三", title: "绕弯儿无二位任务二位绕弯儿玩儿玩儿"},
+            // { owner: "赵四", title: "梵蒂冈地方个电饭锅电饭锅大范甘迪发"}
+            
             chosedTopicTitle: '', // 所选话题标题
             chosedTopicOwner: '', // 所选话题创建者
             createTopicName: '' // 创建话题名称
@@ -63,7 +76,7 @@ export default {
         },
         handleTopicBackBtn(){
             this.showChat = false
-        }
+        },
     },
 }
 </script>
@@ -127,9 +140,12 @@ export default {
     }
 }
 .chosedTopicWrap{
-    width: 640px;
+    width: 638px;   
     display: flex;
-    margin: 17px 0;
+    margin: 15px 0 0 0;
+    padding: 7px 10px;
+    border: 1px solid #e5e5e5;
+    background-color: #f5f5f5;
     .topicTitle{
         margin-left: 10px;
         max-width: 460px;
@@ -144,6 +160,7 @@ export default {
 }
 .topicChat{
     .chatMainBox{
+        margin-top: 0;
         .chatScrollArea{
             height: 386px;
         }

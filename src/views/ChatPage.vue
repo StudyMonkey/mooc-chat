@@ -1,5 +1,6 @@
 <template>
     <div class="chatTopWrap">
+        <loading v-if="showLoad" />
         <chat-list />
         <div class="chatMainWrap">
             <div class="chatTitleWrap">
@@ -8,14 +9,16 @@
             </div>
             <p class="chatGroupNum">小组编号：<span>54284122</span></p>
             <div class="card-container">
-                <a-tabs type="card" defaultActiveKey="chat">
+                <a-tabs type="card" @change="handleTabsChange" defaultActiveKey="chat">
                     <a-tab-pane tab="聊天" key="chat">
                         <chat-main />
                     </a-tab-pane>
                     <a-tab-pane tab="话题" key="topic" forceRender>
-                        <chat-topic />
+                        <chat-topic :listTopic="topicList" />
                     </a-tab-pane>
-                    <a-tab-pane tab="成员" key="member">Content of Tab Pane 3</a-tab-pane>
+                    <a-tab-pane tab="成员" key="member">
+                        <chat-member :listMember="memberList" />
+                    </a-tab-pane>
                     <a-tab-pane tab="文件" key="file">Content of Tab Pane 4</a-tab-pane>
                     <a-tab-pane tab="公告" key="notice">Content of Tab Pane 5</a-tab-pane>
                     <a-tab-pane tab="设置" key="setting">Content of Tab Pane 6</a-tab-pane>
@@ -26,24 +29,46 @@
 </template>
 
 <script>
+import { getData } from '@/utils/utils'
+import Loading from '@/components/loading'
 import ChatList from '@/components/chatList'
 import ChatMain from '@/components/chat'
 import ChatTopic from '@/components/topic'
+import ChatMember from '@/components/member'
 export default {
     name: 'member',
     data() {
         return {
-
+            showLoad: false,
+            topicList: [], // 传递给话题的数组 
+            memberList: [] // 传递给成员的数组
         }
     },
     components: {
         ChatList,
         ChatMain,
-        ChatTopic
+        ChatTopic,
+        ChatMember,
+        Loading
     },
     methods: {
-        callback (key) {
+        async handleTabsChange (key) {
             console.log(key)
+            if ( key === 'topic' ){
+                this.showLoad = true;
+                const res = await getData('topicList', {});
+                this.showLoad = false;
+                const { data: { data } } = res;
+                console.log(data);
+                this.topicList = data;
+            } else if ( key === 'member' ) {
+                this.showLoad = true;
+                const res = await getData('memberList', {});
+                this.showLoad = false;
+                const { data: { data } } = res;
+                console.log(data);
+                this.memberList = data;                
+            }
         },
     },    
 
@@ -63,21 +88,21 @@ ul,p{
         width: 670px;
         .chatGroupNum{
             background-color: #f5f5f5;
-            padding: 0 15px;            
+            padding: 0 15px; 
+            line-height: 14px;
         }
         .chatTitleWrap{
             display: flex;
             font-size: 15px;
+            line-height: 14px;
             background-color: #f5f5f5;
             padding: 15px 15px 0;
             i{
-                margin-top: 3px;
                 height: 20px;
                 line-height: 21px;
             }
             p{
                 margin-left: 4px;
-
             }
         }
         .card-container {
@@ -98,6 +123,7 @@ ul,p{
             .ant-tabs.ant-tabs-card .ant-tabs-card-bar{
                 .ant-tabs-tab{
                     line-height: 25px;
+                    background-color: #f5f5f5;
                     &:hover{
                         background-color: #f9eedf;
                         color: #666666;

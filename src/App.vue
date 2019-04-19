@@ -26,13 +26,13 @@ export default {
     // })
     var websocket = null;
     if ('WebSocket' in window) {
-        websocket = new WebSocket("ws://172.26.75.222/groups//ws?uid=ksz");
+        websocket = new WebSocket("ws://172.26.75.217:8080/groups//ws?uid=ksz");
     }
     else if ('MozWebSocket' in window) {
-        websocket = new MozWebSocket("ws://172.26.75.222/groups//ws?uid=ksz");
+        websocket = new MozWebSocket("ws://172.26.75.217:8080/groups//ws?uid=ksz");
     }
     else {
-        websocket = new SockJS("http://172.26.75.222/groups//ws?uid=ksz");
+        websocket = new SockJS("http://172.26.75.217:8080/groups//ws?uid=ksz");
     }
     // websocket.onopen = onOpen;
     websocket.onopen = function(evnt) {
