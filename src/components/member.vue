@@ -1,6 +1,5 @@
 <template>
     <div>
-        <loading v-if="showLoad" />
         <div class="memberSearchWrap">
             <a-input v-model="searchVal" placeholder="请输入用户名或昵称......" />
             <a-button class="searchBtn" size="small" @click="handleSearchBtn">搜索</a-button>
@@ -25,8 +24,18 @@
                             </td>
                             <td v-text="item.identity"></td>
                             <td class="operate">
-                                <span class="iconfont iconsixin"></span>
-                                <span v-if="item.identityNum !== 0" class="iconfont iconyuechi"></span>
+                                <a-tooltip>
+                                    <template slot="title">
+                                        发起私聊
+                                    </template>
+                                    <span class="iconfont iconsixin"></span>
+                                </a-tooltip>
+                                <a-tooltip>
+                                    <template slot="title">
+                                        转让群主给该用户
+                                    </template>
+                                    <span v-if="item.identityNum !== 0" class="iconfont iconyuechi"></span>
+                                </a-tooltip>                           
                                 <a-tooltip>
                                     <template slot="title">
                                         删除该小组成员                                       
@@ -39,13 +48,14 @@
                     </tbody>
                 </table>
             </div>
-            <a-pagination showQuickJumper :defaultCurrent="1" :total="500" @change="handlePageChange" />
+            <div class="paginationWrap">
+                <a-pagination showQuickJumper :defaultCurrent="1" :total="500" @change="handlePageChange" />
+            </div>
         </div>
     </div>
 </template>
 
 <script>
-import Loading from '@/components/loading'
 export default {
     name: 'memberList',
     props: {
@@ -74,12 +84,8 @@ export default {
             }
         }
     },
-    components: {
-        Loading,
-    },
     data() {
         return {
-            showLoad: false,
             memberList: [], // 成员列表数据
             searchVal: '', // input框输入的搜索内容
         }
@@ -91,21 +97,21 @@ export default {
             this.$confirm({
                 title: '确定删除该小组成员？',
                 onOk() {
-                    _this.showLoad = true;
+                    _this.$emit('changeMemberLoad', true);
                     setTimeout( () => {
-                        _this.showLoad = false;
-                        _this.$message.success('删除小组成员成功！');
+                        _this.$emit('changeMemberLoad', false);
+                        _this.$message.success('删除小组成员成功');
                     }, 1500)                  
                 },
-                onCancel(){}
+                onText: '确认',
+                cancelText: '取消',
             })
         },
         // 翻页点击事件
         async handlePageChange(pageNumber) {
-            console.log('Page: ', pageNumber);
-            this.showLoad = true;
+            this.$emit('changeMemberLoad', true);
             const res = await this.$getData('memberList', {page: pageNumber});
-            this.showLoad = false;
+            this.$emit('changeMemberLoad', false);
             const { data: { data } } = res;
             this.memberList = data;         
         },
@@ -153,6 +159,9 @@ export default {
             height: 50px;
             line-height: 50px;
             background-color: #f5f5f5;
+            &:hover{
+                background-color: #f5f5f5;
+            }            
             td{
                 color: #2e766e;
                 font-size: 16px;
@@ -179,6 +188,9 @@ export default {
                 width: 200px;
                 padding-left: 20px;
                 word-break:keep-all;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
                 span.iconfont{
                     float: left;
                     margin-right: 4px;
@@ -217,8 +229,14 @@ export default {
             }
         }
     }
-    .ant-pagination{
-        text-align: center;
+    .paginationWrap{
+        position: absolute;
+        bottom: 12px;
+        left: 0;
+        right: 0;
+        .ant-pagination{
+            text-align: center;
+        } 
     }
 }
 </style>

@@ -27,20 +27,12 @@
                             <div class="partInfoWrap">
                                 <p>单位：<span v-text="item.partInfo"></span></p>
                                 <p class="partIconWrap">
-                                    <a-tooltip>
-                                        <template slot="title">
-                                            点击发送私聊消息
-                                        </template>
-                                        <span @click="handleChatSend" class="iconfont iconsiliao" />
-                                    </a-tooltip>                              
-                                    <a-tooltip>
-                                        <template slot="title">
-                                            {{ item.friend ? '点击删除好友' : '点击发送好友请求'}}
-                                        </template>
-                                        <span :class="[item.friend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" @click="showAddFriend" />
-                                    </a-tooltip>
-
-                                    
+                                    <span title="点击发送私聊消息" @click="handleChatSend" class="iconfont iconsiliao" />
+                                    <span 
+                                        :title="[ item.friend ? '点击删除好友' : '点击添加好友' ]"
+                                        :class="[item.friend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
+                                        @click="showAddFriend(item.friend)" 
+                                    />                                  
                                 </p>
                             </div>
                             <div class="addFriendWrap" v-if="showAddFriendWrap">
@@ -143,8 +135,21 @@ export default {
             this.$message.info('发起私聊请求');
         },
         // 显示添加好友框
-        showAddFriend(){
-            this.showAddFriendWrap = true;
+        showAddFriend(obj){
+            let _this = this;
+            if ( obj ) {
+                this.$confirm({
+                    title: '确认从好友列表中删除此人么？',
+                    okText: '确认',
+                    cancelText: '取消',
+                    onOk(){
+                        _this.$message.success('删除好友成功')
+                    }
+                })
+            } else {
+                this.showAddFriendWrap = true;
+            }
+            
         },
         // 隐藏添加好友框
         hideAddFriend(){

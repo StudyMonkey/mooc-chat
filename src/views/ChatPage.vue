@@ -17,9 +17,11 @@
                         <chat-topic :listTopic="topicList" />
                     </a-tab-pane>
                     <a-tab-pane tab="成员" key="member">
-                        <chat-member :listMember="memberList" />
+                        <chat-member @changeMemberLoad="handleChangeShowLoad" :listMember="memberList" />
                     </a-tab-pane>
-                    <a-tab-pane tab="文件" key="file">Content of Tab Pane 4</a-tab-pane>
+                    <a-tab-pane tab="文件" key="file">
+                        <chat-file @changeShowLoad="handleChangeShowLoad" :listFile="fileList" />
+                    </a-tab-pane>
                     <a-tab-pane tab="公告" key="notice">
                         <chat-notice :listNotice="noticeList"/>
                     </a-tab-pane>
@@ -37,6 +39,7 @@ import ChatMain from '@/components/chat'
 import ChatTopic from '@/components/topic'
 import ChatMember from '@/components/member'
 import ChatNotice from '@/components/notice'
+import ChatFile from '@/components/file'
 export default {
     name: 'member',
     data() {
@@ -45,6 +48,7 @@ export default {
             topicList: [], // 传递给话题的数组 
             memberList: [], // 传递给成员的数组
             noticeList: [], // 传递给公告的数组
+            fileList: [], // 传递给文件的数组
         }
     },
     components: {
@@ -53,35 +57,34 @@ export default {
         ChatTopic,
         ChatMember,
         ChatNotice,
+        ChatFile,
         Loading
     },
     methods: {
-        async commonGetMethod(url, params, obj){
-            console.log(this);
-            console.log(obj);
+        async commonGetMethod(url, params){
             this.showLoad = true;
             const res = await this.$getData(url, params);
             this.showLoad = false;
             const { data: { data } } = res;
-            obj = data;
-            console.log(this.topicList);
-            console.log(obj);
+            return data;
         },
         async handleTabsChange (key) {
             console.log(key)
-            let _this = this;
             if ( key === 'topic' ){
-                this.commonGetMethod('topicList', {}, _this.topicList);
+                this.topicList = await this.commonGetMethod('topicList', {});
             } else if ( key === 'member' ) {
-                this.commonGetMethod('memberList', {}, _this.memberList);                
+                this.memberList = await this.commonGetMethod('memberList', {});                
             } else if ( key === 'notice' ) {
-                this.showLoad = true;
-                const res = await this.$getData('noticeList', {});
-                this.showLoad = false;
-                const { data: { data } } = res;
-                this.noticeList = data;
+                this.noticeList = await this.commonGetMethod('noticeList', {});
+            } else if ( key === 'file' ) {
+                this.fileList = await this.commonGetMethod('fileList', {});
             }
         },
+        // 接收文件tab传递过来的事件处理
+        handleChangeShowLoad(obj){
+            console.log('接收file', obj);
+            this.showLoad = obj;
+        }
     },    
 
 }
@@ -161,17 +164,6 @@ ul,p{
     margin-bottom: 15px;
 }
 
-.ant-tabs-nav{
-    .ant-tabs-tab-active{
-        color: #024d45
-    }
-    .ant-tabs-ink-bar{
-        background-color: #024d45
-    }
-    .ant-tabs-tab{
-        padding: 3px 8px;
-    }    
-}
 
 </style>
 

@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="chatTopicWrap" v-if="!showChat">
-            <ul>
+            <ul class="lm_scroll">
                 <li 
                     class="topicListLi" 
                     v-for="(item,index) in topicList" 
@@ -16,7 +16,7 @@
             <div class="createTopicWrap">
                 <span>话题名称：</span>
                 <a-input v-model="createTopicName" placeholder="请输入话题名称......" />
-                <a-button size="small">创建</a-button>
+                <a-button size="small" @click="handleTopicCreate">创建</a-button>
             </div>
         </div>
         <div v-else>
@@ -70,6 +70,17 @@ export default {
         handleTopicBackBtn(){
             this.showChat = false
         },
+        handleTopicCreate(){
+            if ( this.createTopicName ) {
+                let obj = {};
+                obj.title = this.createTopicName;
+                obj.owner = '本人';
+                this.topicList.push(obj);
+                this.createTopicName = '';
+            } else {
+                this.$message.error('话题名称不能为空');
+            }
+        }
     },
 }
 </script>
@@ -83,6 +94,9 @@ export default {
     background-color: #ffffff;
     position: relative;
     ul{
+        height: 498px;
+        overflow-y: auto;
+        overflow-x: hidden;
         .topicListLi{
             display: flex;
             padding: 0 20px;

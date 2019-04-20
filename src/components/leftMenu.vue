@@ -17,6 +17,22 @@
               <span :class="[item.type, 'iconfont']" :title="item.title"></span>
             </router-link>
           </li>
+          <li class="menuIconWrap">
+            <router-link 
+              to='/message' 
+            >
+              <a-badge :count="1" dot>
+                <span :class="['iconxinfeng', 'iconfont']" title="消息"></span>
+              </a-badge>            
+            </router-link>            
+          </li>
+          <li class="menuIconWrap">
+            <router-link 
+              to='/setting' 
+            >
+              <span :class="['iconshezhi', 'iconfont']" title="设置"></span>
+            </router-link>            
+          </li>          
         </ul>
     </div>
 </template>
@@ -32,8 +48,6 @@ export default {
             { type: 'icontongxunlu', title: '通讯录', link: '/member'},
             { type: 'iconsousuo', title: '查找用户和小组', link: '/search'},
             { type: 'iconincrease', title: '创建小组', link: '/add'},
-            { type: 'iconxinfeng', title: '消息', link: '/message'},
-            { type: 'iconshezhi', title: '设置', link: '/setting'},
           ]
       }
   },

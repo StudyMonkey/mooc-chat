@@ -1,6 +1,6 @@
 <template>
     <div class="noticeTopWrap">
-        <ul>
+        <ul class="lm_scroll">
             <li v-for="(item,index) in noticeList" :key="index">
                 <div class="noticeInfoWrap">
                     <span class="iconfont iconbiaoqing"></span>
@@ -14,12 +14,12 @@
             </li>
         </ul>
         <div class="createNoticeWrap">
-            <div><span>公告标题：</span><a-input placeholder="请输入您想创建的公告标题......" /></div>
+            <div><span>公告标题：</span><a-input v-model="noticeTitle" placeholder="请输入您想创建的公告标题......" /></div>
             <div>
                 <span>公告内容：</span>
-                <a-textarea placeholder="请输入您想创建的公告内容......" :rows="4" />
+                <a-textarea v-model="noticeContent" placeholder="请输入您想创建的公告内容......" :rows="4" />
             </div>
-            <a-button size="small">创建</a-button>
+            <a-button size="small" @click="handleCreateNotice">创建</a-button>
         </div>
     </div>
 </template>
@@ -36,7 +36,9 @@ export default {
     data() {
         return {
             isActive: '',
-            noticeList: []
+            noticeList: [],
+            noticeTitle: '', // 创建的话题标题
+            noticeContent: '', // 创建的话题内容 
         }
     },
     watch: {
@@ -45,11 +47,36 @@ export default {
                 this.noticeList = this.listNotice;
                 console.log(this.noticeList);
             }
-        }
+        },
     },
     methods: {
+        /*  展开收起按钮操作事件处理
+        *   根据传入的index修改值
+        */
         handleDivClick(index) {
-            this.isActive = index;
+            if ( this.isActive === index ) {
+                this.isActive = ''
+            } else {
+                this.isActive = index
+            }
+        },
+        /* 点击创建按钮的事件处理
+        *  获取到公告的标题noticeTitle和内容noticeContent的值，push到数组
+        *  再调用后台接口
+        */
+        handleCreateNotice(){
+            if ( this.noticeTitle && this.noticeContent ) {
+                let obj = {};
+                obj.title = this.noticeTitle;
+                obj.content = this.noticeContent;
+                obj.creator = 'me'
+                this.noticeList.push(obj);
+                this.noticeTitle = '';
+                this.noticeContent = '';
+            } else {
+                this.$message.error('部分信息填写不完整，请填写完整后点击创建');
+            }
+
         }
     },
     
@@ -64,6 +91,9 @@ export default {
     border: 1px solid #e5e5e5;
     position: relative;
     ul{
+        height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
         li{         
             padding: 0 20px;
             &:hover{
