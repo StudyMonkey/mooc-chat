@@ -9,6 +9,7 @@ html,body{
 ul,li{
     list-style: none;
 }
+i{ font-style: normal }
 .fl{float: left;}
 .fr{float: right} 
 .clearfix{zoom: 1;}
@@ -18,3 +19,8 @@ ul,li{
     visibility: hidden;
     display: block;
 } 
+.overHidden{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;    
+}

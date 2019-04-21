@@ -106,11 +106,6 @@ body,.lm_scroll{
       background: rgba(0, 0, 0, 0.1);
   }
 }
-.overHidden{
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;    
-}
 .topWrap{
     width:980px;
     margin: 30px auto;

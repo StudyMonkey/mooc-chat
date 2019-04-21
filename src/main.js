@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { Button,List,Avatar,Icon,Input,Badge,Tabs,Pagination,Popover,Tooltip,message,Modal } from 'ant-design-vue';
+import { Button,List,Avatar,Icon,Input,Badge,Tabs,Pagination,Popover,Tooltip,message,Modal,Select,Upload } from 'ant-design-vue';
 import App from './App.vue'
 import router from './router'
 import '@/static/scrollbars-firefox.css'
@@ -22,6 +22,14 @@ Vue.component(Input.TextArea.name, Input.TextArea);
 Vue.component(Pagination.name, Pagination); // 分页
 Vue.component(Popover.name, Popover); // 气泡卡片
 Vue.component(Tooltip.name, Tooltip); // 文字提示
+Vue.component(Select.name, Select); // select选择框
+Vue.component(Select.Option.name, Select.Option); // select选择框子菜单
+Vue.component(Upload.name, Upload); // 上传文件
+Vue.component(Modal.name, Modal); // 上传文件
+
+
+
+
 
 
 Vue.prototype.$getData = getData;

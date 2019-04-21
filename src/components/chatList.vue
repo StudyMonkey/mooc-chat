@@ -1,6 +1,5 @@
 <template>
     <div class="userListWrap">
-        <loading v-if="showLoading" />
         <div class="searchWrap">
             <a-input placeholder="搜索" v-model="searchVal" ref="userNameInput">
                 <a-icon slot="prefix" type="search" />
@@ -11,17 +10,13 @@
         <div class="mesListWrap lm_scroll">
             <ul>
                 <li 
-                    v-for="(item,index) in messageList" 
-                    :key="index"
-                    :class="isActive === index ? 'bg_active' : ''"
-                    @click="handleLiClick(index)"
+                    v-for="item in messageList" 
+                    :key="item.guid"
+                    :class="isActive === item.guid ? 'bg_active' : ''"
+                    @click="handleLiClick(item)"
                 >
                     <a-badge :count="item.mesNum" :dot="item.groupType === 1">
-                        <a-avatar
-                            shape="square" 
-                            size="default"
-                            :src="item.avatar"
-                        />
+                        <x-avatar :imgUrl="item.avatar" />
                     </a-badge>
                     <div class="infoWrap">
                         <div class="titleWrap">
@@ -39,30 +34,30 @@
 
 <script>
 import { getData } from '@/utils/utils'
-import Loading from '@/components/loading'
+import XAvatar from '@/components/avatar'
 export default {
     name: 'chatList',
     data() {
         return {
             searchVal: '',
             isActive: '', // li的下标，默认不选中任何
-            showLoading: false, // loading状态显示
             messageList: [], // 用户列表数据
         }
     },
     components: {
-        Loading,
+        XAvatar,
     },
     methods: {
         // 清空搜索内容
         emitEmpty() {
             this.searchVal = ''
         },
-        async handleLiClick(index){
-            this.isActive = index;
-            this.showLoading = true;
+        async handleLiClick(item){
+            this.$emit('clickChosedLi', item);
+            this.isActive = item.guid;
+            this.$emit('changeShowLoad', true);
             const res = await getData('chatCon', {});
-            this.showLoading = false;
+            this.$emit('changeShowLoad', false);
             const { data: { data } } = res;
             this.$store.commit('addChatConList', data);
             console.log(this.$store);
@@ -72,9 +67,9 @@ export default {
          */
           
         async getUserList(init){
-            this.showLoading = true;
+            this.$emit('changeShowLoad', true);
             const res = await getData('userList', {});
-            this.showLoading = false
+            this.$emit('changeShowLoad', false);
             let { data: { data } } = res;
             init ? this.messageList = this.messageList.concat(data) : this.messageList = data;
             // 存储到vuex
@@ -127,11 +122,6 @@ export default {
                 }
                 &.bg_active{
                     background-color: #f3e2cb;
-                }
-                .ant-avatar{                 
-                    width: 38px;
-                    height: 38px;
-                    border: 1px solid #bbbbbb;
                 }
                 .infoWrap{
                     margin-left: 10px;

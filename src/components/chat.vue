@@ -1,7 +1,6 @@
 <template>
     <div class="chatMainBox">
-        <loading v-if="showLoading" />
-        <div class="chatScrollArea">
+        <div class="chatScrollArea lm_scroll">
             <ul>
                 <li 
                     v-for="(item,index) in chatList" 
@@ -14,11 +13,7 @@
                     >
                         <template slot="content">
                             <div class="personInfoWrap">
-                                <a-avatar 
-                                    shape="square"
-                                    size="default"
-                                    :src="item.avatar"
-                                />
+                                <x-avatar :imgUrl="item.avatar" />
                                 <div>
                                     <p><span>昵称</span><span class="iconfont iconpen" /></p>
                                     <p>用户名：<span v-text="item.name"></span></p>
@@ -41,12 +36,9 @@
                                 <a-button size="small" @click="handleAddFriendSure">确定</a-button>
                             </div>
                         </template>
-                        <a-avatar 
-                            :class="[ item.isMe ? 'fl' : 'fr' ]"
-                            shape="square"
-                            size="default"
-                            :src="item.avatar"
-                        />
+                        <div>
+                            <x-avatar :class="[ item.isMe ? 'fl' : 'fr' ]" :imgUrl="item.avatar" />
+                        </div>
                     </a-popover>
                     <div :class="[ item.isMe ? 'fl ml10 ' : 'fr mr10 textAlignR ','chatInfoWrap' ]">
                         <p><span v-text="item.name"></span></p>
@@ -63,7 +55,7 @@
                 <template slot="title">
                     点击加载历史记录
                 </template>
-                <span class="iconfont fr iconliaotianjilu"></span>
+                <span @click="handleLoadMoreChat" class="iconfont fr iconliaotianjilu"></span>
             </a-tooltip>
             
         </ul>
@@ -77,14 +69,13 @@
 </template>
 
 <script>
-import Loading from '@/components/loading'
+import XAvatar from '@/components/avatar'
 export default {
     name: 'chat',
     data() {
         return {
             chatCon: '', // 用户输入的聊天内容
             chatList: [],
-            showLoading: false,
             showAddFriendWrap: false,
             addFriend: '我是', // 添加好友理由
             iconList: [
@@ -104,19 +95,21 @@ export default {
     },
     watch: {
         getChatConList(curval, oldval){
-            console.log(`最新值${curval}--旧值${oldval}`);
             if ( curval !== oldval ) {
                 this.chatList = curval
             }
         }
     },
+    components: {
+        XAvatar,
+    },
     methods: {
         async handleLoadMoreChat() {
-            this.showLoading = true
+            this.$emit('changeShowLoad', true);
             const res = await this.$getData('chatCon', {});
             const { data: { data } } = res;
             this.chatList = data.concat(this.chatList);
-            this.showLoading = false
+            this.$emit('changeShowLoad', false);
             this.$store.commit('addChatConList', this.chatList);
         },
         // 点击发送消息逻辑
@@ -131,8 +124,14 @@ export default {
             this.chatCon = '';
         },
         // 发起私聊请求
-        handleChatSend(){
+        async handleChatSend(){
             this.$message.info('发起私聊请求');
+            this.$emit('changeShowLoad', true);
+            const res = await this.$getData('chatCon', {});
+            const { data: { data } } = res; 
+            this.chatList = data;
+            this.$emit('changeShowLoad', false);
+            this.$store.commit('addChatConList', this.chatList);                       
         },
         // 显示添加好友框
         showAddFriend(obj){
@@ -162,9 +161,6 @@ export default {
             // alert('请求发送成功');
         }
     },
-    components: {
-        Loading,
-    },
     created () {
         // this.chatList = this.$store.state.chatConList;
         // console.log(this.chatList);
@@ -191,10 +187,6 @@ textarea[class='ant-input']{ resize: none }
             color: #333333;
             margin-bottom: 13px;
             .ant-avatar{
-                width: 38px;
-                height: 38px;
-                border-radius: 0;
-                border: 1px solid #bbbbbb;
                 margin-right: 10px;
             }
             span{
@@ -242,35 +234,12 @@ textarea[class='ant-input']{ resize: none }
         border-right: none;
         padding: 12px 10px 0 10px;
         background-color: #ffffff;
-        overflow-y: scroll;
+        overflow-y: auto;
         overflow-x: hidden;
-        &::-webkit-scrollbar {
-            /*滚动条整体样式*/
-            width: 2px; /*高宽分别对应横竖滚动条的尺寸*/
-            height: 2px;
-        }
-        &::-webkit-scrollbar-thumb {
-            /*滚动条里面小方块样式*/
-            border-radius: 5px;
-            -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-            background: #06c5d2;
-        }
-        &::-webkit-scrollbar-track {
-            /*滚动条里面轨道样式*/
-            -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-            border-radius: 0;
-            background: rgba(0, 0, 0, 0.1);
-        }
         ul{
             li{
                 width: 390px;
                 margin-bottom: 20px;
-                .ant-avatar{
-                    width: 38px;
-                    height: 38px;
-                    border: 1px solid #dcdcdc;
-                    border-radius: 0;
-                }
                 div.chatInfoWrap{
                     p{
                         font-size: 12px;

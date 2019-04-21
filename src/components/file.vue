@@ -42,13 +42,12 @@
                 </tbody>
             </table>
         </div>
-        <div class="paginationWrap">
-            <a-pagination showQuickJumper :defaultCurrent="1" :total="500" @change="handlePageChange" />
-        </div>
+        <x-pagination @pageChange="handlePageChange" />
     </div>
 </template>
 
 <script>
+import XPagination from '@/components/pagination'
 export default {
     name: 'file',
     props: {
@@ -68,6 +67,9 @@ export default {
                 this.fileList = this.listFile;
             }
         }
+    },
+    components: {
+        XPagination,
     },
     methods: {
         async handlePageChange(pageNum) {

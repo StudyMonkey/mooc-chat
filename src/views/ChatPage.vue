@@ -1,33 +1,44 @@
 <template>
     <div class="chatTopWrap">
         <loading v-if="showLoad" />
-        <chat-list />
+        <chat-list 
+            @changeShowLoad="handleChangeShowLoad" 
+            @clickChosedLi="handleClickChosedLi"
+        />
         <div class="chatMainWrap">
-            <div class="chatTitleWrap">
-                <a-icon type="message" />
-                <p>圈子名称圈子名称圈子名称圈子名称圈子名称圈子名称<span>(96人)</span></p>
+            <div v-if="!chosedChat" class="notClickChat">
+                未点击时显示的内容
             </div>
-            <p class="chatGroupNum">小组编号：<span>54284122</span></p>
-            <div class="card-container">
-                <a-tabs type="card" @change="handleTabsChange" defaultActiveKey="chat">
-                    <a-tab-pane tab="聊天" key="chat">
-                        <chat-main />
-                    </a-tab-pane>
-                    <a-tab-pane tab="话题" key="topic" forceRender>
-                        <chat-topic :listTopic="topicList" />
-                    </a-tab-pane>
-                    <a-tab-pane tab="成员" key="member">
-                        <chat-member @changeMemberLoad="handleChangeShowLoad" :listMember="memberList" />
-                    </a-tab-pane>
-                    <a-tab-pane tab="文件" key="file">
-                        <chat-file @changeShowLoad="handleChangeShowLoad" :listFile="fileList" />
-                    </a-tab-pane>
-                    <a-tab-pane tab="公告" key="notice">
-                        <chat-notice :listNotice="noticeList"/>
-                    </a-tab-pane>
-                    <a-tab-pane tab="设置" key="setting">Content of Tab Pane 6</a-tab-pane>
-                </a-tabs>
-            </div>            
+            <div v-else>
+                <div class="chatTitleWrap">
+                    <span :class="[ chosedChat.groupType === 1 ? 'iconqunliao' : 'iconsiliao', 'iconfont' ]"></span>
+                    <p v-text="chosedChat.title"><span></span></p>
+                </div>
+                <p class="chatGroupNum">小组编号：<span>54284122</span></p>
+                <div class="card-container">
+                    <a-tabs type="card" @change="handleTabsChange" defaultActiveKey="chat">
+                        <a-tab-pane tab="聊天" key="chat">
+                            <chat-main @changeShowLoad="handleChangeShowLoad" />
+                        </a-tab-pane>
+                        <a-tab-pane tab="话题" key="topic" forceRender>
+                            <chat-topic :listTopic="topicList" />
+                        </a-tab-pane>
+                        <a-tab-pane tab="成员" key="member">
+                            <chat-member @changeMemberLoad="handleChangeShowLoad" :listMember="memberList" />
+                        </a-tab-pane>
+                        <a-tab-pane tab="文件" key="file">
+                            <chat-file @changeShowLoad="handleChangeShowLoad" :listFile="fileList" />
+                        </a-tab-pane>
+                        <a-tab-pane tab="公告" key="notice">
+                            <chat-notice :listNotice="noticeList"/>
+                        </a-tab-pane>
+                        <a-tab-pane tab="设置" key="setting">
+                            <chat-set />
+                        </a-tab-pane>
+                    </a-tabs>
+                </div> 
+            </div>
+           
         </div>
     </div>
 </template>
@@ -40,11 +51,13 @@ import ChatTopic from '@/components/topic'
 import ChatMember from '@/components/member'
 import ChatNotice from '@/components/notice'
 import ChatFile from '@/components/file'
+import ChatSet from '@/components/set'
 export default {
     name: 'member',
     data() {
         return {
             showLoad: false,
+            chosedChat: '',
             topicList: [], // 传递给话题的数组 
             memberList: [], // 传递给成员的数组
             noticeList: [], // 传递给公告的数组
@@ -58,6 +71,7 @@ export default {
         ChatMember,
         ChatNotice,
         ChatFile,
+        ChatSet,
         Loading
     },
     methods: {
@@ -80,10 +94,14 @@ export default {
                 this.fileList = await this.commonGetMethod('fileList', {});
             }
         },
-        // 接收文件tab传递过来的事件处理
+        // 接收文件子组件传递过来的显示隐藏loading的事件处理
         handleChangeShowLoad(obj){
-            console.log('接收file', obj);
             this.showLoad = obj;
+        },
+        // 接受chatList子组件所选择的聊天列表
+        handleClickChosedLi(item){
+            console.log(item);
+            this.chosedChat = item;
         }
     },    
 
@@ -101,6 +119,15 @@ ul,p{
     border: 1px solid #c1bfba;
     .chatMainWrap{
         width: 670px;
+        .notClickChat{
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
         .chatGroupNum{
             background-color: #f5f5f5;
             padding: 0 15px; 
@@ -111,7 +138,7 @@ ul,p{
             font-size: 15px;
             line-height: 14px;
             background-color: #f5f5f5;
-            padding: 15px 15px 0;
+            padding: 15px 15px 10px 15px;
             i{
                 height: 20px;
                 line-height: 21px;

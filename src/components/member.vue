@@ -48,14 +48,13 @@
                     </tbody>
                 </table>
             </div>
-            <div class="paginationWrap">
-                <a-pagination showQuickJumper :defaultCurrent="1" :total="500" @change="handlePageChange" />
-            </div>
+            <x-pagination @pageChange="handlePageChange" />
         </div>
     </div>
 </template>
 
 <script>
+import XPagination from '@/components/pagination'
 export default {
     name: 'memberList',
     props: {
@@ -90,6 +89,9 @@ export default {
             searchVal: '', // input框输入的搜索内容
         }
     },
+    components: {
+        XPagination,
+    },
     methods: {
         // 删除小组成员事件处理
         handleDeleteMember(){
@@ -118,9 +120,6 @@ export default {
         handleSearchBtn(){
             this.$message.info('开始搜索');
         }
-    },
-    created () {
-
     },
 
 }

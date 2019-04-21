@@ -87,7 +87,7 @@ export default {
 .noticeTopWrap{
     margin-top: 15px;
     width: 638px;
-    height: 600px;
+    height: 598px;
     border: 1px solid #e5e5e5;
     position: relative;
     ul{

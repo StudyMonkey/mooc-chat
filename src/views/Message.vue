@@ -39,7 +39,41 @@
                     </table>
                 </div>                
             </a-tab-pane>
-            <a-tab-pane tab="个人申请" key="person" forceRender>Content of Tab Pane 2</a-tab-pane>
+            <a-tab-pane tab="个人申请" key="person" forceRender>
+                <div class="table_area">
+                    <table class="limitadm_table1 messageGroupTable messagePersonTable">
+                        <tbody>
+                            <tr class="h50 tr1">
+                                <td class="username">用户名</td>
+                                <td class="name">姓名</td>
+                                <td class="part">单位</td>
+                                <td class="joinReason">申请理由</td>
+                                <td class="time">申请时间</td>
+                                <td class="operate">处理方法</td>
+                            </tr>
+                            <tr v-for="(item,index) in groupMesList" :key="index">
+                                <td class="username" v-text="item.username"></td>
+                                <td class="name" v-text="item.name"></td>
+                                <td class="part" v-text="item.part"></td>
+                                <td class="joinReason" v-text="item.reason"></td>
+                                <td class="time" v-text="item.time"></td>
+                                <td class="operate">
+                                    <a-button 
+                                        class="sureBtn" 
+                                        size="small"
+                                        @click="handleSureBtnClick"
+                                    >同意</a-button>
+                                    <a-button 
+                                        class="cancelBtn" 
+                                        size="small"
+                                        @click="handleCancelBtnClick"
+                                    >拒绝</a-button>                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>                 
+            </a-tab-pane>
             <a-tab-pane tab="系统消息" key="systerm">Content of Tab Pane 3</a-tab-pane>
         </a-tabs>       
     </div>
@@ -124,6 +158,9 @@ export default {
                     font-weight: bold;
                 }
             }
+            &:hover{
+                background-color: #fbf6ed;
+            }
         }
         td{
             font-size: 14px;
@@ -172,6 +209,19 @@ export default {
                         background-color: #ff8000;
                     }
                 }
+            }
+        }
+    }
+    .messagePersonTable{
+        td{
+            &.username{
+                width: 178px;
+            }
+            &.name{
+                width: 90px;
+            }
+            &.part{
+                width: 304px;
             }
         }
     }
