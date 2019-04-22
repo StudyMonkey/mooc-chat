@@ -106,6 +106,38 @@ body,.lm_scroll{
       background: rgba(0, 0, 0, 0.1);
   }
 }
+div{
+  /deep/input.ant-input:focus,/deep/.ant-select-open .ant-select-selection {
+      outline: none;
+      border-color: #97c1bc;
+      box-shadow: 0 0 3px #97c1bc;
+  }
+  /deep/input.ant-input:hover,/deep/.ant-select-selection:hover{
+      border-color: #97c1bc;
+  }
+}
+.ant-input-affix-wrapper{
+  input.ant-input:hover{
+      border-color: #97c1bc;
+  }  
+}
+
+.ant-tooltip{
+  /deep/.ant-tooltip-inner{
+    background-color: #fff;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  .ant-tooltip-content{
+    .ant-tooltip-arrow{
+      border-top-color: #fff;
+      border-bottom-color: #ffffff;
+    }
+
+  }
+
+}
+
 .topWrap{
     width:980px;
     margin: 30px auto;

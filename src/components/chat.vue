@@ -49,9 +49,17 @@
         </div>
         <ul class="iconListWrap">
             <li v-for="(item,index) in iconList" :key="index">
-                <span :class="[item.type, 'iconfont']" :title="item.title"></span>
+                <a-tooltip>
+                    <template slot="title">
+                        {{item.title}}
+                    </template>
+                    <span>
+                        <span :class="[item.type, 'iconfont']"></span>
+                    </span>
+                    
+                </a-tooltip>            
             </li>
-            <a-tooltip>
+            <a-tooltip placement="topRight">
                 <template slot="title">
                     点击加载历史记录
                 </template>
@@ -79,7 +87,7 @@ export default {
             showAddFriendWrap: false,
             addFriend: '我是', // 添加好友理由
             iconList: [
-                { type: 'iconaite', title: '' },
+                { type: 'iconaite', title: '艾特' },
                 { type: 'iconbiaoqing', title: '表情'},
                 { type: 'icontupian', title: '发送图片'},
                 { type: 'iconlianjie', title: '发送链接'},
@@ -228,10 +236,9 @@ textarea[class='ant-input']{ resize: none }
     width: 640px;
     margin-top: 15px;
     .chatScrollArea{
-        width: 100%;
+        width: 638px;
         height: 428px;
         border: 1px solid #e5e5e5;
-        border-right: none;
         padding: 12px 10px 0 10px;
         background-color: #ffffff;
         overflow-y: auto;

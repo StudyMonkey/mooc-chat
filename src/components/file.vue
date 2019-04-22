@@ -20,19 +20,19 @@
                         <td class="operate">                          
                             <a-tooltip>
                                 <template slot="title">
-                                    下载该文件
+                                    下载
                                 </template>
                                 <span class="iconfont iconxiazai"></span>
                             </a-tooltip>                            
                             <a-tooltip>
                                 <template slot="title">
-                                    分享该文件
+                                    分享
                                 </template>
                                 <span class="iconfont iconfenxiang"></span>
                             </a-tooltip>
                             <a-tooltip>
                                 <template slot="title">
-                                    删除该文件                                      
+                                    删除                                      
                                 </template>  
                                 <span @click="handleDeleteFile" class="iconfont icondelete"></span>                      
                             </a-tooltip>

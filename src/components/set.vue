@@ -36,7 +36,7 @@
             <span>添加成员：</span>
             <a-select style="width: 209px;height:25px;" defaultValue="0">
                 <a-select-option value="0">允许全员添加小组成员</a-select-option>
-                <a-select-option value="1">不允许推荐</a-select-option>
+                <a-select-option value="1">仅允许管理员添加小组成员</a-select-option>
             </a-select>
         </div>
         <div class="selectWrap">

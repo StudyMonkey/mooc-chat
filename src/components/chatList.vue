@@ -1,12 +1,6 @@
 <template>
     <div class="userListWrap">
-        <div class="searchWrap">
-            <a-input placeholder="搜索" v-model="searchVal" ref="userNameInput">
-                <a-icon slot="prefix" type="search" />
-                <a-icon v-if="searchVal" slot="suffix" type="close-circle" @click="emitEmpty" />
-            </a-input>
-            <a-button icon="plus" />
-        </div>
+        <search-wrap />
         <div class="mesListWrap lm_scroll">
             <ul>
                 <li 
@@ -35,23 +29,20 @@
 <script>
 import { getData } from '@/utils/utils'
 import XAvatar from '@/components/avatar'
+import SearchWrap from '@/components/searchWrap'
 export default {
     name: 'chatList',
     data() {
         return {
-            searchVal: '',
             isActive: '', // li的下标，默认不选中任何
             messageList: [], // 用户列表数据
         }
     },
     components: {
         XAvatar,
+        SearchWrap,
     },
     methods: {
-        // 清空搜索内容
-        emitEmpty() {
-            this.searchVal = ''
-        },
         async handleLiClick(item){
             this.$emit('clickChosedLi', item);
             this.isActive = item.guid;
@@ -92,22 +83,6 @@ export default {
     height: 700px;
     background-color: #f5f5f5;
     position: relative;
-    .searchWrap{
-        display: flex;
-        padding: 22px 14px 21px 17px;
-        background-color: #dddddd;
-        .ant-btn{
-            padding: 0 6px;
-            height: 27px;
-            &:hover{
-                color: #ff5400
-            }
-        }
-        .ant-input{
-            width: 181px;
-            height: 27px;
-        }        
-    }
     .mesListWrap{
         height: 600px;
         overflow-y: auto;

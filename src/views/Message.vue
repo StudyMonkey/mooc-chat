@@ -2,7 +2,7 @@
     <div class="messagePageWrap">
         <loading v-show="showLoad" />
         <a-tabs defaultActiveKey="group" @change="handleTabsChange">
-            <a-tab-pane tab="群组申请" key="group">
+            <a-tab-pane tab="小组消息" key="group">
                 <div class="table_area">
                     <table class="limitadm_table1 messageGroupTable">
                         <tbody>

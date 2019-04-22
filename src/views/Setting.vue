@@ -17,23 +17,22 @@
                     <span>好友请求验证：</span>            
                     <a-select v-model="selectFriend" style="width: 209px">
                         <a-select-option value="0">直接通过，无需验证</a-select-option>
-                        <a-select-option value="1">需要经过我的同意</a-select-option>
-                        <a-select-option value="2">不允许任何人加我为好友</a-select-option>                    
+                        <a-select-option value="1">需通过验证添加好友</a-select-option>
+                        <a-select-option value="2">拒绝添加好友</a-select-option>                    
                     </a-select>
                 </div>
                 <div class="setSelect">
                     <span>小组请求验证：</span>            
                     <a-select v-model="selectGroup" style="width: 209px">
-                        <a-select-option value="0">直接加入，无需验证</a-select-option>
-                        <a-select-option value="1">需要经过我的同意</a-select-option>
-                        <a-select-option value="2">不允许加入任何学习小组</a-select-option>                    
+                        <a-select-option value="0">直接通过，无需验证</a-select-option>
+                        <a-select-option value="1">通过验证添加小组</a-select-option>                  
                     </a-select>
                 </div>
                 <div class="setSelect">
                     <span>是否允许推荐：</span>            
                     <a-select v-model="selectRecommand" style="width: 209px">
                         <a-select-option value="0">允许推荐</a-select-option>
-                        <a-select-option value="1">不允许推荐</a-select-option>
+                        <a-select-option value="1">拒绝推荐</a-select-option>
                     </a-select>
                 </div>
                 <a-button @click="handleSubmit">提交</a-button> 

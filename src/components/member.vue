@@ -1,55 +1,97 @@
 <template>
     <div>
-        <div class="memberSearchWrap">
-            <a-input v-model="searchVal" placeholder="请输入用户名或昵称......" />
-            <a-button class="searchBtn" size="small" @click="handleSearchBtn">搜索</a-button>
-            <a-button class="addMember" size="small">添加成员</a-button>
+        <div v-if="hasClickAdd">
+            <div class="memberSearchWrap">
+                <a-input v-model="searchVal" placeholder="请输入用户名或昵称......" />
+                <a-button class="searchBtn" size="small" @click="handleSearchBtn">搜索</a-button>
+                <a-tooltip placement="bottomRight">
+                    <template slot="title">
+                        <span>{{ btnDisabled ? '单位学习小组请在系统后台添加小组成员' : '点击添加成员' }}</span>
+                    </template>
+                    <a-button class="addMember" size="small" :disabled="btnDisabled" @click="handleAddMemberShow">添加成员</a-button>
+                </a-tooltip>        
+            </div>
+            <div class="memberContentWrap">          
+                <div class="table_area">
+                    <table class="limitadm_table1">
+                        <tbody>
+                            <tr class="h50 tr1">
+                                <td class="username">用户</td>
+                                <td class="nickname">昵称</td>
+                                <td>身份</td>
+                                <td class="operate">操作</td>
+                            </tr>
+                            <tr v-for="(item,index) in memberList" :key="index">
+                                <td class="username">
+                                    <span :class="identityClass(item.identityNum)"></span>
+                                    <span v-text="item.username"></span>
+                                </td>
+                                <td class="nickname" v-text="item.nickname">
+                                </td>
+                                <td v-text="item.identity"></td>
+                                <td class="operate">
+                                    <a-tooltip>
+                                        <template slot="title">
+                                            私信
+                                        </template>
+                                        <span class="iconfont iconsixin"></span>
+                                    </a-tooltip>
+                                    <a-tooltip>
+                                        <template slot="title">
+                                            授权为管理员
+                                        </template>
+                                        <span v-if="item.identityNum !== 0" class="iconfont iconyuechi"></span>
+                                    </a-tooltip>                           
+                                    <a-tooltip>
+                                        <template slot="title">
+                                            删除成员                                       
+                                        </template>  
+                                        <span @click="handleDeleteMember" class="iconfont iconshanchengyuan"></span>                      
+                                    </a-tooltip>
+                                    
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <x-pagination @pageChange="handlePageChange" />
+            </div>
         </div>
-        <div class="memberContentWrap">
-            <div class="table_area">
+        <div v-else class="addMemberWrap">
+            <div class="memberBtnWrap">
+                <a-button @click="handleAddMemberBackBtn" size="small">返回</a-button>
+                <span>添加成员</span>
+            </div>
+            <div class="memberTableWrap">
+                <div class="addMemberSearchWrap">
+                    <span>用户名：</span>
+                    <a-input v-model="searchMember" placeholder="请输入搜索用户名" />
+                    <a-button size="small">搜索</a-button>
+                </div>
                 <table class="limitadm_table1">
                     <tbody>
                         <tr class="h50 tr1">
-                            <td class="username">用户</td>
-                            <td class="nickname">昵称</td>
-                            <td>身份</td>
-                            <td class="operate">操作</td>
+                            <td class="checkboxTd"></td>
+                            <td class="username">用户名</td>
+                            <td class="name">姓名</td>
+                            <td class="part">单位</td>
                         </tr>
-                        <tr v-for="(item,index) in memberList" :key="index">
+                        <tr v-for="(item,index) in searchMemberList" :key="index">
+                            <td class="checkboxTd">
+                                <a-checkbox></a-checkbox>
+                            </td>
                             <td class="username">
-                                <span :class="identityClass(item.identityNum)"></span>
                                 <span v-text="item.username"></span>
                             </td>
-                            <td class="nickname" v-text="item.nickname">
+                            <td class="name" v-text="item.name">
                             </td>
-                            <td v-text="item.identity"></td>
-                            <td class="operate">
-                                <a-tooltip>
-                                    <template slot="title">
-                                        发起私聊
-                                    </template>
-                                    <span class="iconfont iconsixin"></span>
-                                </a-tooltip>
-                                <a-tooltip>
-                                    <template slot="title">
-                                        转让群主给该用户
-                                    </template>
-                                    <span v-if="item.identityNum !== 0" class="iconfont iconyuechi"></span>
-                                </a-tooltip>                           
-                                <a-tooltip>
-                                    <template slot="title">
-                                        删除该小组成员                                       
-                                    </template>  
-                                    <span @click="handleDeleteMember" class="iconfont iconshanchengyuan"></span>                      
-                                </a-tooltip>
-                                
-                            </td>
+                            <td v-text="item.part"></td>
                         </tr>
                     </tbody>
-                </table>
-            </div>
-            <x-pagination @pageChange="handlePageChange" />
-        </div>
+                </table>  
+                <!-- <div v-else>未搜索到成员信息</div>               -->
+            </div>                  
+        </div>        
     </div>
 </template>
 
@@ -86,7 +128,13 @@ export default {
     data() {
         return {
             memberList: [], // 成员列表数据
+            searchMemberList: [
+                { username: '43081119941024001X', name: '张三', part: '戏精学院'  }
+            ], // 搜索的成员列表数据
             searchVal: '', // input框输入的搜索内容
+            searchMember: '',
+            btnDisabled: false,
+            hasClickAdd: true, // 点击添加成员按钮
         }
     },
     components: {
@@ -105,7 +153,7 @@ export default {
                         _this.$message.success('删除小组成员成功');
                     }, 1500)                  
                 },
-                onText: '确认',
+                okText: '确认',
                 cancelText: '取消',
             })
         },
@@ -119,6 +167,18 @@ export default {
         },
         handleSearchBtn(){
             this.$message.info('开始搜索');
+        },
+        /*  添加成员的按钮点击事件处理
+         *  仅显示隐藏部分div
+         */
+        handleAddMemberShow(){
+            this.hasClickAdd = false;
+        },
+        /*  返回按钮的点击事件处理
+         *  仅显示隐藏部分div
+         */        
+        handleAddMemberBackBtn(){
+            this.hasClickAdd = true;
         }
     },
 
@@ -236,6 +296,74 @@ export default {
         .ant-pagination{
             text-align: center;
         } 
+    }
+}
+.addMemberWrap{
+    width: 640px;
+    padding: 18px 0;
+    .memberBtnWrap{
+        width: 640px;
+        height: 25px;
+        margin-bottom: 16px;
+        button{
+            margin-right: 10px;
+        }
+        span{
+            color: #333333;
+            font-size: 14px;
+        }
+    } 
+    .memberTableWrap{
+        width: 638px;
+        height: 554px;
+        border: 1px solid #e5e5e5;
+        .addMemberSearchWrap{
+            display: flex;
+            padding: 15px 15px 15px 19px;
+            input{
+                width: 490px;
+                height: 26px;
+                margin-right: 6px;
+            }
+            button{
+                height: 26px;
+                background-color: #70b24c;
+                color: #ffffff;
+            }
+        }
+        table{
+            width: 100%;
+            table-layout: fixed;
+            tr{
+                &.tr1{
+                    background-color: #f5f5f5;
+                    font-size: 16px;
+                    color: #2e766e;
+                    font-weight: bold;
+                }
+                td{
+                    color: #333333;
+                    height: 50px;
+                    line-height: 50px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    &.checkboxTd{
+                        width: 20px;
+                        margin: 0 10px 0 15px;
+                    }
+                    &.username{
+                        width: 175px;
+                    }
+                    &.name{
+                        width: 85px;
+                    }
+                    &.part{
+                        width: 300px;
+                    }
+                }
+            }
+        }
     }
 }
 </style>

@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { Button,List,Avatar,Icon,Input,Badge,Tabs,Pagination,Popover,Tooltip,message,Modal,Select,Upload } from 'ant-design-vue';
+import { Button,List,Avatar,Icon,Input,Badge,Tabs,Pagination,Popover,Tooltip,message,Modal,Select,Upload, Checkbox } from 'ant-design-vue';
 import App from './App.vue'
 import router from './router'
 import '@/static/scrollbars-firefox.css'
@@ -15,6 +15,7 @@ Vue.component(List.Item.Meta.name, List.Item.Meta);
 Vue.component(Avatar.name, Avatar);
 Vue.component(Icon.name, Icon);
 Vue.component(Input.name, Input);
+Vue.component(Checkbox.name, Checkbox);
 Vue.component(Badge.name, Badge);
 Vue.component(Tabs.name, Tabs);
 Vue.component(Tabs.TabPane.name, Tabs.TabPane);

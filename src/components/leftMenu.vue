@@ -11,27 +11,45 @@
             v-for="(item,index) in menuList" 
             :key="index"
           >
-            <router-link 
-              :to='item.link' 
-            >
-              <span :class="[item.type, 'iconfont']" :title="item.title"></span>
-            </router-link>
+            <a-tooltip placement="topLeft">
+              <template slot="title">
+                {{item.title}}
+              </template>
+              <div>
+                <router-link :to='item.link'>
+                  <span :class="[item.type, 'iconfont']"></span>
+                </router-link>
+              </div>
+            </a-tooltip>                     
           </li>
           <li class="menuIconWrap">
             <router-link 
               to='/message' 
             >
-              <a-badge :count="1" dot>
-                <span :class="['iconxinfeng', 'iconfont']" title="消息"></span>
-              </a-badge>            
+              <a-tooltip placement="topLeft">
+                <template slot="title">
+                  消息
+                </template>  
+                <a-badge :count="1" dot>
+                  <span :class="['iconxinfeng', 'iconfont']"></span>
+                </a-badge>  
+              </a-tooltip>          
             </router-link>            
           </li>
           <li class="menuIconWrap">
-            <router-link 
-              to='/setting' 
-            >
-              <span :class="['iconshezhi', 'iconfont']" title="设置"></span>
-            </router-link>            
+
+              <a-tooltip placement="topLeft">
+                <template slot="title">
+                  设置
+                </template> 
+                <div>
+                  <router-link 
+                    to='/setting' 
+                  >
+                    <span :class="['iconshezhi', 'iconfont']"></span>
+                  </router-link> 
+                </div> 
+              </a-tooltip>                      
           </li>          
         </ul>
     </div>
