@@ -148,69 +148,59 @@ export default {
         }
     }
     .messageGroupTable{
-        width: 100%;
-        table-layout: fixed;
         tr{
-            &.tr1{
-                td{
-                    font-size: 16px;
-                    color: #2e766e;
-                    font-weight: bold;
-                }
-            }
+            background-color: #ffffff;
             &:hover{
                 background-color: #fbf6ed;
             }
-        }
-        td{
-            font-size: 14px;
-            color: #333333;
-            height: 50px;
-            line-height: 50px;
-            word-break: keep-all;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            &.username{
-                padding-left: 16px;
-                width: 105px;
+            &.tr1{
+                &:hover{
+                    background-color: #ffffff;
+                }
             }
-            &.name{
-                width: 70px;
-            }
-            &.part{
-                width: 200px;
-            }
-            &.joinGroup{
-                width: 170px;
-            }
-            &.reason{
-                width: 130px;
-            }
-            &.time{
-                text-align: center;
-                width: 100px;
-                padding-right: 20px;
-            }
-            &.operate{
-                width: 114px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                button{
-                    height: 25px;
-                    color: #ffffff;
-                    &.sureBtn{
-                        background-color: #70b24c;
-                        margin-right: auto;
-                    }
-                    &.cancelBtn{
-                        margin-left: auto;
-                        background-color: #ff8000;
+            td{
+                &.username{
+                    padding-left: 16px;
+                    width: 105px;
+                }
+                &.name{
+                    width: 70px;
+                }
+                &.part{
+                    width: 200px;
+                }
+                &.joinGroup{
+                    width: 170px;
+                }
+                &.reason{
+                    width: 130px;
+                }
+                &.time{
+                    text-align: center;
+                    width: 100px;
+                    padding-right: 20px;
+                }
+                &.operate{
+                    width: 114px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    button{
+                        height: 25px;
+                        color: #ffffff;
+                        &.sureBtn{
+                            background-color: #70b24c;
+                            margin-right: auto;
+                        }
+                        &.cancelBtn{
+                            margin-left: auto;
+                            background-color: #ff8000;
+                        }
                     }
                 }
             }
         }
+
     }
     .messagePersonTable{
         td{

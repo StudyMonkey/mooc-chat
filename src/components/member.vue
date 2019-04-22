@@ -88,7 +88,8 @@
                             <td v-text="item.part"></td>
                         </tr>
                     </tbody>
-                </table>  
+                </table> 
+                <a-button>确定</a-button> 
                 <!-- <div v-else>未搜索到成员信息</div>               -->
             </div>                  
         </div>        
@@ -212,90 +213,56 @@ export default {
     height: 566px;
     border: 1px solid #e5e5e5;
     .limitadm_table1{
-        width: 100%;
-        table-layout:fixed;
-        tr.h50{
-            height: 50px;
-            line-height: 50px;
-            background-color: #f5f5f5;
-            &:hover{
-                background-color: #f5f5f5;
-            }            
-            td{
-                color: #2e766e;
-                font-size: 16px;
-                font-weight: bold;
-                &.username{
-                    padding-left: 38px;
-                }
-                &.operate{
-                    padding-right: 18px;
-                    justify-content: center;
-                }
-            }
-        }
         tr{
-            &:hover{
-                background-color: #fbf6ed;
-            }
-        }
-        td{
-            height: 50px;
-            line-height: 50px;
-            font-size: 14px;
-            &.username{
-                width: 200px;
-                padding-left: 20px;
-                word-break:keep-all;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                span.iconfont{
-                    float: left;
-                    margin-right: 4px;
-                }
-                span.iconqunzhu{
-                    color: #35a8eb
-                }
-                span.iconguanliyuan{
-                    color: #43b30d;
-                }
-            }
-            &.nickname{
-                width: 188px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                word-break:keep-all;
-            }
-            &.operate{
-                width: 100px;
-                text-align: center;                
-                padding-right: 18px;
-                display: flex;
-                span{
-                    cursor: pointer;
-                    &:hover{
-                        color: #f1bd85;
+            &.tr1{
+                td{
+                    &.username{
+                        padding-left: 38px;
+                    }
+                    &.operate{
+                        padding-right: 18px;
+                        justify-content: center;
                     }
                 }
-                span.iconsixin{
-                    margin-right: auto
+            } 
+            td{
+                &.username{
+                    width: 200px;
+                    padding-left: 20px;
+                    span.iconfont{
+                        float: left;
+                        margin-right: 4px;
+                    }
+                    span.iconqunzhu{
+                        color: #35a8eb
+                    }
+                    span.iconguanliyuan{
+                        color: #43b30d;
+                    }
                 }
-                span.iconshanchengyuan{
-                    margin-left: auto
+                &.nickname{
+                    width: 188px;
                 }
-            }
+                &.operate{
+                    width: 100px;
+                    text-align: center;                
+                    padding-right: 18px;
+                    display: flex;
+                    span{
+                        cursor: pointer;
+                        &:hover{
+                            color: #f1bd85;
+                        }
+                    }
+                    span.iconsixin{
+                        margin-right: auto
+                    }
+                    span.iconshanchengyuan{
+                        margin-left: auto
+                    }
+                }
+            }                     
         }
-    }
-    .paginationWrap{
-        position: absolute;
-        bottom: 12px;
-        left: 0;
-        right: 0;
-        .ant-pagination{
-            text-align: center;
-        } 
     }
 }
 .addMemberWrap{
@@ -332,25 +299,11 @@ export default {
             }
         }
         table{
-            width: 100%;
-            table-layout: fixed;
             tr{
-                &.tr1{
-                    background-color: #f5f5f5;
-                    font-size: 16px;
-                    color: #2e766e;
-                    font-weight: bold;
-                }
                 td{
-                    color: #333333;
-                    height: 50px;
-                    line-height: 50px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
                     &.checkboxTd{
                         width: 20px;
-                        margin: 0 10px 0 15px;
+                        padding: 0 21px 0 15px;
                     }
                     &.username{
                         width: 175px;

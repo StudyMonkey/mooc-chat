@@ -2,22 +2,35 @@
     <div class="searchTopWrap">
         <Loading v-if="showLoad" />
         <a-modal
-            v-model="visible"
-            onOk="handleOk"
+            class="searchModalWrap"
+            v-model="groupVisible"
             :footer="null"
         >
             <div class="modalHeaderWarap">
-                <x-avatar imgUrl="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
+                <x-avatar :imgUrl="chosedGroup.avatar" />
                 <div>
-                    <p>某某某某小组</p>
-                    <p>小组编号：12345678</p>
+                    <p v-text="chosedGroup.groupTitle"></p>
+                    <p class="groupCard">小组编号：<span v-text="chosedGroup.groupId"></span></p>
                 </div>
             </div>
-            
-
-            <a-textarea placeholder="请输入申请理由..." :rows="4" />
-            <a-button>发送</a-button>
-        </a-modal>        
+            <a-textarea v-model="joinGroupReason" placeholder="请输入申请理由..." :rows="4" />
+            <a-button @click="handleSendJoinReq" size="small">发送</a-button>
+        </a-modal>  
+        <a-modal
+            class="searchModalWrap"
+            v-model="memberVisible"
+            :footer="null"
+        >
+            <div class="modalHeaderWarap">
+                <x-avatar :imgUrl="chosedMember.avatar" />
+                <div>
+                    <p>昵称</p>
+                    <p class="groupCard">用户名：<span v-text="chosedMember.username"></span></p>
+                </div>
+            </div>
+            <a-textarea v-model="addMemberReason" placeholder="请输入申请理由..." :rows="4" />
+            <a-button @click="handleAddMemberReq" size="small">发送</a-button>
+        </a-modal>              
         <div class="searchMiddleWrap">
             <div class="searchGroup">
                 <p class="searchTitle">小组:</p>
@@ -42,7 +55,7 @@
 
         </div>
         <div class="searchRightWrap">
-            <div v-if="hasResult">
+            <div class="notSearchWrap" v-if="hasResult">
                 未搜索时显示的内容
             </div>
             <div v-else>
@@ -66,14 +79,37 @@
                             <p class="groupDescrition" v-text="item.groupdesc"></p>
                             <div class="groupBtnWrap">
                                 <p><span>小组编号：</span><span v-text="item.groupId"></span></p>
-                                <a-button type="primary" size="small" @click="handleJoinClick">加入</a-button>
+                                <a-button type="primary" size="small" @click="handleJoinClick(item)">加入</a-button>
                             </div>  
                         </li>                       
                     </ul>
                     <x-pagination @pageChange="handlePageChange" />
                 </div>
                 <div v-if="memberList.length > 0" class="MemberResultWrap">
-
+                    <div class="table_area">
+                        <table class="limitadm_table1">
+                            <tbody>
+                                <tr class="h50 tr1">
+                                    <td class="username">用户名</td>
+                                    <td class="name">姓名</td>
+                                    <td class="part">单位</td>
+                                    <td></td>
+                                </tr>
+                                <tr v-for="item in memberList" :key="item.id">
+                                    <td class="username" v-text="item.username"></td>
+                                    <td class="name" v-text="item.name"></td>
+                                    <td class="part" v-text="item.part"></td>
+                                    <td>
+                                        <a-button 
+                                            type="primary" 
+                                            size="small"
+                                            @click="handleAddMemberClick(item)"
+                                        >添加好友</a-button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>                    
                 </div>
 
             </div>
@@ -90,14 +126,19 @@ export default {
     name: 'search',
     data() {
         return {
-            visible: false, //modal框显示
+            groupVisible: false,  // 小组加入的modal框显示
+            memberVisible: false, // 添加好友的modal框显示
             showLoad: false,
             searchMember: '', // 搜索用户名输入内容
             groupList: [],  // 查询的小组列表
             memberList: [],  // 查询的用户列表
+            chosedGroup: '',  // 所点击的小组对象
+            chosedMember: '', // 所点击的好友对象
+            joinGroupReason: '', // 申请加入小组的理由
+            addMemberReason: '', // 添加好友的理由
             groupNum: '',
             groupName: '',
-            hasResult: false
+            hasResult: true
         }
     },
     components: {
@@ -106,17 +147,26 @@ export default {
         XPagination
     },
     methods: {
+        /**  通用的获取数据方法
+         *   传递参数url和查询条件
+         */
+        async commonGetData(url, params){
+            this.showLoad = true;
+            const res = await this.$getData(url, params);
+            this.showLoad = false;
+            const { data: { data } } = res;
+            return data;    
+        },
         /*  点击查询用户事件处理
          *  判断用户名是否为空给出提示
          */
-        handleSearchMember() {
+        async handleSearchMember() {
             if ( this.searchMember ) {
-                this.showLoad = true;
-                setTimeout( () => {
-                    this.showLoad = false;
-                    this.$message.success('搜索用户成功');
-                    this.memberResult = true;
-                }, 1000)
+                this.memberList = await this.commonGetData('searchMember', {});
+                this.groupList = [];
+                this.hasResult = false;
+                this.searchMember = '';
+                this.$message.success('搜索用户成功');
             } else {
                 this.$message.error('请输入需要查找的用户名');
             }
@@ -126,39 +176,81 @@ export default {
          */
         async handleSearchGroup(){
             if ( this.groupNum || this.groupName ) {
-                this.showLoad = true;          
-                
-                const res = await this.$getData('groupList', {});
-                const { data: { data } } = res;
-                this.showLoad = false;
-                this.$message.success('搜索小组成功');       
-                this.groupList = data;
-                this.groupResult = true;
+                this.groupList = await this.commonGetData('groupList', {});
+                this.memberList = [];
+                this.hasResult = false;
+                this.groupNum = '';
+                this.groupName = '';
+                this.$message.success('搜索小组成功');  
             } else {
                 this.$message.error('请输入需要查找的小组编号或名称');
             }
         },
         /**  点击加入事件的处理
-         * 
+         *   modal的状态改为显示，传入点击的对象值
          */
-        handleJoinClick(){
-            this.visible = true;
+        handleJoinClick(item){
+            this.groupVisible = true;
+            this.chosedGroup = item;
+        },
+        /*  Modal框的点击发送事件处理
+        *
+        */
+        handleSendJoinReq(){
+            this.groupVisible = false;
+            this.joinGroupReason = '';
+            this.$message.success('申请加入该小组的请求已发送');
+        },
+        /*  点击添加好友的事件处理
+         *  
+         */
+        handleAddMemberClick(item){
+            this.chosedMember = item;
+            this.memberVisible = true;
+        },
+        handleAddMemberReq(){
+            this.memberVisible = false;
+            this.addMemberReason = '';
+            this.$message.success('添加好友请求已发送');            
         },
         // 翻页点击事件
         async handlePageChange(pageNumber) {
-            this.showLoad = true;
-            const res = await this.$getData('groupList', {page: pageNumber});
-            this.showLoad = false;
-            const { data: { data } } = res;
-            this.groupList = data;         
+            this.groupList = await this.commonGetData('groupList', {page: pageNumber})       
         },        
     },
 }
 </script>
 
 <style lang="less" scoped>
-.modalHeaderWarap{
-    display: flex;
+
+.searchModalWrap{
+    .modalHeaderWarap{
+        display: flex;
+        .ant-avatar{
+            margin-right: 9px;
+        }
+        div{
+            p{
+                color: #333333;
+                &.groupCard{
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+    textarea{
+        resize: none;
+        margin: 10px 0;
+    }
+    button{
+        height: 25px;
+        background-color: #70b24c;
+        color: #ffffff;
+        margin-left: 425px;
+    }
+    /deep/.ant-modal-body{
+        padding: 0;
+    }
 }
 
 .searchTopWrap{
@@ -211,10 +303,19 @@ export default {
     .searchRightWrap{
         width: 670px;
         height: 100%;
+        border: 1px solid #c1bfba;
+        border-left: none;
         .searchTitle{
             text-indent: 15px;
             background-color: #f5f5f5;
             color: #666666;
+        }
+        .notSearchWrap{
+            display: flex;
+            height: 100%;
+            font-size: 20px;
+            justify-content: center;
+            align-items: center;
         }
         .groupResultWrap{
             position: relative;
@@ -266,6 +367,55 @@ export default {
                         }
                         button{
                             margin-left: auto;
+                        }
+                    }
+                }
+            }
+        }
+        .MemberResultWrap{
+            width: 638px;
+            height: 632px;
+            border: 1px solid #e5e5e5;
+            margin: 15px;
+            .limitadm_table1{
+                width: 100%;
+                table-layout: fixed;
+                tr{
+                    &:hover{
+                        background-color: #fbf6ed;
+                    }                        
+                    &.tr1{
+                        height: 50px;
+                        line-height: 50px;
+                        background-color: #f5f5f5;
+                        &:hover{
+                            background-color: #f5f5f5;
+                        }
+                        td{
+                            color: #2e766e;
+                            font-weight: bold;
+                            &.username{
+                                padding-left: 27px;
+                            }
+                        }
+                    }
+                    td{
+                        color: #333333;
+                        height: 50px;
+                        line-height: 50px;
+                        word-break: keep-all;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        &.username{
+                            padding-left: 20px;
+                            width: 172px;                         
+                        }
+                        &.name{
+                            width: 66px;
+                        }
+                        &.part{
+                            width: 288px;
                         }
                     }
                 }

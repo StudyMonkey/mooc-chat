@@ -107,38 +107,21 @@ export default {
     border: 1px solid #e5e5e5;
     position: relative;
     .limitadm_table1{
-        width: 100%;
-        table-layout:fixed;
         tr.h50{
-            height: 50px;
-            line-height: 50px;
-            background-color: #f5f5f5;
             td{
-                color: #2e766e;
-                font-size: 16px;
-                font-weight: bold;
                 &.filename{
                     padding-left: 38px;
                 }
                 &.operate{
+                    color: #2e766e;
                     justify-content: center;
                 }
             }
         }
-        tr{
-            &:hover{
-                background-color: #fbf6ed;
-            }
-        }
         td{
-            height: 50px;
-            line-height: 50px;
-            font-size: 14px;
-            color: #333333;
             &.filename{
                 width: 360px;
-                padding-left: 20px;
-                word-break:keep-all;               
+                padding-left: 20px;              
                 span.iconfont{
                     float: left;
                     margin-right: 4px;
@@ -149,7 +132,6 @@ export default {
             }
             &.fileAuthor{
                 width: 90px;
-                word-break:keep-all;
             }
             &.fileDateTime{
                 width: 90px;
@@ -176,16 +158,6 @@ export default {
                 }
             }
         }
-    }
-    .paginationWrap{
-        position: absolute;
-        bottom: 12px;
-        left: 0;
-        right: 0;
-        .ant-pagination{
-            text-align: center;
-        } 
-    }
-   
+    }  
 }
 </style>
