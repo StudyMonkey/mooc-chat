@@ -62,10 +62,10 @@ export default {
       return {
           menuList: [
             { type: 'iconsiliao', title: '聊天', link: '/chat' },
-            { type: 'iconqunliao', title: '我加入的小组', link: '/about'},
+            { type: 'iconqunliao', title: '我加入的小组', link: '/group'},
             { type: 'icontongxunlu', title: '通讯录', link: '/member'},
             { type: 'iconsousuo', title: '查找用户和小组', link: '/search'},
-            { type: 'iconincrease', title: '创建小组', link: '/add'},
+            { type: 'iconincrease', title: '创建小组', link: '/createGroup'},
           ]
       }
   },

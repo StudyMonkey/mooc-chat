@@ -1,6 +1,5 @@
 <template>
     <div class="messagePageWrap">
-        <loading v-show="showLoad" />
         <a-tabs defaultActiveKey="group" @change="handleTabsChange">
             <a-tab-pane tab="小组消息" key="group">
                 <div class="table_area">
@@ -80,19 +79,18 @@
 </template>
 
 <script>
-import Loading from '@/components/loading'
 export default {
     name: 'message',
     methods: {
         /**  相同的请求群组申请列表的方法
-         * 
+         *   调用了vuex里面的changeShowLoad方法，改变遮蔽层显示隐藏
          */
         async commonGetGroupMesList(){
-            this.showLoad = true;
+            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData('groupMesList', {});
             const { data: { data } } = res;
             this.groupMesList = data;
-            this.showLoad = false;  
+            this.$store.commit('changeShowLoad', false);
         },
         handleTabsChange(key) {
             console.log(key)
@@ -122,12 +120,8 @@ export default {
     },
     data() {
         return {
-            showLoad: false,
             groupMesList: [ ],
         }
-    },
-    components: {
-        Loading,
     },
     created () {
         this.commonGetGroupMesList();
@@ -186,15 +180,13 @@ export default {
                     justify-content: center;
                     align-items: center;
                     button{
-                        height: 25px;
-                        color: #ffffff;
+                        height: 26px;
+                        color: #333333;
                         &.sureBtn{
-                            background-color: #70b24c;
                             margin-right: auto;
                         }
                         &.cancelBtn{
                             margin-left: auto;
-                            background-color: #ff8000;
                         }
                     }
                 }

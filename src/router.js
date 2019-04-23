@@ -1,12 +1,11 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import About from './views/About.vue'
 import ChatPage from './views/ChatPage.vue'
 import Message from './views/Message.vue'
 import Setting from './views/Setting.vue'
 import Member from './views/Member.vue'
 import Search from './views/Search.vue'
-
+import createGroup from './views/createGroup'
 
 Vue.use(Router)
 
@@ -19,9 +18,9 @@ export default new Router({
       component: ChatPage
     },
     {
-      path: '/about',
-      name: 'about',
-      component: About
+      path: '/group',
+      name: 'group',
+      component: ChatPage
     },
     {
       path: '/member',
@@ -32,6 +31,11 @@ export default new Router({
       path: '/search',
       name: 'search',
       component: Search
+    },
+    {
+      path: '/createGroup',
+      name: 'createGroup',
+      component: createGroup
     },
     {
       path: '/message',

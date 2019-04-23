@@ -16,7 +16,7 @@
             <div class="createTopicWrap">
                 <span>话题名称：</span>
                 <a-input v-model="createTopicName" placeholder="请输入话题名称......" />
-                <a-button size="small" @click="handleTopicCreate">创建</a-button>
+                <a-button class="greenBtn" size="small" @click="handleTopicCreate">创建</a-button>
             </div>
         </div>
         <div v-else>
@@ -131,17 +131,11 @@ export default {
         display: flex;
         span{
             font-size: 14px;
-            line-height: 27px;
         }
         input{
             width: 466px;
             height: 27px;
             margin-right: 6px;
-        }
-        button{
-            height: 27px;
-            background-color: #70b24c;
-            color: #fff;
         }
     }
 }

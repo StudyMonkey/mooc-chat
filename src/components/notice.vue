@@ -10,7 +10,10 @@
                         <span :class="['iconfont', isActive === index ? 'iconbiaoqing' : 'iconsixin']"></span>
                     </div>
                 </div>
-                <div class="noticeContentWrap" v-show="isActive === index" v-text="item.content"></div>
+                <div v-show="isActive === index">
+                    <div class="noticeContentWrap" v-text="item.content"></div>
+                    <a-button size="small" class="fr" @click="handleNoticeDelete(item)">删除</a-button>
+                </div>               
             </li>
         </ul>
         <div class="createNoticeWrap">
@@ -76,7 +79,12 @@ export default {
             } else {
                 this.$message.error('部分信息填写不完整，请填写完整后点击创建');
             }
-
+        },
+        /**
+         * 公告的点击删除事件处理
+         */
+        handleNoticeDelete(item){
+            console.log(item);
         }
     },
     
@@ -96,6 +104,7 @@ export default {
         overflow-x: hidden;
         li{         
             padding: 0 20px;
+            overflow: hidden;
             &:hover{
                 background-color: #fbf6ed;
             }
@@ -123,6 +132,9 @@ export default {
                 text-indent: 30px;
                 padding: 14px 10px;
                 background-color: #ffffff;
+            }
+            .ant-btn-sm{
+                margin: 10px 0 20px 0;
             }
         }
     }

@@ -1,15 +1,9 @@
 <template>
     <div class="settingTopWrap">
-        <div class="setMiddleWrap">
-            <div class="promptWrap">
-                <span class="iconfont iconsixin"></span>
-                温馨提示
-            </div>
-            <div class="promptContent">
-                <p>【好友请求验证】和【小组请求验证】默认为直接通过，如果想不被打扰可更改设置；</p>
-                <p>如果设置为拒绝添加好友，【是否允许推荐】也会<span>自动更改为拒绝推荐。</span></p>                                        
-            </div>
-        </div>
+        <x-prompt>
+            <p>【好友请求验证】和【小组请求验证】默认为直接通过，如果想不被打扰可更改设置；</p>
+            <p>如果设置为拒绝添加好友，【是否允许推荐】也会<span>自动更改为拒绝推荐。</span></p>             
+        </x-prompt>
         <div class="systemSetWrap">
             <p class="systemTitle">系统设置</p>
             <div class="setSelectWrap">
@@ -42,6 +36,7 @@
 </template>
 
 <script>
+import XPrompt from '@/components/prompt'
 export default {
     name: 'setting',
     data() {
@@ -50,6 +45,9 @@ export default {
             selectGroup: "0",
             selectRecommand: "0"
         }
+    },
+    components: {
+        XPrompt,
     },
     methods: {
         handleSubmit(){
@@ -63,32 +61,6 @@ export default {
 <style lang="less" scoped>
 .settingTopWrap{
     display: flex;
-    .setMiddleWrap{
-        width: 250px;
-        .promptWrap{
-            display: flex;
-            height: 36px;
-            align-items: center;
-            background-color: #e7e7e7;
-            color: #666666;
-            span{
-                color: #ff5400;
-                margin: 0 3px 0 11px;
-            }
-        }
-        .promptContent{
-            height: 664px;
-            color: #444444;
-            background-color: #f5f5f5;
-            padding: 21px 17px 0 18px;
-            p{
-                text-indent: 23px;
-            }
-            span{
-                color: #fd672b;
-            }
-        }
-    } 
     .systemSetWrap{
         width: 670px;
         .systemTitle{

@@ -54,15 +54,15 @@
             </a-select>            
         </div>   
         <div class="btnWrap">
-            <a-button class="primaryBtn" size="small" @click="handleTopChatClick">聊天置顶</a-button>
+            <a-button size="small" @click="handleTopChatClick">聊天置顶</a-button>
             <a-button size="small" @click="handleClearChat">清除聊天</a-button>
-            <a-button size="small" @click="handleClearTopic">清除话题</a-button>
+            <a-button :disabled="hasClearRight" size="small" @click="handleClearTopic">清除话题</a-button>
         </div>  
         <div class="btnWrap">
-            <a-button class="warningBtn" size="small" @click="handleQuitGroupClick">退出小组</a-button>
-            <a-button class="warningBtn" size="small" @click="handleDismissGroupClick">解散小组</a-button>
+            <a-button size="small" @click="handleQuitGroupClick">退出小组</a-button>
+            <a-button size="small" @click="handleDismissGroupClick">解散小组</a-button>
         </div>      
-        <a-button class="successBtn" @click="handleSaveBtnClick">保存</a-button>
+        <a-button class="greenBtn" @click="handleSaveBtnClick">保存</a-button>
     </div>
 </template>
 
@@ -79,6 +79,7 @@ export default {
             transferLeader: '0', // 群主转移，默认第一项
             fileList: [], // 上传的图片
             uploading: false,
+            hasClearRight: true
         }
     },
     methods: {
@@ -189,21 +190,14 @@ export default {
         }
     }
     button{
-        height: 25px;
+        height: 26px;
         color: #333333;
-        &.primaryBtn{
-            background-color: #35a8eb;
+        &.greenBtn{
             color: #ffffff;
-        }
-        &.warningBtn{
-            background-color: #ff8000;
-            color: #ffffff;
-        }
-        &.successBtn{
-            background-color: #70b24c;
-            color: #ffffff;
-            height: 32px;
             margin: 12px 0 0 293px;
+            &:hover{
+                color: #40a9ff;
+            }
         }
     }
     div{

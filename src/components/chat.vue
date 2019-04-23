@@ -1,5 +1,17 @@
 <template>
     <div class="chatMainBox">
+        <a-modal
+            class="checkMemberModal"
+            style="width: 251px;"
+            v-model="cardVisible"
+            centered
+            :closable="false"
+            :footer="null"
+        >
+            <check-member @quickCreateGroup="handleQuickCreateGroup">
+                <span>勾选好友，发送名片</span>
+            </check-member>
+        </a-modal>
         <div class="chatScrollArea lm_scroll">
             <ul>
                 <li 
@@ -33,7 +45,7 @@
                             <div class="addFriendWrap" v-if="showAddFriendWrap">
                                 <p>添加好友<span class="iconfont icondelete" @click="hideAddFriend"></span></p>
                                 <a-textarea v-model="addFriend+item.name" :rows="4" placeholder="请输入添加理由" />
-                                <a-button size="small" @click="handleAddFriendSure">确定</a-button>
+                                <a-button class="greenBtn" size="small" @click="handleAddFriendSure">确定</a-button>
                             </div>
                         </template>
                         <div>
@@ -54,7 +66,7 @@
                         {{item.title}}
                     </template>
                     <span>
-                        <span :class="[item.type, 'iconfont']"></span>
+                        <span @click="handleIconClick(item)" :class="[item.type, 'iconfont']"></span>
                     </span>
                     
                 </a-tooltip>            
@@ -70,7 +82,7 @@
         <a-textarea v-model="chatCon" placeholder="请输入......" :rows="4" />
         <div class="sendWrap fr">
             <p>按Enter发送、Ctrl+Enter换行</p>
-            <a-button @click="handleSendBtnClick" size="small">发送</a-button>
+            <a-button class="greenBtn" @click="handleSendBtnClick" size="small">发送</a-button>
         </div>
         
     </div>
@@ -78,6 +90,7 @@
 
 <script>
 import XAvatar from '@/components/avatar'
+import CheckMember from '@/components/checkMember'
 export default {
     name: 'chat',
     data() {
@@ -86,6 +99,7 @@ export default {
             chatList: [],
             showAddFriendWrap: false,
             addFriend: '我是', // 添加好友理由
+            cardVisible: false,
             iconList: [
                 { type: 'iconaite', title: '艾特' },
                 { type: 'iconbiaoqing', title: '表情'},
@@ -110,14 +124,15 @@ export default {
     },
     components: {
         XAvatar,
+        CheckMember
     },
     methods: {
         async handleLoadMoreChat() {
-            this.$emit('changeShowLoad', true);
+            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData('chatCon', {});
             const { data: { data } } = res;
             this.chatList = data.concat(this.chatList);
-            this.$emit('changeShowLoad', false);
+            this.$store.commit('changeShowLoad', false);
             this.$store.commit('addChatConList', this.chatList);
         },
         // 点击发送消息逻辑
@@ -134,11 +149,11 @@ export default {
         // 发起私聊请求
         async handleChatSend(){
             this.$message.info('发起私聊请求');
-            this.$emit('changeShowLoad', true);
+            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData('chatCon', {});
             const { data: { data } } = res; 
             this.chatList = data;
-            this.$emit('changeShowLoad', false);
+            this.$store.commit('changeShowLoad', false);
             this.$store.commit('addChatConList', this.chatList);                       
         },
         // 显示添加好友框
@@ -166,12 +181,18 @@ export default {
         handleAddFriendSure(){
             this.hideAddFriend();
             this.$message.success('添加好友请求发送成功');
-            // alert('请求发送成功');
+        },
+        // 图标的点击事件处理
+        handleIconClick(item){
+            console.log(item);
+            if ( item.type === 'iconmingpian' ) {
+                this.cardVisible = true;
+            }
+        },
+        // 接收searchMember传递的事件处理
+        handleQuickCreateGroup(obj){
+            this.cardVisible = !obj;
         }
-    },
-    created () {
-        // this.chatList = this.$store.state.chatConList;
-        // console.log(this.chatList);
     },
 }
 </script>
@@ -183,6 +204,40 @@ export default {
 .bgOther{ background-color: #def7f0 }
 .textAlignR{ text-align: right }
 textarea[class='ant-input']{ resize: none }
+
+
+.ant-modal-centered {
+    .ant-modal{
+        width: 251px !important;
+        height: 471px; 
+        .ant-model-content{
+            .ant-modal-body{
+                padding: 0;
+                .checkMemberTopWrap{
+                    height: 360px;
+                    border: 1px solid #d5d4d4;
+                }
+            }
+        }        
+    } 
+     
+}
+// .ant-modal{
+//     width: 251px !important;
+//     height: 471px;
+//     .ant-model-content{
+//         .ant-modal-body{
+//             padding: 0;
+//             .checkMemberTopWrap{
+//                 height: 360px;
+//                 border: 1px solid #d5d4d4;
+//             }
+//         }
+//     }
+// }
+
+
+
 
 .ant-popover{
     div.ant-popover-inner-content{
@@ -223,9 +278,7 @@ textarea[class='ant-input']{ resize: none }
             }
             button{
                 margin-top: 10px;
-                float: right;
-                background-color: #70b24c;
-                color: #fff;                
+                float: right;              
             }
         }
     }
@@ -295,10 +348,6 @@ textarea[class='ant-input']{ resize: none }
             font-size: 13px;
             color: #999999;
             margin: 3px 6px 0 0;
-        }
-        button{
-            background-color: #70b24c;
-            color: #fff;
         }
     }
 }

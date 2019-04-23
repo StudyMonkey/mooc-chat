@@ -3,7 +3,7 @@
         <div v-if="hasClickAdd">
             <div class="memberSearchWrap">
                 <a-input v-model="searchVal" placeholder="请输入用户名或昵称......" />
-                <a-button class="searchBtn" size="small" @click="handleSearchBtn">搜索</a-button>
+                <a-button class="searchBtn greenBtn" size="small" @click="handleSearchBtn">搜索</a-button>
                 <a-tooltip placement="bottomRight">
                     <template slot="title">
                         <span>{{ btnDisabled ? '单位学习小组请在系统后台添加小组成员' : '点击添加成员' }}</span>
@@ -66,7 +66,7 @@
                 <div class="addMemberSearchWrap">
                     <span>用户名：</span>
                     <a-input v-model="searchMember" placeholder="请输入搜索用户名" />
-                    <a-button size="small">搜索</a-button>
+                    <a-button size="small" class="greenBtn">搜索</a-button>
                 </div>
                 <table class="limitadm_table1">
                     <tbody>
@@ -89,7 +89,7 @@
                         </tr>
                     </tbody>
                 </table> 
-                <a-button>确定</a-button> 
+                <a-button size="small" class="greenBtn sureBtn">确定</a-button> 
                 <!-- <div v-else>未搜索到成员信息</div>               -->
             </div>                  
         </div>        
@@ -148,9 +148,9 @@ export default {
             this.$confirm({
                 title: '确定删除该小组成员？',
                 onOk() {
-                    _this.$emit('changeMemberLoad', true);
+                    _this.$store.commit('changeShowLoad', true);
                     setTimeout( () => {
-                        _this.$emit('changeMemberLoad', false);
+                        _this.$store.commit('changeShowLoad', false);
                         _this.$message.success('删除小组成员成功');
                     }, 1500)                  
                 },
@@ -160,9 +160,9 @@ export default {
         },
         // 翻页点击事件
         async handlePageChange(pageNumber) {
-            this.$emit('changeMemberLoad', true);
+            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData('memberList', {page: pageNumber});
-            this.$emit('changeMemberLoad', false);
+            this.$store.commit('changeShowLoad', false);
             const { data: { data } } = res;
             this.memberList = data;         
         },
@@ -196,15 +196,14 @@ export default {
         height: 27px;
     }
     button{
-        height: 25px;
+        height: 26px;
         margin-top: 1px;
-        color: #ffffff;
         &.searchBtn{
             margin: 1px 6px;
-            background-color: #70b24c;
         }
         &.addMember{
-            background-color: #35a8eb
+            background-color: #35a8eb;
+            color: #ffffff;
         }
     }
 }
@@ -284,18 +283,14 @@ export default {
         width: 638px;
         height: 554px;
         border: 1px solid #e5e5e5;
+        position: relative;
         .addMemberSearchWrap{
             display: flex;
             padding: 15px 15px 15px 19px;
             input{
-                width: 490px;
+                width: 488px;
                 height: 26px;
                 margin-right: 6px;
-            }
-            button{
-                height: 26px;
-                background-color: #70b24c;
-                color: #ffffff;
             }
         }
         table{
@@ -316,6 +311,12 @@ export default {
                     }
                 }
             }
+        }
+        button.sureBtn{
+            position: absolute;
+            bottom: 19px;
+            left: 50%;
+            margin-left: -26px;
         }
     }
 }

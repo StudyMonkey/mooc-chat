@@ -1,10 +1,13 @@
 <template>
     <div class="chatTopWrap">
-        <loading v-if="showLoad" />
-        <chat-list 
-            @changeShowLoad="handleChangeShowLoad" 
-            @clickChosedLi="handleClickChosedLi"
-        />
+        <div v-if="quickCreateGroup">
+            <chat-list @clickChosedLi="handleClickChosedLi" @quickCreateGroup="handleQuickCreateGroup" />
+        </div>
+        <div v-else>
+            <check-member @quickCreateGroup="handleQuickCreateGroup">
+                <span>勾选好友，快速创建小组</span>
+            </check-member>
+        </div>     
         <div class="chatMainWrap">
             <div v-if="!chosedChat" class="notClickChat">
                 未点击时显示的内容
@@ -18,16 +21,16 @@
                 <div class="card-container">
                     <a-tabs type="card" @change="handleTabsChange" defaultActiveKey="chat">
                         <a-tab-pane tab="聊天" key="chat">
-                            <chat-main @changeShowLoad="handleChangeShowLoad" />
+                            <chat-main />
                         </a-tab-pane>
                         <a-tab-pane tab="话题" key="topic" forceRender>
                             <chat-topic :listTopic="topicList" />
                         </a-tab-pane>
                         <a-tab-pane tab="成员" key="member">
-                            <chat-member @changeMemberLoad="handleChangeShowLoad" :listMember="memberList" />
+                            <chat-member :listMember="memberList" />
                         </a-tab-pane>
                         <a-tab-pane tab="文件" key="file">
-                            <chat-file @changeShowLoad="handleChangeShowLoad" :listFile="fileList" />
+                            <chat-file :listFile="fileList" />
                         </a-tab-pane>
                         <a-tab-pane tab="公告" key="notice">
                             <chat-notice :listNotice="noticeList"/>
@@ -44,8 +47,8 @@
 </template>
 
 <script>
-import Loading from '@/components/loading'
 import ChatList from '@/components/chatList'
+import CheckMember from '@/components/checkMember'
 import ChatMain from '@/components/chat'
 import ChatTopic from '@/components/topic'
 import ChatMember from '@/components/member'
@@ -56,30 +59,30 @@ export default {
     name: 'member',
     data() {
         return {
-            showLoad: false,
             chosedChat: '',
             topicList: [], // 传递给话题的数组 
             memberList: [], // 传递给成员的数组
             noticeList: [], // 传递给公告的数组
             fileList: [], // 传递给文件的数组
+            quickCreateGroup: true, // 点击快速创建小组切换状态
         }
     },
     components: {
         ChatList,
+        CheckMember,
         ChatMain,
         ChatTopic,
         ChatMember,
         ChatNotice,
         ChatFile,
-        ChatSet,
-        Loading
+        ChatSet
     },
     methods: {
         async commonGetMethod(url, params){
-            this.showLoad = true;
+            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData(url, params);
-            this.showLoad = false;
             const { data: { data } } = res;
+            this.$store.commit('changeShowLoad', false);
             return data;
         },
         async handleTabsChange (key) {
@@ -94,14 +97,12 @@ export default {
                 this.fileList = await this.commonGetMethod('fileList', {});
             }
         },
-        // 接收文件子组件传递过来的显示隐藏loading的事件处理
-        handleChangeShowLoad(obj){
-            this.showLoad = obj;
-        },
         // 接受chatList子组件所选择的聊天列表
         handleClickChosedLi(item){
-            console.log(item);
             this.chosedChat = item;
+        },
+        handleQuickCreateGroup(obj){
+            this.quickCreateGroup = obj
         }
     },    
 
@@ -109,11 +110,6 @@ export default {
 </script>
 
 <style lang="less">
-ul,p{
-    margin: 0
-}
-.fr{ float: right; }
-
 .chatTopWrap{
     display: flex;
     border: 1px solid #c1bfba;

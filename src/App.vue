@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <div class="topWrap">
+      <Loading v-if="showLoad" />
       <LeftMenu />
       <div>
         <router-view/>
@@ -11,19 +12,37 @@
 
 <script>
 import LeftMenu from '@/components/leftMenu'
-// import io from 'socket.io-client'
-import './sockjs'
+import Loading from '@/components/loading'
 
 export default {
   name: 'app',
   components: {
     LeftMenu,
+    Loading
+  },
+  computed: {
+    getLoadStatus() {
+      return this.$store.state.showLoad
+    }
+  },
+  watch: {
+    getLoadStatus(n, o) {
+      if ( n !== o ) {
+        this.showLoad = n;
+      }      
+    }
+  },
+  data() {
+    return {
+      showLoad: false
+    }
   },
   created() {},
 }
 </script>
 
 <style lang='less'>
+ul,p{ margin: 0 }
 body,.lm_scroll{
   &::-webkit-scrollbar {
       /*滚动条整体样式*/
@@ -102,6 +121,13 @@ div{
             white-space: nowrap;
         }  
     }     
+}
+
+.greenBtn{
+  padding: 0 9px;
+  background-color: #70b24c; 
+  height: 26px;
+  color: #ffffff;   
 }
 
 .topWrap{

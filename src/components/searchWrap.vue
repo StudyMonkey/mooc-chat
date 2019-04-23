@@ -9,7 +9,7 @@
             <template slot="title">
                 快速创建交流小组
             </template>
-            <a-button><span class="iconfont iconincrease"></span></a-button>
+            <a-button @click="handleCreateGroupClick"><span class="iconfont iconincrease"></span></a-button>
         </a-tooltip>      
     </div>
 </template>
@@ -27,6 +27,12 @@ export default {
         emitEmpty() {
             this.searchVal = ''
         },
+        /**
+         * 快速创建小组的点击事件处理
+         */
+        handleCreateGroupClick(){
+            this.$emit('quickCreate', false);
+        }
     },
 }
 </script>

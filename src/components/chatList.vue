@@ -1,6 +1,6 @@
 <template>
     <div class="userListWrap">
-        <search-wrap />
+        <search-wrap @quickCreate="handleQuickCreate" />
         <div class="mesListWrap lm_scroll">
             <ul>
                 <li 
@@ -43,24 +43,28 @@ export default {
         SearchWrap,
     },
     methods: {
+        /**
+         * li的点击处理事件
+         * 将点击的数据对象传递到父组件
+         * 通过vuex改变Loading的状态
+         */
         async handleLiClick(item){
             this.$emit('clickChosedLi', item);
             this.isActive = item.guid;
-            this.$emit('changeShowLoad', true);
+            this.$store.commit('changeShowLoad', true);
             const res = await getData('chatCon', {});
-            this.$emit('changeShowLoad', false);
+            this.$store.commit('changeShowLoad', false);
             const { data: { data } } = res;
             this.$store.commit('addChatConList', data);
-            console.log(this.$store);
         },
         /** 获取用户列表数据方法
          *  init为布尔值，初始化请求为false，加载更多按钮点击为true
          */
           
         async getUserList(init){
-            this.$emit('changeShowLoad', true);
+            this.$store.commit('changeShowLoad', true);
             const res = await getData('userList', {});
-            this.$emit('changeShowLoad', false);
+            this.$store.commit('changeShowLoad', false);
             let { data: { data } } = res;
             init ? this.messageList = this.messageList.concat(data) : this.messageList = data;
             // 存储到vuex
@@ -69,6 +73,12 @@ export default {
         // 加载更多按钮的点击事件处理
         handleLoadBtnClick(){
             this.getUserList(true)
+        },
+        /**
+         * 接收searchWrap子组件传递过来的值
+         */
+        handleQuickCreate(obj){
+            this.$emit('quickCreateGroup', obj);
         }
     }, 
     created () {

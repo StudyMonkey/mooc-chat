@@ -73,10 +73,9 @@ export default {
     },
     methods: {
         async handlePageChange(pageNum) {
-            console.log(pageNum);
-            this.$emit('changeShowLoad', true);
+            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData('fileList', {});
-            this.$emit('changeShowLoad', false);
+            this.$store.commit('changeShowLoad', false);
             const { data: { data } } = res;
             this.fileList = data;
         },
@@ -87,9 +86,9 @@ export default {
                 okText: '确认',
                 cancelText: '取消',
                 onOk(){
-                    _this.$emit('changeShowLoad', true);
+                    _this.$store.commit('changeShowLoad', true);
                     setTimeout(() => {
-                        _this.$emit('changeShowLoad', false);
+                        _this.$store.commit('changeShowLoad', false);
                         _this.$message.success('删除文件成功');
                     }, 1000)
                 }

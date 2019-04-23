@@ -1,6 +1,5 @@
 <template>
     <div class="searchTopWrap">
-        <Loading v-if="showLoad" />
         <a-modal
             class="searchModalWrap"
             v-model="groupVisible"
@@ -111,15 +110,12 @@
                         </table>
                     </div>                    
                 </div>
-
-            </div>
-            
+            </div>           
         </div>
     </div>
 </template>
 
 <script>
-import Loading from '@/components/loading'
 import XAvatar from '@/components/avatar'
 import XPagination from '@/components/pagination'
 export default {
@@ -128,7 +124,6 @@ export default {
         return {
             groupVisible: false,  // 小组加入的modal框显示
             memberVisible: false, // 添加好友的modal框显示
-            showLoad: false,
             searchMember: '', // 搜索用户名输入内容
             groupList: [],  // 查询的小组列表
             memberList: [],  // 查询的用户列表
@@ -142,7 +137,6 @@ export default {
         }
     },
     components: {
-        Loading,
         XAvatar,
         XPagination
     },
@@ -151,9 +145,9 @@ export default {
          *   传递参数url和查询条件
          */
         async commonGetData(url, params){
-            this.showLoad = true;
+            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData(url, params);
-            this.showLoad = false;
+            this.$store.commit('changeShowLoad', false);
             const { data: { data } } = res;
             return data;    
         },
