@@ -196,7 +196,6 @@ export default {
         height: 27px;
     }
     button{
-        height: 26px;
         margin-top: 1px;
         &.searchBtn{
             margin: 1px 6px;
@@ -269,7 +268,6 @@ export default {
     padding: 18px 0;
     .memberBtnWrap{
         width: 640px;
-        height: 25px;
         margin-bottom: 16px;
         button{
             margin-right: 10px;

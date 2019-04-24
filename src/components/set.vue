@@ -4,26 +4,7 @@
             <span>小组名称：</span>
             <a-input class="groupName" v-model="groupName" placeholder="请输入小组名称......" />
         </div>
-        <div class="groupLogoWrap">
-            <span>小组头像：</span>
-            <img src="" alt="">
-            <a-upload
-                :fileList="fileList"
-                :remove="handleRemove"
-                listType="picture"
-                :beforeUpload="beforeUpload"
-                class="upload-list-inline"
-            >
-                <a-button :disabled="fileList.length >= 1">选择</a-button>
-            </a-upload>
-            <a-button
-                @click="handleUpload"
-                :disabled="fileList.length === 0"
-                :loading="uploading"
-            >
-                {{uploading ? '上传中...' : '点击上传' }}
-            </a-button>            
-        </div>
+        <upload-img />
         <div class="groupDescriptionWrap">
             <span>小组描述：</span>
             <a-textarea class="groupDescription" :rows="4" v-model="groupDescription" placeholder="请输入小组描述......" />
@@ -67,6 +48,8 @@
 </template>
 
 <script>
+import XAvatar from '@/components/avatar'
+import UploadImg from '@/components/uploadImg'
 export default {
     name: 'set',
     data() {
@@ -77,10 +60,12 @@ export default {
             addMember: '0', // 添加成员，默认第一项
             addGroup: '0', // 加群方式，默认第一项
             transferLeader: '0', // 群主转移，默认第一项
-            fileList: [], // 上传的图片
-            uploading: false,
             hasClearRight: true
         }
+    },
+    components: {
+        XAvatar,
+        UploadImg
     },
     methods: {
         // 通用的确认事件处理
@@ -94,29 +79,6 @@ export default {
                     _this.$message.success(mes);
                 }
             })             
-        },
-        handleRemove(file) {
-            const index = this.fileList.indexOf(file);
-            const newFileList = this.fileList.slice();
-            newFileList.splice(index, 1);
-            this.fileList = newFileList
-        },
-        beforeUpload(file) {
-            this.fileList = [...this.fileList, file]
-            return false;
-        },
-        handleUpload() {
-            const { fileList } = this;
-            const formData = new FormData();
-            fileList.forEach((file) => {
-                formData.append('files[]', file);
-            });
-            this.uploading = true
-
-            setTimeout( () => {
-                this.uploading = false
-                this.$message.success('upload successfully.');                
-            }, 1000)
         },
         // 清除聊天点击事件处理
         handleClearChat(){
@@ -161,19 +123,6 @@ export default {
             height: 27px;
         }        
     }
-    .groupLogoWrap{
-        display: flex;
-        button{
-            margin-top: 0;
-        }
-        /deep/.ant-upload-list{
-            float: right;
-            .ant-upload-list-item{
-                margin: 0 10px 0 0;
-                float: left;
-            }
-        }
-    }
     .groupDescriptionWrap{
         display: flex;
         textarea{
@@ -190,7 +139,6 @@ export default {
         }
     }
     button{
-        height: 26px;
         color: #333333;
         &.greenBtn{
             color: #ffffff;

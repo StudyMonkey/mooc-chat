@@ -71,6 +71,14 @@ div{
   /deep/input.ant-input:hover,/deep/.ant-select-selection:hover{
       border-color: #97c1bc;
   }
+  .ant-btn-sm{
+    height: 26px;
+  }
+  &.middleWrap{
+    width: 250px;
+    height: 700px;
+    background-color: #f5f5f5;
+  }
 }
 .ant-input-affix-wrapper{
   input.ant-input:hover{

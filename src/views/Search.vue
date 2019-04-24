@@ -30,7 +30,7 @@
             <a-textarea v-model="addMemberReason" placeholder="请输入申请理由..." :rows="4" />
             <a-button @click="handleAddMemberReq" size="small">发送</a-button>
         </a-modal>              
-        <div class="searchMiddleWrap">
+        <div class="searchMiddleWrap middleWrap">
             <div class="searchGroup">
                 <p class="searchTitle">小组:</p>
                 <div>
@@ -58,7 +58,9 @@
                 未搜索时显示的内容
             </div>
             <div v-else>
-                <p class="searchTitle">搜索结果</p>
+                <right-title>
+                    <span>搜索结果</span>
+                </right-title>
                 <div v-if="groupList.length > 0" class="groupResultWrap">
                     <ul class="groupList">
                         <li 
@@ -117,6 +119,7 @@
 
 <script>
 import XAvatar from '@/components/avatar'
+import RightTitle from '@/components/rightTitle'
 import XPagination from '@/components/pagination'
 export default {
     name: 'search',
@@ -138,6 +141,7 @@ export default {
     },
     components: {
         XAvatar,
+        RightTitle,
         XPagination
     },
     methods: {
@@ -256,8 +260,6 @@ export default {
         font-size: 14px;
     }
     .searchMiddleWrap{
-        width: 250px;
-        background-color: #f5f5f5;
         .searchGroup{
             height: 187px;
         }

@@ -3,7 +3,7 @@ import Router from 'vue-router'
 import ChatPage from './views/ChatPage.vue'
 import Message from './views/Message.vue'
 import Setting from './views/Setting.vue'
-import Member from './views/Member.vue'
+import AddressList from './views/addressList.vue'
 import Search from './views/Search.vue'
 import createGroup from './views/createGroup'
 
@@ -25,7 +25,7 @@ export default new Router({
     {
       path: '/member',
       name: 'member',
-      component: Member
+      component: AddressList
     },
     {
       path: '/search',

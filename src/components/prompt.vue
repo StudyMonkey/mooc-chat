@@ -1,5 +1,5 @@
 <template>
-    <div class="setMiddleWrap">
+    <div class="setMiddleWrap middleWrap">
         <div class="promptWrap">
             <span class="iconfont iconsixin"></span>
             温馨提示
@@ -18,7 +18,6 @@ export default {
 
 <style lang='less' scoped>
 .setMiddleWrap{
-    width: 250px;
     .promptWrap{
         display: flex;
         height: 36px;
@@ -33,7 +32,6 @@ export default {
     .promptContent{
         height: 664px;
         color: #444444;
-        background-color: #f5f5f5;
         padding: 21px 17px 0 18px;
         p{
             text-indent: 23px;

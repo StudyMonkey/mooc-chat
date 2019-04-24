@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { Button,List,Avatar,Icon,Input,Badge,Tabs,Pagination,Popover,Tooltip,message,Modal,Select,Upload, Checkbox } from 'ant-design-vue';
+import { Button,List,Avatar,Icon,Input,Badge,Tabs,Pagination,Popover,Tooltip,message,Modal,Select,Upload, Checkbox,Radio } from 'ant-design-vue';
 import App from './App.vue'
 import router from './router'
 import '@/static/scrollbars-firefox.css'
@@ -27,8 +27,8 @@ Vue.component(Select.name, Select); // select选择框
 Vue.component(Select.Option.name, Select.Option); // select选择框子菜单
 Vue.component(Upload.name, Upload); // 上传文件
 Vue.component(Modal.name, Modal); // 上传文件
-
-
+Vue.component(Radio.Group.name, Radio.Group); // 单选按钮组
+Vue.component(Radio.name, Radio);
 
 
 

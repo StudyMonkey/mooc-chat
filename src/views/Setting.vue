@@ -5,7 +5,9 @@
             <p>如果设置为拒绝添加好友，【是否允许推荐】也会<span>自动更改为拒绝推荐。</span></p>             
         </x-prompt>
         <div class="systemSetWrap">
-            <p class="systemTitle">系统设置</p>
+            <right-title>
+                <span>系统设置</span>
+            </right-title>
             <div class="setSelectWrap">
                 <div class="setSelect">
                     <span>好友请求验证：</span>            
@@ -37,6 +39,7 @@
 
 <script>
 import XPrompt from '@/components/prompt'
+import RightTitle from '@/components/rightTitle'
 export default {
     name: 'setting',
     data() {
@@ -48,6 +51,7 @@ export default {
     },
     components: {
         XPrompt,
+        RightTitle
     },
     methods: {
         handleSubmit(){
@@ -63,13 +67,6 @@ export default {
     display: flex;
     .systemSetWrap{
         width: 670px;
-        .systemTitle{
-            height: 36px;
-            line-height: 36px;
-            background-color: #f5f5f5;
-            color: #666666;
-            text-indent: 16px;
-        }
         .setSelectWrap{
             text-align: center;
             color: #333333;

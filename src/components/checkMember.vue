@@ -8,13 +8,9 @@
             </a-input>
             <span class="iconfont icondelete" @click="handleCloseClick"></span>
         </div>
-        <ul class="lm_scroll">
-            <li v-for="item in checkMemberList" :key="item.id">
-                <x-avatar :imgUrl="item.avatar" />
-                <span v-text="item.username"></span>
-                <a-checkbox  @change="onChange" />
-            </li>
-        </ul>
+        <list-user :listUser="checkMemberList">
+            <a-checkbox  @change="onChange" />
+        </list-user>
         <div class="chosedNumWrap">
             <span class="word">已选<i>10</i>人</span>
             <a-button class="greenBtn" size="small">确定</a-button>
@@ -24,7 +20,7 @@
 </template>
 
 <script>
-import XAvatar from '@/components/avatar'
+import ListUser from '@/components/listUser'
 export default {
     name: 'checkMember',
     data() {
@@ -34,7 +30,7 @@ export default {
         }
     },
     components: {
-        XAvatar,
+        ListUser
     },
     methods: {
         onChange(e) {
@@ -77,18 +73,6 @@ export default {
     }
     ul{
         height: 588px;
-        overflow-y: auto;
-        li{
-            display: flex;
-            padding: 10px 20px 10px 10px;
-            line-height: 40px;
-            .ant-avatar{
-                margin-right: 9px;
-            }
-            .ant-checkbox-wrapper{
-                margin-left: auto;
-            }
-        }
     }
     .chosedNumWrap{
         height: 40px;
