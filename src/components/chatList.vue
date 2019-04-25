@@ -1,6 +1,6 @@
 <template>
     <div class="userListWrap">
-        <search-wrap @quickCreate="handleQuickCreate" />
+        <search-wrap @changeSearchVal="handleChangeSearchVal" @quickCreate="handleQuickCreate" />
         <div class="mesListWrap lm_scroll">
             <ul>
                 <li 
@@ -20,7 +20,8 @@
                         <p class="time" v-text="item.time"></p>
                     </div>
                 </li>                   
-            </ul>         
+            </ul> 
+            <div v-if="searchNoResult">未搜索到任何用户</div>   
         </div>
         <div class="loadMoreBtn" @click="handleLoadBtnClick">加载更多<a-icon type="caret-down" /></div>
     </div>    
@@ -36,6 +37,8 @@ export default {
         return {
             isActive: '', // li的下标，默认不选中任何
             messageList: [], // 用户列表数据
+            saveMessageList: [],  // 保存用户列表数据
+            searchNoResult: false,  // 未搜索到用户时显示
         }
     },
     components: {
@@ -59,14 +62,15 @@ export default {
         },
         /** 获取用户列表数据方法
          *  init为布尔值，初始化请求为false，加载更多按钮点击为true
-         */
-          
+         */       
         async getUserList(init){
             this.$store.commit('changeShowLoad', true);
             const res = await getData('userList', {});
             this.$store.commit('changeShowLoad', false);
             let { data: { data } } = res;
             init ? this.messageList = this.messageList.concat(data) : this.messageList = data;
+            this.saveMessageList = this.messageList;
+            console.log(this.saveMessageList);
             // 存储到vuex
             this.$store.commit('addUserList', this.messageList);
         },
@@ -79,6 +83,27 @@ export default {
          */
         handleQuickCreate(obj){
             this.$emit('quickCreateGroup', obj);
+        },
+        /**
+         *  接受searchWrap子组件传递过来的搜索的值
+         */
+        async handleChangeSearchVal(searchVal){
+            console.log(searchVal);
+            if ( searchVal !== '' ) {
+                this.messageList = this.messageList.filter( v => v.title === searchVal);
+                if ( this.messageList.length === 0 ) {
+                    const res = await this.$getData('searchSomeMember', {});
+                    console.log('搜索结果:', res);
+                    if ( res.data.data ) {
+                        const { data: { data } } = res;
+                        this.messageList = data;
+                    } else {
+                        this.searchNoResult = true;
+                    }
+                }
+            } else {
+                this.messageList = this.saveMessageList;
+            }
         }
     }, 
     created () {

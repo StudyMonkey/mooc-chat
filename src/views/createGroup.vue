@@ -73,6 +73,7 @@ export default {
 .createGroupTopWrap{
     display: flex;
     .createRightTop{
+        background-color: #ffffff;
         .createBtnWrap{
             display: flex;
             justify-content: center;

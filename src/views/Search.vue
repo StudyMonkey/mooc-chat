@@ -72,7 +72,7 @@
                                 <div>
                                     <p class="overHidden" v-text="item.groupTitle"></p>
                                     <p>
-                                        <span class="iconfont iconsixin"></span>
+                                        <span class="iconfont iconqunliao1"></span>
                                         <span class="colorSpan"><i v-text="item.number"></i>人</span>
                                     </p>
                                 </div>
@@ -338,6 +338,10 @@ export default {
                                 span.colorSpan{
                                     color: #e97307;
                                     font-size: 14px;
+                                }
+                                span.iconfont{
+                                    color: #c5c8cb;
+                                    margin-right: 7px;
                                 }
                             }                   
                         }

@@ -131,6 +131,8 @@ export default {
 
 <style lang="less">
 .messagePageWrap{
+    height: 700px;
+    background-color: #ffffff;
     .ant-tabs{
         width: 920px;
         .ant-tabs-nav-container{

@@ -248,6 +248,7 @@ export default {
                     display: flex;
                     span{
                         cursor: pointer;
+                        color: #999999;
                         &:hover{
                             color: #f1bd85;
                         }

@@ -145,6 +145,7 @@ export default {
         }
         .card-container {
             overflow: hidden;
+            background-color: #ffffff;
             .ant-tabs-bar{
                 display: flex;
                 justify-content: flex-end;

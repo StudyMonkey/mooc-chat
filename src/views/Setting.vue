@@ -67,6 +67,7 @@ export default {
     display: flex;
     .systemSetWrap{
         width: 670px;
+        background-color: #ffffff;
         .setSelectWrap{
             text-align: center;
             color: #333333;

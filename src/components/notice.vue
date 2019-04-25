@@ -1,21 +1,21 @@
 <template>
     <div class="noticeTopWrap">
-        <ul class="lm_scroll">
-            <li v-for="(item,index) in noticeList" :key="index">
-                <div class="noticeInfoWrap">
-                    <span class="iconfont iconbiaoqing"></span>
-                    <p class="noticeTitle" v-text="item.title"></p>
-                    <div @click="handleDivClick(index)">
-                        <span v-text="isActive === index ? '收起' : '展开'"></span>
-                        <span :class="['iconfont', isActive === index ? 'iconbiaoqing' : 'iconsixin']"></span>
+        <div v-if="noticeList.length > 0">
+            <ul class="lm_scroll">
+                <li v-for="(item,index) in noticeList" :key="index">
+                    <div class="noticeInfoWrap">
+                        <span class="iconfont icongonggao"></span>
+                        <p  @click="handleDivClick(index)" class="noticeTitle" v-text="item.title"></p>
+                        <p class="dateTime" v-text="item.time"></p>
                     </div>
-                </div>
-                <div v-show="isActive === index">
-                    <div class="noticeContentWrap" v-text="item.content"></div>
-                    <a-button size="small" class="fr" @click="handleNoticeDelete(item)">删除</a-button>
-                </div>               
-            </li>
-        </ul>
+                    <div v-show="isActive === index">
+                        <div class="noticeContentWrap" v-text="item.content"></div>
+                        <a-button size="small" class="fr" @click="handleNoticeDelete(item)">删除</a-button>
+                    </div>               
+                </li>
+            </ul>
+        </div>
+        <div v-else>暂无任何小组公告信息</div>
         <div class="createNoticeWrap">
             <div><span>公告标题：</span><a-input v-model="noticeTitle" placeholder="请输入您想创建的公告标题......" /></div>
             <div>
@@ -48,7 +48,6 @@ export default {
         listNotice(n, o) {
             if ( n !== o ) {
                 this.noticeList = this.listNotice;
-                console.log(this.noticeList);
             }
         },
     },
@@ -85,6 +84,9 @@ export default {
          */
         handleNoticeDelete(item){
             console.log(item);
+            const index = this.noticeList.findIndex( v => v === item );
+            this.noticeList.splice(index, 1);
+            this.isActive = '';
         }
     },
     
@@ -112,7 +114,7 @@ export default {
                 height: 50px;
                 line-height: 50px;
                 display: flex;
-                span.iconbiaoqing{
+                span.icongonggao{
                     color: #43b30d;
                     margin-right: 7px;
                 }
@@ -123,9 +125,9 @@ export default {
                     text-overflow: ellipsis;
                     color: #333333;
                 }
-                div{
+                .dateTime{
                     margin-left: auto;
-                }                
+                }              
             }
             .noticeContentWrap{
                 border: 1px solid #dcdcdc;
