@@ -1,4 +1,4 @@
-<<template>
+<template>
     <ul class="lm_scroll listUserUlWrap">
         <li 
             v-for="item in checkMemberList" 

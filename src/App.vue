@@ -42,6 +42,7 @@ export default {
 </script>
 
 <style lang='less'>
+body{ background-color: #f0eee8; }
 ul,p{ margin: 0 }
 body,.lm_scroll{
   &::-webkit-scrollbar {

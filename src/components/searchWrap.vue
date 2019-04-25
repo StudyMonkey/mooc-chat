@@ -1,6 +1,5 @@
 <template>
     <div class="searchWrap">
-
         <a-input placeholder="搜索" v-model="searchVal" ref="userNameInput">
             <a-icon slot="prefix" type="search" />
             <a-icon v-if="searchVal" slot="suffix" type="close-circle" @click="emitEmpty" />
@@ -15,6 +14,7 @@
 </template>
 
 <script>
+import { debounce } from '@/utils/utils'
 export default {
     name: 'searchWrap',
     data() {
@@ -33,6 +33,14 @@ export default {
         handleCreateGroupClick(){
             this.$emit('quickCreate', false);
         }
+    },
+    created () {
+        // 节流操作
+        this.$watch('searchVal', debounce(async (newQuery) => {
+            // newQuery为输入的值
+            console.log(newQuery) 
+            this.$emit('changeSearchVal', newQuery);                            
+        }, 300))
     },
 }
 </script>

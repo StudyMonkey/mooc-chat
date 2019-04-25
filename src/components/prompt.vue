@@ -1,7 +1,7 @@
 <template>
     <div class="setMiddleWrap middleWrap">
         <div class="promptWrap">
-            <span class="iconfont iconsixin"></span>
+            <span class="iconfont icontishi"></span>
             温馨提示
         </div>
         <div class="promptContent">
