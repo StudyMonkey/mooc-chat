@@ -3,10 +3,10 @@ import Vuex from 'vuex'
 import { Button,List,Avatar,Icon,Input,Badge,Tabs,Pagination,Popover,Tooltip,message,Modal,Select,Upload, Checkbox,Radio } from 'ant-design-vue';
 import App from './App.vue'
 import router from './router'
-import '@/static/scrollbars-firefox.css'
 import store from './store/store'
 import '@/assets/font/iconfont.css'
 import { getData } from './utils/utils'
+import { emoji } from './utils/emoji.js'
 
 Vue.component(Button.name, Button);
 Vue.component(List.name, List);
@@ -36,6 +36,7 @@ Vue.component(Radio.name, Radio);
 Vue.prototype.$getData = getData;
 Vue.prototype.$message = message;
 Vue.prototype.$confirm = Modal.confirm;
+Vue.prototype.emoji = emoji
 Vue.config.productionTip = false
 Vue.use(Vuex);
 

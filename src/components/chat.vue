@@ -54,7 +54,7 @@
                     </a-popover>
                     <div :class="[ item.isMe ? 'fl ml10 ' : 'fr mr10 textAlignR ','chatInfoWrap' ]">
                         <p><span v-text="item.name"></span></p>
-                        <div :class="[ item.isMe ? 'bgSelf' : 'bgOther', 'mesContent' ]" v-text="item.content"></div>
+                        <div :class="[ item.isMe ? 'bgSelf' : 'bgOther', 'mesContent' ]" v-html="emoji(item.content)"></div>
                     </div>
                 </li>
             </ul>
@@ -79,6 +79,11 @@
             </a-tooltip>
             
         </ul>
+        <div class="emojiPosition" v-if="showEmoji">
+            <vue-emoji
+                @select="selectEmoji">
+            </vue-emoji>
+        </div>
         <a-textarea v-model="chatCon" placeholder="请输入......" :rows="4" />
         <div class="sendWrap fr">
             <p>按Enter发送、Ctrl+Enter换行</p>
@@ -91,10 +96,13 @@
 <script>
 import XAvatar from '@/components/avatar'
 import CheckMember from '@/components/checkMember'
+import vueEmoji from '@/components/emoji.vue'
 export default {
     name: 'chat',
     data() {
         return {
+            value: '',
+            showEmoji: false,
             chatCon: '', // 用户输入的聊天内容
             chatList: [],
             showAddFriendWrap: false,
@@ -124,9 +132,14 @@ export default {
     },
     components: {
         XAvatar,
-        CheckMember
+        CheckMember,
+        vueEmoji
     },
     methods: {
+        selectEmoji (code) {
+            this.showEmoji = false
+            this.chatCon += code;
+        },
         async handleLoadMoreChat() {
             this.$store.commit('changeShowLoad', true);
             const res = await this.$getData('chatCon', {});
@@ -187,6 +200,10 @@ export default {
             console.log(item);
             if ( item.type === 'iconmingpian' ) {
                 this.cardVisible = true;
+            }
+
+            if ( item.type === 'iconbiaoqing' ) {
+                this.showEmoji = !this.showEmoji;
             }
         },
         // 接收searchMember传递的事件处理
@@ -340,6 +357,13 @@ textarea[class='ant-input']{ resize: none }
             line-height: 36px;
             cursor: pointer;
         }       
+    }
+    .emojiPosition{
+        position: absolute;
+        top: 282px;
+        .emoji{
+            width: 645px;
+        }
     }
     .sendWrap{
         display: flex;
