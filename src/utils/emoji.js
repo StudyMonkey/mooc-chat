@@ -5,8 +5,6 @@ Object.values(data).forEach(item => {
 })
 
 /**
- *
- *
  * @export
  * @param {string} value
  * @returns {string}

@@ -21,12 +21,13 @@
                     <p>
                         <span>单位：<i v-text="oneUser.part"></i></span>
                     </p> 
-                    <p>
-                        <span>备注名：<i>暂无添加备注</i><span class="iconfont iconpen"></span></span>
-                    </p> 
+                    <div class="memoNameDiv">
+                        <span>备注名：</span>
+                        <memo-name @saveMemoName="handleSaveMemoName" />                       
+                    </div> 
                     <div class="addressBtnWrap">
                         <a-button size="small" @click="handleIsTop" v-text="oneUser.isTop ? '取消置顶' : '置顶' "></a-button>
-                        <a-button class="greenBtn" size="small">发消息</a-button>    
+                        <a-button class="greenBtn" size="small" @click="handleSendMessage">发消息</a-button>    
                     </div>                                                           
                 </div>
             </div>
@@ -38,6 +39,7 @@
 import SearchWrap from '@/components/searchWrap'
 import ListUser from '@/components/listUser'
 import XAvatar from '@/components/avatar'
+import MemoName from '@/components/memoName'
 export default {
     name: 'member',
     data() {
@@ -52,7 +54,8 @@ export default {
     components: {
         SearchWrap,
         ListUser,
-        XAvatar
+        XAvatar,
+        MemoName
     },
     async created () {
         this.$store.commit('changeShowLoad', true);
@@ -113,7 +116,21 @@ export default {
             } else {
                 this.addressUserList = this.saveAddressUserList;
             }
-        }        
+        },
+        /**
+         * 发送消息的事件处理
+         */
+        handleSendMessage(){
+            this.$router.push({
+                path: '/chat'
+            })
+        },
+        /**
+         *  接收子组件修改备注名的点击传递事件
+         */        
+        handleSaveMemoName(name){
+            console.log(name)
+        }
     },
 }
 </script>
@@ -145,14 +162,13 @@ export default {
         }
         .addressInfoWrap{
             padding: 36px 0 0 195px;
-            p{
+            p,.memoNameDiv{
                 font-size: 14px;
                 color: #333333;
                 margin-bottom: 34px; 
-                span.iconfont{
-                    cursor: pointer;
-                    color: #f0b577;
-                }
+            }
+            .memoNameDiv{
+                display: flex;
             }
             .addressBtnWrap{
                 .greenBtn{

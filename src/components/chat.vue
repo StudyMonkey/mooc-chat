@@ -27,7 +27,8 @@
                             <div class="personInfoWrap">
                                 <x-avatar :imgUrl="item.avatar" />
                                 <div>
-                                    <p><span>昵称</span><span class="iconfont iconpen" /></p>
+                                    <!-- <p><span>昵称</span><span class="iconfont iconpen" /></p> -->
+                                    <memo-name from='1' @saveMemoName="handleSaveMemoName" />
                                     <p>用户名：<span v-text="item.name"></span></p>
                                 </div>
                             </div>
@@ -96,7 +97,8 @@
 <script>
 import XAvatar from '@/components/avatar'
 import CheckMember from '@/components/checkMember'
-import vueEmoji from '@/components/emoji.vue'
+import vueEmoji from '@/components/emoji'
+import MemoName from '@/components/memoName'
 export default {
     name: 'chat',
     data() {
@@ -133,7 +135,8 @@ export default {
     components: {
         XAvatar,
         CheckMember,
-        vueEmoji
+        vueEmoji,
+        MemoName
     },
     methods: {
         selectEmoji (code) {
@@ -147,6 +150,13 @@ export default {
             this.chatList = data.concat(this.chatList);
             this.$store.commit('changeShowLoad', false);
             this.$store.commit('addChatConList', this.chatList);
+        },
+        /**
+         * memoName组件传递过来的参数
+         * 修改昵称的点击事件
+         */
+        handleSaveMemoName(name){
+            console.log(name)
         },
         // 点击发送消息逻辑
         handleSendBtnClick(){
@@ -279,8 +289,8 @@ textarea[class='ant-input']{ resize: none }
             .ant-avatar{
                 margin-right: 10px;
             }
-            span{
-                cursor: pointer;
+            div{
+                line-height: 20px;
             }
         }
         .partInfoWrap{
