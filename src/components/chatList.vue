@@ -90,7 +90,8 @@ export default {
         async handleChangeSearchVal(searchVal){
             console.log(searchVal);
             if ( searchVal !== '' ) {
-                this.messageList = this.messageList.filter( v => v.title === searchVal);
+                this.searchNoResult = false;
+                this.messageList = this.messageList.filter( v => v.title === searchVal);          
                 if ( this.messageList.length === 0 ) {
                     const res = await this.$getData('searchSomeMember', {});
                     console.log('搜索结果:', res);

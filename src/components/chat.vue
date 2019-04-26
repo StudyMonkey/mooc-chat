@@ -8,7 +8,7 @@
             :closable="false"
             :footer="null"
         >
-            <check-member @quickCreateGroup="handleQuickCreateGroup">
+            <check-member @checkMemberSureBtn="handleCheckMemberSureBtn" @quickCreateGroup="handleQuickCreateGroup">
                 <span>勾选好友，发送名片</span>
             </check-member>
         </a-modal>
@@ -209,6 +209,16 @@ export default {
         // 接收searchMember传递的事件处理
         handleQuickCreateGroup(obj){
             this.cardVisible = !obj;
+        },
+        // 接收checkMember传递勾选好友
+        handleCheckMemberSureBtn(arr){
+            console.log(arr);
+            if ( arr.length > 0 ){
+                this.$router.push({
+                    path: '/chat'
+                })
+            }
+            this.cardVisible = false;
         }
     },
 }
@@ -300,7 +310,6 @@ textarea[class='ant-input']{ resize: none }
         }
     }
 }
-
 
 .chatMainBox{
     width: 640px;

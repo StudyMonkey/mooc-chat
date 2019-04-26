@@ -4,7 +4,7 @@
             <chat-list @clickChosedLi="handleClickChosedLi" @quickCreateGroup="handleQuickCreateGroup" />
         </div>
         <div v-else>
-            <check-member @quickCreateGroup="handleQuickCreateGroup">
+            <check-member @changeSearchVal="handleChangeSearchVal" @checkMemberSureBtn="handleCheckMemberSureBtn" @quickCreateGroup="handleQuickCreateGroup">
                 <span>勾选好友，快速创建小组</span>
             </check-member>
         </div>     
@@ -101,8 +101,44 @@ export default {
         handleClickChosedLi(item){
             this.chosedChat = item;
         },
+        /**
+         *  处理快速创建小组传递过来的显示隐藏参数
+         */
         handleQuickCreateGroup(obj){
             this.quickCreateGroup = obj
+        },
+        /**
+         * 处理快速创建小组确定按钮的事件传递
+         * checkMember组件传递过来的勾选好友的数组值
+         */
+        handleCheckMemberSureBtn(arr){
+            this.quickCreateGroup = true;
+            if ( arr.length > 0 ) {
+                this.$router.push({path: '/chat'});
+            }          
+        },
+        /**
+         * 处理快速创建小组
+         * checkMember组件传递过来的搜索值
+         */
+        handleChangeSearchVal(str){
+            console.log(str);
+            // if ( searchVal !== '' ) {
+            //     this.searchNoResult = false;
+            //     this.messageList = this.messageList.filter( v => v.title === searchVal);          
+            //     if ( this.messageList.length === 0 ) {
+            //         const res = await this.$getData('searchSomeMember', {});
+            //         console.log('搜索结果:', res);
+            //         if ( res.data.data ) {
+            //             const { data: { data } } = res;
+            //             this.messageList = data;
+            //         } else {
+            //             this.searchNoResult = true;
+            //         }
+            //     }
+            // } else {
+            //     this.messageList = this.saveMessageList;
+            // }            
         }
     },    
 

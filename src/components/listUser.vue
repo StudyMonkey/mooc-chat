@@ -7,7 +7,9 @@
         >
             <x-avatar :imgUrl="item.avatar" />
             <span v-text="item.name"></span>
-            <slot></slot>
+            <div class="checkboxWrap" @click="handleSendToCheckMember(item)">
+                <slot></slot>
+            </div>            
         </li>
     </ul>
 </template>
@@ -46,6 +48,10 @@ export default {
             if ( this.type ) {
                 this.$emit('toAddressList', item);
             }
+        },
+        handleSendToCheckMember(item){
+            console.log(item);
+            this.$emit('sendCheckLiToParent', item);
         }
     },
 }
@@ -64,7 +70,7 @@ export default {
         .ant-avatar{
             margin-right: 9px;
         }
-        .ant-checkbox-wrapper{
+        .checkboxWrap{
             margin-left: auto;
         }
     }    

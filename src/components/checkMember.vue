@@ -8,12 +8,12 @@
             </a-input>
             <span class="iconfont icondelete" @click="handleCloseClick"></span>
         </div>
-        <list-user :listUser="checkMemberList">
+        <list-user @sendCheckLiToParent="handleSendCheckLiToParent" :listUser="checkMemberList">
             <a-checkbox  @change="onChange" />
         </list-user>
         <div class="chosedNumWrap">
-            <span class="word">已选<i>10</i>人</span>
-            <a-button class="greenBtn" size="small">确定</a-button>
+            <span class="word">已选<i>{{hasCheckedList.length}}</i>人</span>
+            <a-button class="greenBtn" size="small" @click="checkMemberSureBtn">确定</a-button>
         </div>
         
     </div>
@@ -21,29 +21,63 @@
 
 <script>
 import ListUser from '@/components/listUser'
+import { debounce } from '@/utils/utils'
 export default {
     name: 'checkMember',
     data() {
         return {
             searchVal: '',
-            checkMemberList: []
+            checkMemberList: [],
+            hasCheckedList: [], // 勾选上的好友列表
         }
     },
     components: {
         ListUser
     },
     methods: {
+        emitEmpty(){
+            this.searchVal = ''
+        },
         onChange(e) {
             console.log(`checked = ${e.target.checked}`)
-        },        
+        },
+        /**
+         *  传递给chatPage父组件一个显示隐藏的值  
+         */        
         handleCloseClick() {
             this.$emit('quickCreateGroup', true);
+        },
+        /**
+         *  处理listUser传递过来的参数
+         */
+        handleSendCheckLiToParent(item){
+            const index = this.hasCheckedList.findIndex( v => v === item );
+            if ( index === -1 ) {
+                this.hasCheckedList.push(item);
+            } else {
+                this.hasCheckedList.splice(index, 1);
+            }          
+        },
+        /**
+         *  点击确定按钮传递给父组件所勾选的好友和隐藏状态
+         */
+        checkMemberSureBtn(){
+            this.$emit('checkMemberSureBtn', this.hasCheckedList);
+
+            // this.hasCheckedList = []
         }
     },
     async created() {
         const res = await this.$getData('checkMemberList', {});
         const { data: { data } } = res;
-        this.checkMemberList = data
+        this.checkMemberList = data;
+
+        // 节流操作
+        this.$watch('searchVal', debounce(async (newQuery) => {
+            // newQuery为输入的值
+            console.log(newQuery) 
+            this.$emit('changeSearchVal', newQuery);                            
+        }, 300))
     },
 }
 </script>
@@ -83,6 +117,7 @@ export default {
             color: #333333;
             i{
                 color: #fc5b2c;
+                margin: 0 5px;
             }
         }
         
