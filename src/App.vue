@@ -41,11 +41,17 @@ export default {
   created() {
     // setCookie('loginEid', 'yh83');
     // setCookie('loginId', '2019123456');
-    // this.ws.onopen = function(){
-    //   // Web Socket 已连接上，使用 send() 方法发送数据
-    //   ws.send("发送数据");
-    //   alert("数据发送中...");     
-    // }
+    let _this = this;
+    this.ws.onopen = function(){
+      console.log('连接成功');
+      console.log(this);
+      // Web Socket 已连接上，使用 send() 方法发送数据
+      _this.ws.send("发送数据");
+      
+      _this.ws.onmessage = evt => {
+        console.log(evt.data);
+      }
+    }
   },
 }
 </script>
@@ -88,6 +94,7 @@ div{
     width: 250px;
     height: 700px;
     background-color: #f5f5f5;
+    position: relative;
   }
 }
 .ant-input-affix-wrapper{
@@ -114,6 +121,7 @@ div{
 .limitadm_table1{
     width: 100%;
     table-layout: fixed; 
+    background-color: #ffffff;
     tr{
         &:hover{
           background-color: #fbf6ed;

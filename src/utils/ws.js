@@ -1,3 +1,3 @@
-const ws = new WebSocket('ws://172.26.75.222/groups/eid=yh83');
+const ws = new WebSocket('ws://123.207.167.163:9010/ajaxchattest');
 
 export default ws;

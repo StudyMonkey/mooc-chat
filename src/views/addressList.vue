@@ -3,6 +3,7 @@
         <div class="middleWrap">
             <search-wrap @changeSearchVal="handleChangeSearchVal" />
             <list-user @toAddressList="handleAcceptAddressList" type="addressUserList" :listUser="addressUserList" />
+            <load-more @loadMoreBtnClick="handleLoadBtnClick" />
         </div>
         <div class="addressListRightWrap">
             <div v-if="hasChosed" class="hasChosed">未选择时显示的样式</div>
@@ -40,6 +41,7 @@ import SearchWrap from '@/components/searchWrap'
 import ListUser from '@/components/listUser'
 import XAvatar from '@/components/avatar'
 import MemoName from '@/components/memoName'
+import LoadMore from '@/components/loadMore'
 export default {
     name: 'member',
     data() {
@@ -55,18 +57,34 @@ export default {
         SearchWrap,
         ListUser,
         XAvatar,
-        MemoName
+        MemoName,
+        LoadMore
     },
     async created () {
-        this.$store.commit('changeShowLoad', true);
-        const res = await this.$getData('addressUserList', {});
-        const { data: { data } } = res;
-        console.log(data);
-        this.addressUserList = data;
-        this.saveAddressUserList = this.addressUserList;
-        this.$store.commit('changeShowLoad', false);
+        this.commonGetAddressList(false);
     },
     methods: {
+        async commonGetAddressList(obj){
+            this.$store.commit('changeShowLoad', true);
+            const res = await this.$getData('addressUserList', {});
+            const { data: { data } } = res;
+            console.log(data);
+            if ( obj === false ) {
+                this.addressUserList = data;
+            } else {
+                this.addressUserList = data.concat(this.addressUserList);
+            }          
+            this.saveAddressUserList = this.addressUserList;
+            this.$store.commit('changeShowLoad', false);            
+        },
+
+        /**
+         *  加载更多子组件传递过来的布尔值
+         * 传递给 commonGetAddressList 调用方法
+         */
+        handleLoadBtnClick(item){
+            this.commonGetAddressList(item)
+        },
         /*  接受listUser传递过来的选择对象 */
         handleAcceptAddressList(item) {
             this.hasChosed = false;
@@ -138,6 +156,11 @@ export default {
 <style lang="less" scoped>
 .addressListTopWrap{
     display: flex;
+    .middleWrap{
+        .listUserUlWrap{
+            height: 600px;
+        }
+    }
     .addressListRightWrap{
         width: 669px;
         height: 698px;

@@ -23,7 +23,8 @@
             </ul> 
             <div v-if="searchNoResult">未搜索到任何用户</div>   
         </div>
-        <div class="loadMoreBtn" @click="handleLoadBtnClick">加载更多<a-icon type="caret-down" /></div>
+        <!-- <div class="loadMoreBtn" @click="handleLoadBtnClick">加载更多<a-icon type="caret-down" /></div> -->
+        <load-more @loadMoreBtnClick="handleLoadBtnClick"  />
     </div>    
 </template>
 
@@ -31,6 +32,7 @@
 import { getData } from '@/utils/utils'
 import XAvatar from '@/components/avatar'
 import SearchWrap from '@/components/searchWrap'
+import LoadMore from '@/components/loadMore'
 export default {
     name: 'chatList',
     data() {
@@ -44,6 +46,7 @@ export default {
     components: {
         XAvatar,
         SearchWrap,
+        LoadMore
     },
     methods: {
         /**
@@ -75,8 +78,8 @@ export default {
             this.$store.commit('addUserList', this.messageList);
         },
         // 加载更多按钮的点击事件处理
-        handleLoadBtnClick(){
-            this.getUserList(true)
+        handleLoadBtnClick(item){
+            this.getUserList(item)
         },
         /**
          * 接收searchWrap子组件传递过来的值
@@ -156,15 +159,15 @@ export default {
         }
 
     }
-    .loadMoreBtn{
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-        text-align: center;
-        line-height: 30px;
-        cursor: pointer;
-        color: #2e766e;
-        background-color: #dddddd;
-    }    
+    // .loadMoreBtn{
+    //     position: absolute;
+    //     bottom: 0;
+    //     width: 100%;
+    //     text-align: center;
+    //     line-height: 30px;
+    //     cursor: pointer;
+    //     color: #2e766e;
+    //     background-color: #dddddd;
+    // }    
 }
 </style>

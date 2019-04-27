@@ -12,7 +12,7 @@
                 <span>勾选好友，发送名片</span>
             </check-member>
         </a-modal>
-        <div class="chatScrollArea lm_scroll">
+        <div id="chatScrollArea" class="chatScrollArea lm_scroll">
             <ul>
                 <li 
                     v-for="(item,index) in chatList" 
@@ -103,13 +103,14 @@ export default {
     name: 'chat',
     data() {
         return {
-            value: '',
+            // value: '',
             showEmoji: false,
             chatCon: '', // 用户输入的聊天内容
             chatList: [],
             showAddFriendWrap: false,
             addFriend: '我是', // 添加好友理由
-            cardVisible: false,
+            cardVisible: false, // 发送名片框的显示隐藏控制
+            wsReadyState: this.ws.readyState,  // websocket连接状态， 0 未建立连接， 1 已建立连接，可通信。 2 连接正在关闭，3 连接已关闭
             iconList: [
                 { type: 'iconaite', title: '艾特' },
                 { type: 'iconbiaoqing', title: '表情'},
@@ -130,6 +131,12 @@ export default {
             if ( curval !== oldval ) {
                 this.chatList = curval
             }
+        },
+        chatList(){
+            this.$nextTick(() => { // 不加nextTick只到倒数第二条
+                var container = this.$el.querySelector('#chatScrollArea')
+                container.scrollTop = container.scrollHeight
+            })           
         }
     },
     components: {
@@ -160,14 +167,33 @@ export default {
         },
         // 点击发送消息逻辑
         handleSendBtnClick(){
-            var newObj = {};
-            newObj.name = '本人'
-            newObj.time = new Date();
-            newObj.content = this.chatCon;
-            newObj.isMe = true;
-            newObj.avatar = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
-            this.chatList.push(newObj);
-            this.chatCon = '';
+            if ( this.wsReadyState === 1 ) {
+                var newObj = {};
+                newObj.name = '本人'
+                newObj.time = new Date();
+                newObj.content = this.chatCon;
+                newObj.isMe = true;
+                newObj.avatar = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
+                this.chatList.push(newObj);
+                // websocket发送消息
+                this.ws.send(this.chatCon);
+                this.ws.onmessage = evt => {
+                    console.log(evt);
+                    console.log(evt.data);
+                    var sysObj = {};
+                    sysObj.name = '系统'
+                    sysObj.time = new Date();
+                    sysObj.content = evt.data;
+                    sysObj.isMe = false;
+                    sysObj.avatar = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
+                    this.chatList.push(sysObj);                    
+                }     
+
+                this.chatCon = '';
+            } else {
+                this.$message.error('websocket连接不正常，请检查后重试');
+            }
+
         },
         // 发起私聊请求
         async handleChatSend(){
@@ -230,6 +256,9 @@ export default {
             }
             this.cardVisible = false;
         }
+    },
+    created() {
+        console.log(this.ws.readyState);
     },
 }
 </script>

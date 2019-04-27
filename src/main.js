@@ -7,7 +7,7 @@ import store from './store/store'
 import '@/assets/font/iconfont.css'
 import { getData } from './utils/utils'
 import { emoji } from './utils/emoji.js'
-// import ws from '@/utils/ws.js'
+import ws from '@/utils/ws.js'
 
 Vue.component(Button.name, Button);
 Vue.component(List.name, List);
@@ -36,7 +36,7 @@ Vue.component(Radio.name, Radio);
 
 Vue.prototype.$getData = getData;
 Vue.prototype.$message = message;
-// Vue.prototype.ws = ws;
+Vue.prototype.ws = ws;
 Vue.prototype.$confirm = Modal.confirm;
 Vue.prototype.emoji = emoji
 Vue.config.productionTip = false

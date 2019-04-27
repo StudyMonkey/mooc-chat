@@ -322,6 +322,7 @@ export default {
                     width: 282px;
                     height: 158px;
                     border: 1px solid #e2e2e2;
+                    background-color: #ffffff;
                     margin: 0 30px 20px 0;
                     position: relative;
                     float: left;
@@ -378,35 +379,16 @@ export default {
             border: 1px solid #e5e5e5;
             margin: 15px;
             .limitadm_table1{
-                width: 100%;
-                table-layout: fixed;
-                tr{
-                    &:hover{
-                        background-color: #fbf6ed;
-                    }                        
+                tr{                  
                     &.tr1{
-                        height: 50px;
-                        line-height: 50px;
-                        background-color: #f5f5f5;
-                        &:hover{
-                            background-color: #f5f5f5;
-                        }
                         td{
-                            color: #2e766e;
-                            font-weight: bold;
+
                             &.username{
                                 padding-left: 27px;
                             }
                         }
                     }
                     td{
-                        color: #333333;
-                        height: 50px;
-                        line-height: 50px;
-                        word-break: keep-all;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
                         &.username{
                             padding-left: 20px;
                             width: 172px;                         

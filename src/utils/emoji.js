@@ -20,6 +20,6 @@ export function emoji (value) {
 
 function createIcon (item) {
   const value = emojiData[item]
-  const path = './static/emoji/'
+  const path = './moocChatShow/emoji/'
   return `<img src=${path}${value} width="16px" height="16px">`
 }

@@ -73,7 +73,7 @@
                     </table>
                 </div>                 
             </a-tab-pane>
-            <a-tab-pane tab="系统消息" key="systerm">Content of Tab Pane 3</a-tab-pane>
+            <a-tab-pane tab="系统消息" disabled key="systerm">Content of Tab Pane 3</a-tab-pane>
         </a-tabs>       
     </div>
 </template>
