@@ -96,6 +96,21 @@ div{
     background-color: #f5f5f5;
     position: relative;
   }
+  /deep/.checkMemberModal{
+     width: 251px !important;
+    .ant-modal-content{
+      width: 251px;
+      .ant-modal-body{
+        padding: 0;
+        .checkMemberTopWrap{
+          height: 531px;
+          .listUserUlWrap{
+            height: 420px;
+          }
+        }
+      }
+    }
+  }
 }
 .ant-input-affix-wrapper{
   input.ant-input:hover{

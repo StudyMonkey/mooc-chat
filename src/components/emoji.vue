@@ -11,11 +11,13 @@
         v-for="(emojiGroup, index) in emojis" 
         style="padding: 0" 
         :key="index"
+        :class="'emojiLi'+ index"
         v-if="index === activeIndex">
         <a 
           href="javascript:;" 
           v-for="(emoji, index) in emojiGroup"  
-          :key="index" @click="selectItem(emoji)">
+          :key="index" @click="selectItem(emoji)"
+        >
            <span 
               class="emoji-item"
               :title="emoji"
@@ -33,7 +35,7 @@ export default {
   data () {
     return {
       emojiData: data,
-      pannels: ['表情', '自然', '物品', '地点', '符号'],
+      pannels: ['表情', '自然', '物品', '地点', '符号', '兔斯基'],
       activeIndex: 0
     }
   },
@@ -60,14 +62,14 @@ export default {
 
 <style lang='less' scoped>
 @import '../assets/scss/emoji-sprite.less';
+@import '../assets/scss/css-sprite.less';
 
 .emoji {
-  width: 380px;
+  width: 472px;
   height: 186px;
   bottom: 30px;
   background: #fff;
   z-index: 10;
-  padding: 10px;
   margin-right: 10px;
   .emoji-controller {
     height: 36px;
@@ -100,6 +102,11 @@ export default {
     li {
       font-size: 0;
       padding: 5px;
+      &.emojiLi5{
+        a{
+          height: 50px;
+        }
+      }
       a {
         float: left;
         overflow: hidden;
@@ -116,6 +123,11 @@ export default {
           display: inline-block;
           border: 1px solid transparent;
           cursor: pointer;
+          &.sprite-10,&.sprite-11,&.sprite-12,&.sprite-13,&.sprite-14,&.sprite-15,
+          &.sprite-16,&.sprite-17,&.sprite-18,&.sprite-19,&.sprite-20,&.sprite-21,{
+            width: 50px;
+            height: 50px;
+          }
         }
       }
     }

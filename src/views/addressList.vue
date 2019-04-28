@@ -6,7 +6,7 @@
             <load-more @loadMoreBtnClick="handleLoadBtnClick" />
         </div>
         <div class="addressListRightWrap">
-            <div v-if="hasChosed" class="hasChosed">未选择时显示的样式</div>
+            <not-click v-if="hasChosed" />
             <div v-else>
                 <div class="addressTitleWrap">
                     <x-avatar :imgUrl="oneUser.avatar" />
@@ -42,6 +42,7 @@ import ListUser from '@/components/listUser'
 import XAvatar from '@/components/avatar'
 import MemoName from '@/components/memoName'
 import LoadMore from '@/components/loadMore'
+import NotClick from '@/components/notClick'
 export default {
     name: 'member',
     data() {
@@ -58,7 +59,8 @@ export default {
         ListUser,
         XAvatar,
         MemoName,
-        LoadMore
+        LoadMore,
+        NotClick
     },
     async created () {
         this.commonGetAddressList(false);
@@ -137,6 +139,8 @@ export default {
         },
         /**
          * 发送消息的事件处理
+         * 这里需要把这个人的id传到聊天页面
+         * 让聊天界面的this.isActive等于这个id设置选中状态
          */
         handleSendMessage(){
             this.$router.push({
@@ -167,13 +171,6 @@ export default {
         border: 1px solid #c1bfba;
         border-left: none;
         background-color: #ffffff;
-        .hasChosed{
-            display: flex;
-            height: 100%;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
         .addressTitleWrap{
             display: flex;
             padding: 15px 0;

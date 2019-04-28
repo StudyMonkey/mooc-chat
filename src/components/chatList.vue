@@ -14,7 +14,7 @@
                     </a-badge>
                     <div class="infoWrap">
                         <div class="titleWrap">
-                            <p class="title" v-text="item.title"></p>
+                            <p class="title" v-text="item.username"></p>
                             <a-icon type='github' v-if="item.official" />
                         </div>
                         <p class="time" v-text="item.time"></p>
@@ -23,7 +23,6 @@
             </ul> 
             <div v-if="searchNoResult">未搜索到任何用户</div>   
         </div>
-        <!-- <div class="loadMoreBtn" @click="handleLoadBtnClick">加载更多<a-icon type="caret-down" /></div> -->
         <load-more @loadMoreBtnClick="handleLoadBtnClick"  />
     </div>    
 </template>
@@ -38,7 +37,14 @@ export default {
     data() {
         return {
             isActive: '', // li的下标，默认不选中任何
-            messageList: [], // 用户列表数据
+            messageList: [
+                // { guid: 'dfsdfwerwerwer324234', avatar: '../assets/logo.png', username: '张三', official: false, time: '2018-05-12 09:38' },
+                // { guid: 'dfsdfwerwerwer487878', avatar: '@/assets/logo.png', username: '李四', official: false, time: '2018-05-12 09:38' },
+                // { guid: 'dfsdfwerwerwerwerwer', avatar: '@/assets/logo.png', username: '王五', official: false, time: '2018-05-12 09:38' },
+                // { guid: 'dfsdfwerwerwer567657', avatar: '@/assets/logo.png', username: '赵六', official: false, time: '2018-05-12 09:38' },
+                // { guid: 'dfsdfwerwerwer978978', avatar: '@/assets/logo.png', username: '张七', official: false, time: '2018-05-12 09:38' },
+                // { guid: 'dfsdfwerwerwer098089', avatar: '@/assets/logo.png', username: '刘八', official: false, time: '2018-05-12 09:38' }
+            ], // 用户列表数据
             saveMessageList: [],  // 保存用户列表数据
             searchNoResult: false,  // 未搜索到用户时显示
         }
@@ -94,7 +100,7 @@ export default {
             console.log(searchVal);
             if ( searchVal !== '' ) {
                 this.searchNoResult = false;
-                this.messageList = this.messageList.filter( v => v.title === searchVal);          
+                this.messageList = this.messageList.filter( v => v.username === searchVal);          
                 if ( this.messageList.length === 0 ) {
                     const res = await this.$getData('searchSomeMember', {});
                     console.log('搜索结果:', res);
@@ -119,7 +125,7 @@ export default {
 <style lang="less">
 .userListWrap{
     width: 250px;
-    height: 700px;
+    height: 698px;
     background-color: #f5f5f5;
     position: relative;
     .mesListWrap{
@@ -157,7 +163,6 @@ export default {
                 }
             }
         }
-
-    }  
+    }
 }
 </style>

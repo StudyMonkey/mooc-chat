@@ -2,7 +2,6 @@
     <div class="chatMainBox">
         <a-modal
             class="checkMemberModal"
-            style="width: 251px;"
             v-model="cardVisible"
             centered
             :closable="false"
@@ -12,6 +11,20 @@
                 <span>勾选好友，发送名片</span>
             </check-member>
         </a-modal>
+        <a-modal 
+            v-model="imgVisible"
+            centered
+            :footer="null"            
+        >
+            这是点击发送图片显示的
+        </a-modal>
+        <a-modal 
+            v-model="linkVisible"
+            centered
+            :footer="null"            
+        >
+            这是点击发送链接显示的
+        </a-modal>        
         <div id="chatScrollArea" class="chatScrollArea lm_scroll">
             <ul>
                 <li 
@@ -80,11 +93,17 @@
             </a-tooltip>
             
         </ul>
-        <div class="emojiPosition" v-if="showEmoji">
-            <vue-emoji
-                @select="selectEmoji">
-            </vue-emoji>
-        </div>
+        <a-modal
+            v-model="showEmoji"
+            centered
+            :footer="null"
+        >        
+            <div class="emojiPosition">
+                <vue-emoji
+                    @select="selectEmoji">
+                </vue-emoji>
+            </div>
+        </a-modal>
         <a-textarea v-model="chatCon" placeholder="请输入......" :rows="4" />
         <div class="sendWrap fr">
             <p>按Enter发送、Ctrl+Enter换行</p>
@@ -110,6 +129,8 @@ export default {
             showAddFriendWrap: false,
             addFriend: '我是', // 添加好友理由
             cardVisible: false, // 发送名片框的显示隐藏控制
+            imgVisible: false, // 发送图片框的显示隐藏控制
+            linkVisible: false, // 发送链接框的显示隐藏控制
             wsReadyState: this.ws.readyState,  // websocket连接状态， 0 未建立连接， 1 已建立连接，可通信。 2 连接正在关闭，3 连接已关闭
             iconList: [
                 { type: 'iconaite', title: '艾特' },
@@ -241,6 +262,14 @@ export default {
             if ( item.type === 'iconbiaoqing' ) {
                 this.showEmoji = !this.showEmoji;
             }
+
+            if ( item.type === 'icontupian' ) {
+                this.imgVisible = !this.imgVisible;
+            }
+
+            if ( item.type === 'iconlianjie' ) {
+                this.linkVisible = !this.linkVisible;
+            }
         },
         // 接收searchMember传递的事件处理
         handleQuickCreateGroup(obj){
@@ -288,22 +317,6 @@ textarea[class='ant-input']{ resize: none }
     } 
      
 }
-// .ant-modal{
-//     width: 251px !important;
-//     height: 471px;
-//     .ant-model-content{
-//         .ant-modal-body{
-//             padding: 0;
-//             .checkMemberTopWrap{
-//                 height: 360px;
-//                 border: 1px solid #d5d4d4;
-//             }
-//         }
-//     }
-// }
-
-
-
 
 .ant-popover{
     div.ant-popover-inner-content{
@@ -405,13 +418,6 @@ textarea[class='ant-input']{ resize: none }
             line-height: 36px;
             cursor: pointer;
         }       
-    }
-    .emojiPosition{
-        position: absolute;
-        top: 282px;
-        .emoji{
-            width: 645px;
-        }
     }
     .sendWrap{
         display: flex;
