@@ -54,9 +54,7 @@
 
         </div>
         <div class="searchRightWrap">
-            <div class="notSearchWrap" v-if="hasResult">
-                未搜索时显示的内容
-            </div>
+            <not-click v-if="hasResult" />
             <div v-else>
                 <right-title>
                     <span>搜索结果</span>
@@ -121,6 +119,7 @@
 import XAvatar from '@/components/avatar'
 import RightTitle from '@/components/rightTitle'
 import XPagination from '@/components/pagination'
+import NotClick from '@/components/notClick'
 export default {
     name: 'search',
     data() {
@@ -142,7 +141,8 @@ export default {
     components: {
         XAvatar,
         RightTitle,
-        XPagination
+        XPagination,
+        NotClick
     },
     methods: {
         /**  通用的获取数据方法
@@ -305,13 +305,6 @@ export default {
             text-indent: 15px;
             background-color: #f5f5f5;
             color: #666666;
-        }
-        .notSearchWrap{
-            display: flex;
-            height: 100%;
-            font-size: 20px;
-            justify-content: center;
-            align-items: center;
         }
         .groupResultWrap{
             position: relative;

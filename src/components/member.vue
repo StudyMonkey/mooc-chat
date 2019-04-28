@@ -34,13 +34,13 @@
                                         <template slot="title">
                                             私信
                                         </template>
-                                        <span class="iconfont iconsixin"></span>
+                                        <span class="iconfont iconliaotian"></span>
                                     </a-tooltip>
                                     <a-tooltip>
                                         <template slot="title">
                                             授权为管理员
                                         </template>
-                                        <span v-if="item.identityNum !== 0" class="iconfont iconyuechi"></span>
+                                        <span v-if="item.identityNum !== 0" class="iconfont iconyuechi1"></span>
                                     </a-tooltip>                           
                                     <a-tooltip>
                                         <template slot="title">
@@ -253,7 +253,7 @@ export default {
                             color: #f1bd85;
                         }
                     }
-                    span.iconsixin{
+                    span.iconliaotian{
                         margin-right: auto
                     }
                     span.iconshanchengyuan{
@@ -266,7 +266,7 @@ export default {
 }
 .addMemberWrap{
     width: 640px;
-    padding: 18px 0;
+    padding: 18px 0 0 0;
     .memberBtnWrap{
         width: 640px;
         margin-bottom: 16px;

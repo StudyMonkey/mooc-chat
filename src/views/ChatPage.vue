@@ -9,9 +9,7 @@
             </check-member>
         </div>     
         <div class="chatMainWrap">
-            <div v-if="!chosedChat" class="notClickChat">
-                未点击时显示的内容
-            </div>
+            <not-click v-if="!chosedChat" />
             <div v-else>
                 <div class="chatTitleWrap">
                     <span :class="[ chosedChat.groupType === 1 ? 'iconqunliao' : 'iconsiliao', 'iconfont' ]"></span>
@@ -55,6 +53,7 @@ import ChatMember from '@/components/member'
 import ChatNotice from '@/components/notice'
 import ChatFile from '@/components/file'
 import ChatSet from '@/components/set'
+import NotClick from '@/components/notClick'
 export default {
     name: 'member',
     data() {
@@ -75,7 +74,8 @@ export default {
         ChatMember,
         ChatNotice,
         ChatFile,
-        ChatSet
+        ChatSet,
+        NotClick
     },
     methods: {
         async commonGetMethod(url, params){
@@ -151,15 +151,6 @@ export default {
     border: 1px solid #c1bfba;
     .chatMainWrap{
         width: 670px;
-        .notClickChat{
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            font-weight: bold;
-        }
         .chatGroupNum{
             background-color: #f5f5f5;
             padding: 0 15px; 

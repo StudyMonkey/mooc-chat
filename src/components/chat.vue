@@ -80,11 +80,19 @@
             </a-tooltip>
             
         </ul>
-        <div class="emojiPosition" v-if="showEmoji">
-            <vue-emoji
-                @select="selectEmoji">
-            </vue-emoji>
-        </div>
+        <a-modal
+            class="checkMemberModal"
+            style="width: 251px;"
+            v-model="showEmoji"
+            centered
+            :footer="null"
+        >        
+            <div class="emojiPosition">
+                <vue-emoji
+                    @select="selectEmoji">
+                </vue-emoji>
+            </div>
+        </a-modal>
         <a-textarea v-model="chatCon" placeholder="请输入......" :rows="4" />
         <div class="sendWrap fr">
             <p>按Enter发送、Ctrl+Enter换行</p>
@@ -288,22 +296,6 @@ textarea[class='ant-input']{ resize: none }
     } 
      
 }
-// .ant-modal{
-//     width: 251px !important;
-//     height: 471px;
-//     .ant-model-content{
-//         .ant-modal-body{
-//             padding: 0;
-//             .checkMemberTopWrap{
-//                 height: 360px;
-//                 border: 1px solid #d5d4d4;
-//             }
-//         }
-//     }
-// }
-
-
-
 
 .ant-popover{
     div.ant-popover-inner-content{
@@ -405,13 +397,6 @@ textarea[class='ant-input']{ resize: none }
             line-height: 36px;
             cursor: pointer;
         }       
-    }
-    .emojiPosition{
-        position: absolute;
-        top: 282px;
-        .emoji{
-            width: 645px;
-        }
     }
     .sendWrap{
         display: flex;
