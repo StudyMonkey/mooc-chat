@@ -3,6 +3,7 @@
         <li 
             v-for="item in checkMemberList" 
             :key="item.id"
+            :class="isActive === item.id ? 'bg_active' : ''"
             @click="handleListUserClick(item)"
         >
             <x-avatar :imgUrl="item.avatar" />
@@ -40,12 +41,14 @@ export default {
     },
     data() {
         return {
-            checkMemberList: []
+            checkMemberList: [],
+            isActive: ''
         }
     },
     methods: {
-        handleListUserClick(item) {
+        handleListUserClick(item) {          
             if ( this.type ) {
+                this.isActive = item.id;
                 this.$emit('toAddressList', item);
             }
         },
@@ -65,6 +68,9 @@ export default {
         padding: 10px 20px 10px 10px;
         line-height: 40px;
         &:hover{
+            background-color: #f3e2cb;
+        }
+        &.bg_active{
             background-color: #f3e2cb;
         }
         .ant-avatar{

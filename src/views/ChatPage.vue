@@ -1,9 +1,9 @@
 <template>
     <div class="chatTopWrap">
-        <div v-if="quickCreateGroup">
+        <div v-show="quickCreateGroup">
             <chat-list @clickChosedLi="handleClickChosedLi" @quickCreateGroup="handleQuickCreateGroup" />
         </div>
-        <div v-else>
+        <div v-show="!quickCreateGroup">
             <check-member @changeSearchVal="handleChangeSearchVal" @checkMemberSureBtn="handleCheckMemberSureBtn" @quickCreateGroup="handleQuickCreateGroup">
                 <span>勾选好友，快速创建小组</span>
             </check-member>

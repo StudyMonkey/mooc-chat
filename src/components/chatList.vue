@@ -14,14 +14,14 @@
                     </a-badge>
                     <div class="infoWrap">
                         <div class="titleWrap">
-                            <p class="title" v-text="item.username"></p>
+                            <p class="title overHidden" v-text="item.username"></p>
                             <a-icon type='github' v-if="item.official" />
                         </div>
                         <p class="time" v-text="item.time"></p>
                     </div>
                 </li>                   
             </ul> 
-            <div v-if="searchNoResult">未搜索到任何用户</div>   
+            <div v-show="searchNoResult">未搜索到任何用户</div>   
         </div>
         <load-more @loadMoreBtnClick="handleLoadBtnClick"  />
     </div>    
@@ -148,10 +148,7 @@ export default {
                     .titleWrap{
                         display: flex;
                         .title{
-                            width: 164px;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                            overflow: hidden;                       
+                            width: 164px;                      
                             color: #333333;
                             font-size: 14px; 
                         } 

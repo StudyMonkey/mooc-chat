@@ -1,9 +1,16 @@
 <template>
     <div class="addressListTopWrap">
         <div class="middleWrap">
-            <search-wrap @changeSearchVal="handleChangeSearchVal" />
-            <list-user @toAddressList="handleAcceptAddressList" type="addressUserList" :listUser="addressUserList" />
-            <load-more @loadMoreBtnClick="handleLoadBtnClick" />
+            <div v-show="quickCreateGroup">
+                <search-wrap @changeSearchVal="handleChangeSearchVal" @quickCreate="handleQuickCreateGroup" />
+                <list-user @toAddressList="handleAcceptAddressList" type="addressUserList" :listUser="addressUserList" />
+                <load-more @loadMoreBtnClick="handleLoadBtnClick" />            
+            </div>
+            <div v-show="!quickCreateGroup">
+                <check-member @changeSearchVal="handleChangeSearchVal" @checkMemberSureBtn="handleCheckMemberSureBtn" @quickCreateGroup="handleQuickCreateGroup">
+                    <span>勾选好友，快速创建小组</span>
+                </check-member>
+            </div> 
         </div>
         <div class="addressListRightWrap">
             <not-click v-if="hasChosed" />
@@ -43,6 +50,7 @@ import XAvatar from '@/components/avatar'
 import MemoName from '@/components/memoName'
 import LoadMore from '@/components/loadMore'
 import NotClick from '@/components/notClick'
+import CheckMember from '@/components/checkMember'
 export default {
     name: 'member',
     data() {
@@ -52,6 +60,7 @@ export default {
             hasChosed: true,
             oneUser: '',
             searchNoResult: false, // 搜索好友的结果显示
+            quickCreateGroup: true
         }
     },
     components: {
@@ -60,9 +69,10 @@ export default {
         XAvatar,
         MemoName,
         LoadMore,
-        NotClick
+        NotClick,
+        CheckMember
     },
-    async created () {
+    created () {
         this.commonGetAddressList(false);
     },
     methods: {
@@ -136,6 +146,26 @@ export default {
             } else {
                 this.addressUserList = this.saveAddressUserList;
             }
+        },
+        /**
+         *  接收searchWrap点击创建交流小组的状态切换值
+         */
+        handleQuickCreateGroup(item){
+            this.quickCreateGroup = item
+        },
+        /**
+         *  接收勾选好友checkMember组件点击确定按钮传递过来的事件
+         */
+        handleCheckMemberSureBtn(arr){
+            // 若勾选好友人数大于1，则创建小组并跳转聊天页面，否则只隐藏操作
+            this.quickCreateGroup = true;
+            if ( arr.length > 0 ) {
+                console.log(arr);
+                // 接收勾选的好友的数组，发送接口创建小组，隐藏并跳转到聊天界面               
+                this.$router.push({
+                    path: '/chat'
+                })
+            } 
         },
         /**
          * 发送消息的事件处理

@@ -86,8 +86,6 @@ a{ text-decoration: none }
     border-radius: 0;
   }
   .menuIconWrap{
-    width: 20px;
-    height: 20px;
     text-align: center;
     line-height: 18px;
     font-size: 20px;
@@ -106,9 +104,19 @@ a{ text-decoration: none }
       &.router-link-active{
         color: #f39800
       }
-      span.iconfont{
-        font-size: 20px;
+      span{
+        &.iconfont{
+          font-size: 20px;
+        }
+        &.iconsiliao,
+        &.iconqunliao,&.icontongxunlu{
+          font-size: 22px;
+        }
+        &.iconshezhi{
+          font-size: 24px;
+        }
       }
+
     }
   }
 }
