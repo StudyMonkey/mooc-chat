@@ -12,18 +12,41 @@
             </check-member>
         </a-modal>
         <a-modal 
+            title="添加图片链接"
             v-model="imgVisible"
             centered
             :footer="null"            
         >
-            这是点击发送图片显示的
+            <upload-img>
+                <span>图片上传：</span>
+            </upload-img>
+            <div class="linkAddressWrap">
+                <span>链接地址：</span>
+                <a-input  placeholder="请输入图片链接地址..." v-model="imgLinkAddress" />
+            </div>
+            <div class="footerPrompt">
+                <p><span class="iconfont icontishi"></span>可发送带有超链接的点击跳转的图片</p>
+                <a-button class="greenBtn" @click="handleImgLinkSureBtn">确定</a-button>
+            </div>
         </a-modal>
         <a-modal 
+            title="添加文本链接"
             v-model="linkVisible"
             centered
             :footer="null"            
         >
-            这是点击发送链接显示的
+            <div class="linkAddressWrap linkAddressWrap_sec linkAddressWrap_sec1">
+                <span>标&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;题<i>*</i>：</span>
+                <a-input placeholder="请输入文本链接标题..." v-model="textLinkTitle" />
+            </div>
+            <div class="linkAddressWrap linkAddressWrap_sec">
+                <span>链接地址<i>*</i>：</span>
+                <a-input placeholder="请输入文本链接地址..." v-model="textLinkAddress" />
+            </div>
+            <div class="footerPrompt">
+                <p><span class="iconfont icontishi"></span>可发送带有超链接的点击跳转的文字</p>
+                <a-button class="greenBtn" @click="handleTextLinkSureBtn">确定</a-button>
+            </div>
         </a-modal>        
         <div id="chatScrollArea" class="chatScrollArea lm_scroll">
             <ul>
@@ -40,7 +63,6 @@
                             <div class="personInfoWrap">
                                 <x-avatar :imgUrl="item.avatar" />
                                 <div>
-                                    <!-- <p><span>昵称</span><span class="iconfont iconpen" /></p> -->
                                     <memo-name from='1' @saveMemoName="handleSaveMemoName" />
                                     <p>用户名：<span v-text="item.name"></span></p>
                                 </div>
@@ -67,7 +89,7 @@
                         </div>
                     </a-popover>
                     <div :class="[ item.isMe ? 'fl ml10 ' : 'fr mr10 textAlignR ','chatInfoWrap' ]">
-                        <p><span v-text="item.name"></span></p>
+                        <!-- <p><span v-text="item.name"></span></p> -->
                         <div :class="[ item.isMe ? 'bgSelf' : 'bgOther', 'mesContent' ]" v-html="emoji(item.content)"></div>
                     </div>
                 </li>
@@ -118,6 +140,7 @@ import XAvatar from '@/components/avatar'
 import CheckMember from '@/components/checkMember'
 import vueEmoji from '@/components/emoji'
 import MemoName from '@/components/memoName'
+import UploadImg from '@/components/uploadImg'
 export default {
     name: 'chat',
     data() {
@@ -131,6 +154,9 @@ export default {
             cardVisible: false, // 发送名片框的显示隐藏控制
             imgVisible: false, // 发送图片框的显示隐藏控制
             linkVisible: false, // 发送链接框的显示隐藏控制
+            imgLinkAddress: '', // 图片的链接地址
+            textLinkAddress: '', // 文本的链接地址
+            textLinkTitle: '',  // 文本链接标题
             wsReadyState: this.ws.readyState,  // websocket连接状态， 0 未建立连接， 1 已建立连接，可通信。 2 连接正在关闭，3 连接已关闭
             iconList: [
                 { type: 'iconaite', title: '艾特' },
@@ -164,7 +190,8 @@ export default {
         XAvatar,
         CheckMember,
         vueEmoji,
-        MemoName
+        MemoName,
+        UploadImg
     },
     methods: {
         selectEmoji (code) {
@@ -284,7 +311,15 @@ export default {
                 })
             }
             this.cardVisible = false;
-        }
+        },
+        // 添加图片链接的确定按钮的点击事件
+        handleImgLinkSureBtn(){
+
+        },
+        // 添加文本链接的确定按钮的点击事件
+        handleTextLinkSureBtn(){
+            
+        }        
     },
     created() {
         console.log(this.ws.readyState);
@@ -299,7 +334,45 @@ export default {
 .bgOther{ background-color: #def7f0 }
 .textAlignR{ text-align: right }
 textarea[class='ant-input']{ resize: none }
+.linkAddressWrap,.footerPrompt{
+    display: flex;
+    align-items: center;
+    input{
+        width: 400px;
+        height: 28px;
+    }
+}
+.linkAddressWrap_sec{
+    input{
+        width: 390px;
+    }
+    span{
+        i{
+            color: red;
+        }
+    }
+}
+.linkAddressWrap{
+    margin: 20px 0 45px 0;
+}
+.linkAddressWrap_sec1{
+    margin: 0
+}
+.footerPrompt{
+    p{
+        color: #333333;
+        font-size: 14px;
+        line-height: 20px;
+        span{
+            color: #ff8447;
+            margin-right: 6px;
+        }        
+    }
+    button{
+        margin-left: auto;
+    }
 
+}
 
 .ant-modal-centered {
     .ant-modal{
@@ -378,20 +451,48 @@ textarea[class='ant-input']{ resize: none }
             li{
                 width: 390px;
                 margin-bottom: 20px;
-                div.chatInfoWrap{
-                    p{
-                        font-size: 12px;
-                        margin-top: -7px;
+                div{
+                    &.chatInfoWrap{
+                        p{
+                            font-size: 12px;
+                            margin-top: -7px;
+                        }
                     }
-                }
-                .mesContent{
-                    max-width: 338px;
-                    border: 1px solid #eaeaea;
-                    border-radius: 5px;
-                    padding: 9px 10px;
-                    font-size: 14px;
-                    color: #696865
-                }
+                    &.mesContent{
+                        max-width: 338px;
+                        border: 1px solid #eaeaea;
+                        border-radius: 5px;
+                        padding: 9px 10px;
+                        font-size: 14px;
+                        color: #696865;
+                        position: relative;
+                            &::before {
+                                content: '';
+                                position: absolute;
+                                top: 12px;                          
+                                border-bottom: 8px solid transparent;
+                                border-top: 8px solid transparent; 
+                            }                        
+                    } 
+                    &.ml10{
+                        .mesContent{
+                            &::before{
+                                left: -5px;
+                                border-right: 8px solid #fbf6ed;
+                                
+                            }                      
+                        }
+                    } 
+                    &.mr10{
+                        .mesContent{
+                            &::before{
+                                right: -5px;
+                                border-left: 8px solid #def7f0;
+                            }                      
+                        }
+                    }                                      
+                } 
+
             }
         }        
     }

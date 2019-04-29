@@ -103,9 +103,9 @@ div{
       .ant-modal-body{
         padding: 0;
         .checkMemberTopWrap{
-          height: 531px;
+          height: 472px;
           .listUserUlWrap{
-            height: 420px;
+            height: 402px;
           }
         }
       }

@@ -4,7 +4,26 @@ const uri = 'https://www.easy-mock.com/mock/5cb7d8990b31727f3d58120a/mooc-chat/'
 
 export function getData(url, data){
     return new Promise( (resolve, reject) => {
-        axios.get(uri+url, data).then( res => {
+        axios.get(uri+url, {
+            params: {
+                ...data
+            }
+        }).then( res => {
+            return resolve(res)
+        }).then( err => {
+            return reject(err)
+        })
+    })
+}
+
+/**
+ * 
+ * @param {请求地址} url 
+ * @param {传递参数} data 
+ */
+export function postData(url, data){
+    return new Promise( (resolve, reject) => {
+        axios.post(uri+url, data).then( res => {
             return resolve(res)
         }).then( err => {
             return reject(err)

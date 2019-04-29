@@ -4,7 +4,9 @@
             <span>小组名称：</span>
             <a-input class="groupName" v-model="groupName" placeholder="请输入小组名称......" />
         </div>
-        <upload-img />
+        <upload-img>
+            <span>小组头像：</span>
+        </upload-img>
         <div class="groupDescriptionWrap">
             <span>小组描述：</span>
             <a-textarea class="groupDescription" :rows="4" v-model="groupDescription" placeholder="请输入小组描述......" />

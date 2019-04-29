@@ -74,7 +74,7 @@ export default {
          */       
         async getUserList(init){
             this.$store.commit('changeShowLoad', true);
-            const res = await getData('userList', {});
+            const res = await getData('userList', {eid: 'admin'});
             this.$store.commit('changeShowLoad', false);
             let { data: { data } } = res;
             init ? this.messageList = this.messageList.concat(data) : this.messageList = data;

@@ -5,7 +5,7 @@ import App from './App.vue'
 import router from './router'
 import store from './store/store'
 import '@/assets/font/iconfont.css'
-import { getData } from './utils/utils'
+import { getData,postData } from './utils/utils'
 import { emoji } from './utils/emoji.js'
 import ws from '@/utils/ws.js'
 
@@ -32,9 +32,8 @@ Vue.component(Radio.Group.name, Radio.Group); // 单选按钮组
 Vue.component(Radio.name, Radio);
 
 
-
-
 Vue.prototype.$getData = getData;
+Vue.prototype.$postData = postData;
 Vue.prototype.$message = message;
 Vue.prototype.ws = ws;
 Vue.prototype.$confirm = Modal.confirm;

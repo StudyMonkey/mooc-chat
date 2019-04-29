@@ -1,6 +1,6 @@
 <template>
     <div class="groupLogoWrap">
-        <span>小组头像：</span>
+        <slot></slot>
         <x-avatar imgUrl="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
         <a-upload
             :fileList="fileList"

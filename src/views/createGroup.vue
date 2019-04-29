@@ -22,7 +22,9 @@
                     <span>小组名称<i>*</i>：</span>
                     <a-input class="groupName" v-model="groupName" placeholder="请输入想创建的交流小组名称" />
                 </div>
-                <upload-img />
+                <upload-img>
+                    <span>小组头像：</span>
+                </upload-img>
                 <div class="">
                     <span>是否审核：</span>
                     <a-radio-group name="radioGroup" :defaultValue="0">
