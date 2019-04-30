@@ -80,7 +80,7 @@
                             </div>
                             <div class="addFriendWrap" v-if="showAddFriendWrap">
                                 <p>添加好友<span class="iconfont icondelete" @click="hideAddFriend"></span></p>
-                                <a-textarea v-model="addFriend+item.name" :rows="4" placeholder="请输入添加理由" />
+                                <a-textarea v-model="item.name" :rows="4" placeholder="请输入添加理由" />
                                 <a-button class="greenBtn" size="small" @click="handleAddFriendSure">确定</a-button>
                             </div>
                         </template>
@@ -103,8 +103,7 @@
                     </template>
                     <span>
                         <span @click="handleIconClick(item)" :class="[item.type, 'iconfont']"></span>
-                    </span>
-                    
+                    </span>                
                 </a-tooltip>            
             </li>
             <a-tooltip placement="topRight">
@@ -148,7 +147,9 @@ export default {
             // value: '',
             showEmoji: false,
             chatCon: '', // 用户输入的聊天内容
+            chatType: '0', // 聊天形式，0 为 普通文本， 1 为 图片类型， 2 为 文本带链接， 3 为 名片类型
             chatList: [],
+            checkMemberList: [], // 接收checkMember组件传递过来的好友列表
             showAddFriendWrap: false,
             addFriend: '我是', // 添加好友理由
             cardVisible: false, // 发送名片框的显示隐藏控制
@@ -214,20 +215,54 @@ export default {
             console.log(name)
         },
         // 点击发送消息逻辑
-        handleSendBtnClick(){
+        handleSendBtnClick(item){
             if ( this.wsReadyState === 1 ) {
+                this.chatType = 0;
                 var newObj = {};
                 newObj.name = '本人'
                 newObj.time = new Date();
+                if ( this.textLinkAddress && this.textLinkTitle ) {
+                    this.chatCon = `<a href="${this.textLinkAddress}" target="_blank">${this.textLinkTitle}</a>`
+                }
+                if ( this.checkMemberList.length > 0 ) {
+                    this.chatCon = `
+                        <div class="sendChatWrap">
+                            <div class="personInfoWrap">
+                                <img :src="${item.avatar}" />
+                                <div>
+                                    <memo-name from='1' @saveMemoName="handleSaveMemoName" />
+                                    <p>用户名：<span>${item.username}</span></p>
+                                </div>
+                            </div>
+                            <div class="partInfoWrap">
+                                <p>单位：<span>${item.part}</span></p>
+                                <p class="partIconWrap">
+                                    <span v-show="item.friend" title="点击发送私聊消息" @click="handleChatSend" class="iconfont iconsiliao" />
+                                    <span 
+                                        :title="[ item.friend ? '点击删除好友' : '点击添加好友' ]"
+                                        :class="[item.friend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
+                                        @click="showAddFriend(item.friend)" 
+                                    />                                  
+                                </p>
+                            </div>
+                            <div class="addFriendWrap" v-if="showAddFriendWrap">
+                                <p>添加好友<span class="iconfont icondelete" @click="hideAddFriend"></span></p>
+                                <a-textarea v-model="addFriend+item.name" :rows="4" placeholder="请输入添加理由" />
+                                <a-button class="greenBtn" size="small" @click="handleAddFriendSure">确定</a-button>
+                            </div>                            
+                        </div>
+                    `
+                }
                 newObj.content = this.chatCon;
+                console.log(newObj.content);
                 newObj.isMe = true;
                 newObj.avatar = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
                 this.chatList.push(newObj);
                 // websocket发送消息
                 this.ws.send(this.chatCon);
                 this.ws.onmessage = evt => {
-                    console.log(evt);
-                    console.log(evt.data);
+                    // console.log(evt);
+                    // console.log(evt.data);
                     var sysObj = {};
                     sysObj.name = '系统'
                     sysObj.time = new Date();
@@ -241,7 +276,6 @@ export default {
             } else {
                 this.$message.error('websocket连接不正常，请检查后重试');
             }
-
         },
         // 发起私聊请求
         async handleChatSend(){
@@ -309,16 +343,29 @@ export default {
                 this.$router.push({
                     path: '/chat'
                 })
+                this.checkMemberList = arr;
+                arr.map( item => {
+                    console.log(item);
+                    this.handleSendBtnClick(item);
+                })
             }
             this.cardVisible = false;
+            this.chatType = '3';
         },
         // 添加图片链接的确定按钮的点击事件
         handleImgLinkSureBtn(){
-
+            this.imgVisible = false;
+            if ( this.imgLinkAddress ) {
+                this.chatType = '1'
+            }
         },
         // 添加文本链接的确定按钮的点击事件
         handleTextLinkSureBtn(){
-            
+            this.chatType = this.textLinkTitle && this.textLinkAddress ? '2' : '0'
+            this.linkVisible = false;
+            this.handleSendBtnClick();
+            this.textLinkAddress = '' 
+            this.textLinkTitle = '';            
         }        
     },
     created() {
@@ -372,23 +419,6 @@ textarea[class='ant-input']{ resize: none }
         margin-left: auto;
     }
 
-}
-
-.ant-modal-centered {
-    .ant-modal{
-        width: 251px !important;
-        height: 471px; 
-        .ant-model-content{
-            .ant-modal-body{
-                padding: 0;
-                .checkMemberTopWrap{
-                    height: 360px;
-                    border: 1px solid #d5d4d4;
-                }
-            }
-        }        
-    } 
-     
 }
 
 .ant-popover{
@@ -466,13 +496,74 @@ textarea[class='ant-input']{ resize: none }
                         font-size: 14px;
                         color: #696865;
                         position: relative;
-                            &::before {
-                                content: '';
-                                position: absolute;
-                                top: 12px;                          
-                                border-bottom: 8px solid transparent;
-                                border-top: 8px solid transparent; 
-                            }                        
+                        &::before {
+                            content: '';
+                            position: absolute;
+                            top: 12px;                          
+                            border-bottom: 8px solid transparent;
+                            border-top: 8px solid transparent; 
+                        } 
+                        /deep/a{
+                            text-decoration: underline;
+                        } 
+                        /deep/img{
+                            width: 312px;
+                            height: 188px;
+                            &.emojiImg{
+                                width: 16px;
+                                height: 16px;
+                            }
+                            &.emojiRabbitImg{
+                                width: 50px;
+                                height: 50px;
+                            }
+                        } 
+                        /deep/.sendChatWrap{
+                            width: 310px;
+                            height: 150px;
+                            background-color: #ffffff;
+                            .personInfoWrap{
+                                display: flex;
+                                background-color: #f5f5f5;
+                                font-size: 14px;
+                                color: #333333;
+                                margin-bottom: 13px;
+                                img{
+                                    width: 38px;
+                                    height: 38px;
+                                    border: 1px solid #dcdcdc;
+                                    margin-right: 10px;
+                                }
+                                div{
+                                    line-height: 20px;
+                                }
+                            }
+                            .partInfoWrap{
+                                font-size: 14px;
+                                color: #333333;
+                                .partIconWrap{
+                                    text-align: right;
+                                    span{
+                                        cursor: pointer;
+                                        margin-left: 9px;
+                                    }
+                                }
+                            }
+                            .addFriendWrap{
+                                overflow: hidden;
+                                p{
+                                    padding: 9px 0;
+                                }
+                                span{
+                                    float: right;
+                                    cursor: pointer;
+                                }
+                                button{
+                                    margin-top: 10px;
+                                    float: right;              
+                                }
+                            }        
+                        }                                             
                     } 
                     &.ml10{
                         .mesContent{

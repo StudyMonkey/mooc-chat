@@ -21,5 +21,11 @@ export function emoji (value) {
 function createIcon (item) {
   const value = emojiData[item]
   const path = './moocChatShow/emoji/'
-  return `<img src=${path}${value} width="16px" height="16px">`
+  let str = ''
+  if ( value.lastIndexOf(".gif") > -1 ) {
+    str = `<img class="emojiRabbitImg" src=${path}${value} />` 
+  } else {
+    str = `<img class="emojiImg" src=${path}${value} />`
+  }
+  return str
 }
