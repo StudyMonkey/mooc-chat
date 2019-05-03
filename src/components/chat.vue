@@ -90,7 +90,38 @@
                     </a-popover>
                     <div :class="[ item.isMe ? 'fl ml10 ' : 'fr mr10 textAlignR ','chatInfoWrap' ]">
                         <!-- <p><span v-text="item.name"></span></p> -->
-                        <div :class="[ item.isMe ? 'bgSelf' : 'bgOther', 'mesContent' ]" v-html="emoji(item.content)"></div>
+                        <div :class="[ item.isMe ? 'bgSelf' : 'bgOther', 'mesContent' ]">
+                            <template v-if="item.chatType === '1'">
+                                <div v-html="emoji(item.content)"></div>
+                            </template>
+                            <template v-else-if="item.chatType === '2'">
+                                <div class="sendChatWrap">
+                                    <div class="personInfoWrap">
+                                        <x-avatar :imgUrl="item.content.avatar" />
+                                        <div>
+                                            <memo-name from='1' @saveMemoName="handleSaveMemoName"></memo-name>
+                                            <p>用户名：<span>{{item.content.username}}</span></p>
+                                        </div>
+                                    </div>
+                                    <div class="partInfoWrap">
+                                        <p>单位：<span>{{item.content.part}}</span></p>
+                                        <p class="partIconWrap">
+                                            <span v-show="item.content.friend" title="点击发送私聊消息" @click="handleChatSend" class="iconfont iconsiliao" />
+                                            <span 
+                                                :title="[ item.content.friend ? '点击删除好友' : '点击添加好友' ]"
+                                                :class="[item.content.friend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
+                                                @click="showAddFriend(item.friend)" 
+                                            />                                  
+                                        </p>
+                                    </div>
+                                    <div class="addFriendWrap" v-if="showAddFriendWrap">
+                                        <p>添加好友<span class="iconfont icondelete" @click="hideAddFriend"></span></p>
+                                        <a-textarea v-model="addFriend+item.content.name" :rows="4" placeholder="请输入添加理由" />
+                                        <a-button class="greenBtn" size="small" @click="handleAddFriendSure">确定</a-button>
+                                    </div>                            
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </li>
             </ul>
@@ -158,7 +189,7 @@ export default {
             imgLinkAddress: '', // 图片的链接地址
             textLinkAddress: '', // 文本的链接地址
             textLinkTitle: '',  // 文本链接标题
-            wsReadyState: this.ws.readyState,  // websocket连接状态， 0 未建立连接， 1 已建立连接，可通信。 2 连接正在关闭，3 连接已关闭
+            // wsReadyState: this.ws.readyState,  // websocket连接状态， 0 未建立连接， 1 已建立连接，可通信。 2 连接正在关闭，3 连接已关闭
             iconList: [
                 { type: 'iconaite', title: '艾特' },
                 { type: 'iconbiaoqing', title: '表情'},
@@ -216,66 +247,44 @@ export default {
         },
         // 点击发送消息逻辑
         handleSendBtnClick(item){
-            if ( this.wsReadyState === 1 ) {
+            // if ( this.wsReadyState === 1 ) {
                 this.chatType = 0;
                 var newObj = {};
                 newObj.name = '本人'
                 newObj.time = new Date();
-                if ( this.textLinkAddress && this.textLinkTitle ) {
-                    this.chatCon = `<a href="${this.textLinkAddress}" target="_blank">${this.textLinkTitle}</a>`
-                }
+                newObj.chatType = '1'; // 其他类型的chatType 都为 1
+
                 if ( this.checkMemberList.length > 0 ) {
-                    this.chatCon = `
-                        <div class="sendChatWrap">
-                            <div class="personInfoWrap">
-                                <img :src="${item.avatar}" />
-                                <div>
-                                    <memo-name from='1' @saveMemoName="handleSaveMemoName" />
-                                    <p>用户名：<span>${item.username}</span></p>
-                                </div>
-                            </div>
-                            <div class="partInfoWrap">
-                                <p>单位：<span>${item.part}</span></p>
-                                <p class="partIconWrap">
-                                    <span v-show="item.friend" title="点击发送私聊消息" @click="handleChatSend" class="iconfont iconsiliao" />
-                                    <span 
-                                        :title="[ item.friend ? '点击删除好友' : '点击添加好友' ]"
-                                        :class="[item.friend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
-                                        @click="showAddFriend(item.friend)" 
-                                    />                                  
-                                </p>
-                            </div>
-                            <div class="addFriendWrap" v-if="showAddFriendWrap">
-                                <p>添加好友<span class="iconfont icondelete" @click="hideAddFriend"></span></p>
-                                <a-textarea v-model="addFriend+item.name" :rows="4" placeholder="请输入添加理由" />
-                                <a-button class="greenBtn" size="small" @click="handleAddFriendSure">确定</a-button>
-                            </div>                            
-                        </div>
-                    `
+                    newObj.chatType = '2';
+                    this.chatCon = {...item};
                 }
+                if ( this.textLinkAddress && this.textLinkTitle ) {
+                    newObj.chatType = '1';
+                    this.chatCon = `<a href="${this.textLinkAddress}" target="_blank">${this.textLinkTitle}</a>`
+                }                
                 newObj.content = this.chatCon;
                 console.log(newObj.content);
                 newObj.isMe = true;
                 newObj.avatar = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
                 this.chatList.push(newObj);
                 // websocket发送消息
-                this.ws.send(this.chatCon);
-                this.ws.onmessage = evt => {
-                    // console.log(evt);
-                    // console.log(evt.data);
-                    var sysObj = {};
-                    sysObj.name = '系统'
-                    sysObj.time = new Date();
-                    sysObj.content = evt.data;
-                    sysObj.isMe = false;
-                    sysObj.avatar = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
-                    this.chatList.push(sysObj);                    
-                }     
+                // this.ws.send(this.chatCon);
+                // this.ws.onmessage = evt => {
+                //     // console.log(evt);
+                //     // console.log(evt.data);
+                //     var sysObj = {};
+                //     sysObj.name = '系统'
+                //     sysObj.time = new Date();
+                //     sysObj.content = evt.data;
+                //     sysObj.isMe = false;
+                //     sysObj.avatar = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
+                //     this.chatList.push(sysObj);                    
+                // }     
 
                 this.chatCon = '';
-            } else {
-                this.$message.error('websocket连接不正常，请检查后重试');
-            }
+            // } else {
+            //     this.$message.error('websocket连接不正常，请检查后重试');
+            // }
         },
         // 发起私聊请求
         async handleChatSend(){
@@ -350,18 +359,18 @@ export default {
                 })
             }
             this.cardVisible = false;
-            this.chatType = '3';
+            // this.chatType = '3';
         },
         // 添加图片链接的确定按钮的点击事件
         handleImgLinkSureBtn(){
             this.imgVisible = false;
             if ( this.imgLinkAddress ) {
-                this.chatType = '1'
+                // this.chatType = '1'
             }
         },
         // 添加文本链接的确定按钮的点击事件
         handleTextLinkSureBtn(){
-            this.chatType = this.textLinkTitle && this.textLinkAddress ? '2' : '0'
+            // this.chatType = this.textLinkTitle && this.textLinkAddress ? '2' : '0'
             this.linkVisible = false;
             this.handleSendBtnClick();
             this.textLinkAddress = '' 
@@ -369,7 +378,7 @@ export default {
         }        
     },
     created() {
-        console.log(this.ws.readyState);
+        // console.log(this.ws.readyState);
     },
 }
 </script>

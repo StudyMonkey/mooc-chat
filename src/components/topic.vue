@@ -146,6 +146,7 @@ export default {
     padding: 7px 10px;
     border: 1px solid #e5e5e5;
     background-color: #f5f5f5;
+    align-items: center;
     .topicTitle{
         margin-left: 10px;
         max-width: 460px;

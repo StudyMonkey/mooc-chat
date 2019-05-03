@@ -41,17 +41,17 @@ export default {
   created() {
     // setCookie('loginEid', 'yh83');
     // setCookie('loginId', '2019123456');
-    let _this = this;
-    this.ws.onopen = function(){
-      console.log('连接成功');
-      console.log(this);
-      // Web Socket 已连接上，使用 send() 方法发送数据
-      _this.ws.send("发送数据");
+    // let _this = this;
+    // this.ws.onopen = function(){
+    //   console.log('连接成功');
+    //   console.log(this);
+    //   // Web Socket 已连接上，使用 send() 方法发送数据
+    //   _this.ws.send("发送数据");
       
-      _this.ws.onmessage = evt => {
-        console.log(evt.data);
-      }
-    }
+    //   _this.ws.onmessage = evt => {
+    //     console.log(evt.data);
+    //   }
+    // }
   },
 }
 </script>
