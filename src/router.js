@@ -3,7 +3,7 @@ import Router from 'vue-router'
 import ChatPage from './views/ChatPage.vue'
 import Message from './views/Message.vue'
 import Setting from './views/Setting.vue'
-import AddressList from './views/addressList.vue'
+// import AddressList from './views/addressList.vue'
 import Search from './views/Search.vue'
 import createGroup from './views/createGroup'
 
@@ -25,27 +25,32 @@ export default new Router({
     {
       path: '/member',
       name: 'member',
-      component: AddressList
+      component: () => import(/* webpackChunkName: "addressList" */ './views/addressList.vue')
+      // component: AddressList
     },
     {
       path: '/search',
       name: 'search',
-      component: Search
+      component: () => import(/* webpackChunkName: "Search" */ './views/Search.vue')
+      // component: Search
     },
     {
       path: '/createGroup',
       name: 'createGroup',
-      component: createGroup
+      component: () => import(/* webpackChunkName: "createGroup" */ './views/createGroup.vue')
+      // component: createGroup
     },
     {
       path: '/message',
       name: 'message',
-      component: Message
+      component: () => import(/* webpackChunkName: "Message" */ './views/Message.vue')
+      // component: Message
     },
     {
       path: '/setting',
       name: 'setting',
-      component: Setting
+      component: () => import(/* webpackChunkName: "Setting" */ './views/Setting.vue')
+      // component: Setting
     },   
     { path: '*', redirect: '/chat' } 
 
