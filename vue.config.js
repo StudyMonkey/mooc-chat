@@ -14,7 +14,7 @@ module.exports = {
         disableHostCheck: true,
         proxy: {
             '/v2': {
-                target: 'ws://172.26.75.222',
+                target: 'http://172.26.75.222',
                 ws: true,
                 changeOrigin: true, // 允许跨域
                 pathRewrite: {

@@ -5,8 +5,7 @@
             v-model="cardVisible"
             centered
             :closable="false"
-            :footer="null"
-        >
+            :footer="null">
             <check-member @checkMemberSureBtn="handleCheckMemberSureBtn" @quickCreateGroup="handleQuickCreateGroup">
                 <span>勾选好友，发送名片</span>
             </check-member>
@@ -15,8 +14,7 @@
             title="添加图片链接"
             v-model="imgVisible"
             centered
-            :footer="null"            
-        >
+            :footer="null">
             <upload-img>
                 <span>图片上传：</span>
             </upload-img>
@@ -33,8 +31,7 @@
             title="添加文本链接"
             v-model="linkVisible"
             centered
-            :footer="null"            
-        >
+            :footer="null">
             <div class="linkAddressWrap linkAddressWrap_sec linkAddressWrap_sec1">
                 <span>标&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;题<i>*</i>：</span>
                 <a-input placeholder="请输入文本链接标题..." v-model="textLinkTitle" />
@@ -104,13 +101,13 @@
                                         </div>
                                     </div>
                                     <div class="partInfoWrap">
-                                        <p>单位：<span>{{item.content.part}}</span></p>
+                                        <p class="partWordWrap">单位：<span>{{item.content.part}}</span></p>
                                         <p class="partIconWrap">
                                             <span v-show="item.content.friend" title="点击发送私聊消息" @click="handleChatSend" class="iconfont iconsiliao" />
                                             <span 
                                                 :title="[ item.content.friend ? '点击删除好友' : '点击添加好友' ]"
                                                 :class="[item.content.friend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
-                                                @click="showAddFriend(item.friend)" 
+                                                @click="showAddFriend(item.content.friend)" 
                                             />                                  
                                         </p>
                                     </div>
@@ -536,20 +533,28 @@ textarea[class='ant-input']{ resize: none }
                                 background-color: #f5f5f5;
                                 font-size: 14px;
                                 color: #333333;
-                                margin-bottom: 13px;
-                                img{
-                                    width: 38px;
-                                    height: 38px;
-                                    border: 1px solid #dcdcdc;
+                                .ant-avatar{
                                     margin-right: 10px;
                                 }
                                 div{
                                     line-height: 20px;
+                                    text-align: left;
+                                    p{
+                                        font-size: 14px;
+                                        margin-top: 0;
+                                    }
                                 }
                             }
                             .partInfoWrap{
                                 font-size: 14px;
                                 color: #333333;
+                                padding: 13px 11px 10px 8px; 
+                                p.partWordWrap{
+                                    text-align: left;
+                                    margin-top: 0;
+                                    font-size: 14px;
+                                    height: 62.4px;
+                                }
                                 .partIconWrap{
                                     text-align: right;
                                     span{
