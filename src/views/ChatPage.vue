@@ -22,7 +22,9 @@
                             <chat-main />
                         </a-tab-pane>
                         <a-tab-pane tab="话题" key="topic" forceRender>
-                            <chat-topic :listTopic="topicList" />
+                            <keep-aliv>
+                                <chat-topic :listTopic="topicList" />
+                            </keep-aliv>                          
                         </a-tab-pane>
                         <a-tab-pane tab="成员" key="member">
                             <chat-member :listMember="memberList" />
