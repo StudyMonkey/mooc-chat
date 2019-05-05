@@ -15,7 +15,7 @@
             v-model="imgVisible"
             centered
             :footer="null">
-            <upload-img>
+            <upload-img @uploadImg="handleUploadImg ">
                 <span>图片上传：</span>
             </upload-img>
             <div class="linkAddressWrap">
@@ -44,17 +44,28 @@
                 <p><span class="iconfont icontishi"></span>可发送带有超链接的点击跳转的文字</p>
                 <a-button class="greenBtn" @click="handleTextLinkSureBtn">确定</a-button>
             </div>
-        </a-modal>        
+        </a-modal> 
+        <a-modal 
+            title="添加好友"
+            v-model="addCardFriendModal"
+            centered
+            :footer="null"
+        >
+            <div class="addFriendWrap">
+                <a-textarea v-model="addFriend" :rows="4" placeholder="请输入添加理由" />
+                <a-button style="margin: 10px 0 0 421px;" class="greenBtn" size="small" @click="handleAddFriendSure">确定</a-button>
+            </div> 
+        </a-modal>       
         <div id="chatScrollArea" class="chatScrollArea lm_scroll">
             <ul>
                 <li 
                     v-for="(item,index) in chatList" 
                     :key="index"
-                    :class="[ item.isMe ? 'fl' : 'fr' ]"
+                    :class="[ item.isMe ? 'fr' : 'fl' ]"
                 >
                     <a-popover
                         placement="rightBottom"
-                        :class="[ item.isMe ? 'fl' : 'fr' ]"
+                        :class="[ item.isMe ? 'fr' : 'fl' ]"
                     >
                         <template slot="content">
                             <div class="personInfoWrap">
@@ -71,7 +82,7 @@
                                     <span 
                                         :title="[ item.friend ? '点击删除好友' : '点击添加好友' ]"
                                         :class="[item.friend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
-                                        @click="showAddFriend(item.friend)" 
+                                        @click="showAddFriend(item, 'title')" 
                                     />                                  
                                 </p>
                             </div>
@@ -82,12 +93,12 @@
                             </div>
                         </template>
                         <div>
-                            <x-avatar :class="[ item.isMe ? 'fl' : 'fr' ]" :imgUrl="item.avatar" />
+                            <x-avatar :class="[ item.isMe ? 'fr' : 'fl' ]" :imgUrl="item.avatar" />
                         </div>
                     </a-popover>
-                    <div :class="[ item.isMe ? 'fl ml10 ' : 'fr mr10 textAlignR ','chatInfoWrap' ]">
+                    <div :class="[ item.isMe ? 'fr mr10 ' : 'fl ml10 textAlignL','chatInfoWrap' ]">
                         <!-- <p><span v-text="item.name"></span></p> -->
-                        <div :class="[ item.isMe ? 'bgSelf' : 'bgOther', 'mesContent' ]">
+                        <div :class="[ item.isMe ? '' : '', 'mesContent' ]">
                             <template v-if="item.chatType === '1'">
                                 <div v-html="emoji(item.content)"></div>
                             </template>
@@ -107,15 +118,10 @@
                                             <span 
                                                 :title="[ item.content.friend ? '点击删除好友' : '点击添加好友' ]"
                                                 :class="[item.content.friend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
-                                                @click="showAddFriend(item.content.friend)" 
+                                                @click="showAddFriend(item, 'card')" 
                                             />                                  
                                         </p>
-                                    </div>
-                                    <div class="addFriendWrap" v-if="showAddFriendWrap">
-                                        <p>添加好友<span class="iconfont icondelete" @click="hideAddFriend"></span></p>
-                                        <a-textarea v-model="addFriend+item.content.name" :rows="4" placeholder="请输入添加理由" />
-                                        <a-button class="greenBtn" size="small" @click="handleAddFriendSure">确定</a-button>
-                                    </div>                            
+                                    </div>                           
                                 </div>
                             </template>
                         </div>
@@ -139,8 +145,7 @@
                     点击加载历史记录
                 </template>
                 <span @click="handleLoadMoreChat" class="iconfont fr iconliaotianjilu"></span>
-            </a-tooltip>
-            
+            </a-tooltip>           
         </ul>
         <a-modal
             v-model="showEmoji"
@@ -153,7 +158,7 @@
                 </vue-emoji>
             </div>
         </a-modal>
-        <a-textarea v-model="chatCon" placeholder="请输入......" :rows="4" />
+        <a-textarea v-model="chatCon" placeholder="请输入......" :rows="4" @keyup.ctrl.enter.native="handleSendBtnClick" />
         <div class="sendWrap fr">
             <p>按Enter发送、Ctrl+Enter换行</p>
             <a-button class="greenBtn" @click="handleSendBtnClick" size="small">发送</a-button>
@@ -178,7 +183,10 @@ export default {
             chatType: '0', // 聊天形式，0 为 普通文本， 1 为 图片类型， 2 为 文本带链接， 3 为 名片类型
             chatList: [],
             checkMemberList: [], // 接收checkMember组件传递过来的好友列表
-            showAddFriendWrap: false,
+            showAddFriendWrap: false, // 聊天信息头像框的信息显示隐藏
+            isUploadImg: false, // 是否上传图片，接收upload-img组件传递过来的值改变，点击确定之后又改为false
+            showCardAddFriend: '', // 名片添加好友显示
+            addCardFriendModal: false,  // 名片添加还有的modal框显示隐藏控制
             addFriend: '我是', // 添加好友理由
             cardVisible: false, // 发送名片框的显示隐藏控制
             imgVisible: false, // 发送图片框的显示隐藏控制
@@ -255,6 +263,18 @@ export default {
                     newObj.chatType = '2';
                     this.chatCon = {...item};
                 }
+                if ( this.isUploadImg && this.imgLinkAddress ) {
+                    console.log( this.isUploadImg );
+                    newObj.chatType = '1';
+                    this.chatCon = `<a class="imgLinkWrap" href="${this.imgLinkAddress}" target="_blank"><img src="https://source.unsplash.com/collection/190727/1600x900" /><span class="iconfont iconlianjie"></span></a>`
+                    this.isUploadImg = false;
+                    this.imgLinkAddress = '';
+                }else if ( this.isUploadImg ) {
+                    console.log( this.isUploadImg );
+                    newObj.chatType = '1';
+                    this.chatCon = `<img src="https://source.unsplash.com/collection/190727/1600x900" />`
+                    this.isUploadImg = false
+                }
                 if ( this.textLinkAddress && this.textLinkTitle ) {
                     newObj.chatType = '1';
                     this.chatCon = `<a href="${this.textLinkAddress}" target="_blank">${this.textLinkTitle}</a>`
@@ -293,22 +313,34 @@ export default {
             this.$store.commit('changeShowLoad', false);
             this.$store.commit('addChatConList', this.chatList);                       
         },
-        // 显示添加好友框
-        showAddFriend(obj){
+        // 用了两次的确认框弹出方法
+        commonComfirm(){
             let _this = this;
-            if ( obj ) {
-                this.$confirm({
-                    title: '确认从好友列表中删除此人么？',
-                    okText: '确认',
-                    cancelText: '取消',
-                    onOk(){
-                        _this.$message.success('删除好友成功')
-                    }
-                })
+            this.$confirm({
+                title: '确认从好友列表中删除此人么？',
+                okText: '确认',
+                cancelText: '取消',
+                onOk(){
+                    _this.$message.success('删除好友成功')
+                }
+            })
+        },
+        // 显示添加好友框
+        showAddFriend(obj, type){          
+            if( type === 'title' ) {
+                if ( obj.friend ) {
+                    this.commonComfirm();
+                } else {
+                    this.showAddFriendWrap = true;       
+                }                
             } else {
-                this.showAddFriendWrap = true;
-            }
-            
+                if ( obj.content.friend ) {
+                    this.commonComfirm();
+                } else {
+                    this.addCardFriendModal = true;
+                    // this.showCardAddFriend = obj.content.id
+                } 
+            }           
         },
         // 隐藏添加好友框
         hideAddFriend(){
@@ -317,6 +349,7 @@ export default {
         // 添加好友确定按钮
         handleAddFriendSure(){
             this.hideAddFriend();
+            this.addCardFriendModal = false;
             this.$message.success('添加好友请求发送成功');
         },
         // 图标的点击事件处理
@@ -358,11 +391,20 @@ export default {
             this.cardVisible = false;
             // this.chatType = '3';
         },
+        /*
+        * 接收upload-img组件传递过来的是否上传图片
+        * 传递过来一个上传成功之后的true值
+        */ 
+
+        handleUploadImg(obj){
+            console.log(obj);
+            this.isUploadImg = obj 
+        },
         // 添加图片链接的确定按钮的点击事件
         handleImgLinkSureBtn(){
             this.imgVisible = false;
-            if ( this.imgLinkAddress ) {
-                // this.chatType = '1'
+            if ( this.isUploadImg ) {
+                this.handleSendBtnClick();
             }
         },
         // 添加文本链接的确定按钮的点击事件
@@ -383,8 +425,8 @@ export default {
 <style lang="less" scoped>
 .mr10{ margin-right: 10px; }
 .ml10{ margin-left: 10px; }
-.bgSelf{ background-color: #fbf6ed }
-.bgOther{ background-color: #def7f0 }
+// .bgSelf{ background-color: #fbf6ed }
+// .bgOther{ background-color: #def7f0 }
 .textAlignR{ text-align: right }
 textarea[class='ant-input']{ resize: none }
 .linkAddressWrap,.footerPrompt{
@@ -480,7 +522,7 @@ textarea[class='ant-input']{ resize: none }
         height: 428px;
         border: 1px solid #e5e5e5;
         padding: 12px 10px 0 10px;
-        background-color: #ffffff;
+        background-color: #f5f5f5;
         overflow-y: auto;
         overflow-x: hidden;
         ul{
@@ -502,6 +544,7 @@ textarea[class='ant-input']{ resize: none }
                         font-size: 14px;
                         color: #696865;
                         position: relative;
+                        background-color: #ffffff;
                         &::before {
                             content: '';
                             position: absolute;
@@ -511,6 +554,22 @@ textarea[class='ant-input']{ resize: none }
                         } 
                         /deep/a{
                             text-decoration: underline;
+                            &.imgLinkWrap{
+                                display: block;
+                                position: relative;
+                                span.iconlianjie{
+                                    position: absolute;
+                                    width: 50px;
+                                    height: 50px;
+                                    text-align: center;
+                                    line-height: 50px;
+                                    background-color: rgb(255,84,0);
+                                    border-radius: 50%;
+                                    color: #fff;
+                                    right: 10px;
+                                    top: 10px;                                    
+                                }
+                            }
                         } 
                         /deep/img{
                             width: 312px;
@@ -533,6 +592,7 @@ textarea[class='ant-input']{ resize: none }
                                 background-color: #f5f5f5;
                                 font-size: 14px;
                                 color: #333333;
+                                padding: 9px;
                                 .ant-avatar{
                                     margin-right: 10px;
                                 }
@@ -553,7 +613,7 @@ textarea[class='ant-input']{ resize: none }
                                     text-align: left;
                                     margin-top: 0;
                                     font-size: 14px;
-                                    height: 62.4px;
+                                    height: 50px;
                                 }
                                 .partIconWrap{
                                     text-align: right;
@@ -583,7 +643,7 @@ textarea[class='ant-input']{ resize: none }
                         .mesContent{
                             &::before{
                                 left: -5px;
-                                border-right: 8px solid #fbf6ed;
+                                border-right: 8px solid #ffffff;
                                 
                             }                      
                         }
@@ -592,7 +652,7 @@ textarea[class='ant-input']{ resize: none }
                         .mesContent{
                             &::before{
                                 right: -5px;
-                                border-left: 8px solid #def7f0;
+                                border-left: 8px solid #ffffff;
                             }                      
                         }
                     }                                      

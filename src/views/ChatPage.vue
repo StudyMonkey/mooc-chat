@@ -17,17 +17,21 @@
                 </div>
                 <p class="chatGroupNum">小组编号：<span>54284122</span></p>
                 <div class="card-container">
-                    <a-tabs type="card" @change="handleTabsChange" defaultActiveKey="chat">
-                        <a-tab-pane tab="聊天" key="chat">
-                            <chat-main />
+                    <a-tabs type="card" @change="handleTabsChange" defaultActiveKey="chatMain">
+                        <a-tab-pane tab="聊天" key="chatMain">
+                            <keep-alive>
+                                <chat-main />
+                            </keep-alive>
                         </a-tab-pane>
-                        <a-tab-pane tab="话题" key="topic" forceRender>
-                            <keep-aliv>
-                                <chat-topic :listTopic="topicList" />
-                            </keep-aliv>                          
+                        <a-tab-pane tab="话题" key="chatTopic" forceRender>
+                            <keep-alive>
+                                <chat-topic :listTopic="topicList" />  
+                            </keep-alive>                      
                         </a-tab-pane>
                         <a-tab-pane tab="成员" key="member">
-                            <chat-member :listMember="memberList" />
+                            <keep-alive>
+                                <chat-member :listMember="memberList" />
+                            </keep-alive>
                         </a-tab-pane>
                         <a-tab-pane tab="文件" key="file">
                             <chat-file :listFile="fileList" />
@@ -61,6 +65,7 @@ export default {
     data() {
         return {
             chosedChat: '',
+            currentTab: 'chatMain',
             topicList: [], // 传递给话题的数组 
             memberList: [], // 传递给成员的数组
             noticeList: [], // 传递给公告的数组
@@ -89,7 +94,8 @@ export default {
         },
         async handleTabsChange (key) {
             console.log(key)
-            if ( key === 'topic' ){
+            this.currentTab = key;
+            if ( key === 'chatTopic' ){
                 this.topicList = await this.commonGetMethod('topicList', {});
             } else if ( key === 'member' ) {
                 this.memberList = await this.commonGetMethod('memberList', {});                

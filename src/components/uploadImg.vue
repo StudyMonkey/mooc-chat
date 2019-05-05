@@ -56,7 +56,10 @@ export default {
 
             setTimeout( () => {
                 this.uploading = false
-                this.$message.success('upload successfully.');                
+                this.$message.success('upload successfully.');   
+                this.$emit('uploadImg', true);
+                this.fileList = []; 
+                console.log('upload-img');            
             }, 1000)
         },
     },
