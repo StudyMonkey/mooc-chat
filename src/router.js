@@ -1,11 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import ChatPage from './views/ChatPage.vue'
-import Message from './views/Message.vue'
-import Setting from './views/Setting.vue'
-// import AddressList from './views/addressList.vue'
-import Search from './views/Search.vue'
-import createGroup from './views/createGroup'
 
 Vue.use(Router)
 
@@ -14,8 +9,8 @@ export default new Router({
   routes: [
     {
       path: '/chat',
-      name: 'chat',
-      component: ChatPage
+      name: 'chatPage',
+      component: ChatPage,
     },
     {
       path: '/group',

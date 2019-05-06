@@ -1,6 +1,6 @@
 <template>
     <div class="messagePageWrap">
-        <a-tabs defaultActiveKey="group" @change="handleTabsChange">
+        <a-tabs type="card" defaultActiveKey="group" @change="handleTabsChange">
             <a-tab-pane tab="小组消息" key="group">
                 <div class="table_area">
                     <table class="limitadm_table1 messageGroupTable">
