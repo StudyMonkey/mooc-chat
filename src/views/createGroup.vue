@@ -1,13 +1,21 @@
 <template>
     <div class="createGroupTopWrap">
         <x-prompt>
-            <p>交流小组并非单位组织的单位
+            <p v-if="userType === 'maneger'">交流小组并非单位组织的单位
                 学习小组。如您是单位管理员并未
                 创建单位学习小组请点击下方按钮
                 前往系统后台直接创建单位学习小
                 组。
             </p>
-            <a-button size="small">前往创建</a-button>
+            <p v-else>
+                交流小组并非单位组织的单位
+                学习小组。如您还未加入您的单位
+                学习小组，请联系上级申请加入；
+                如您是单位管理员请联系上级或者
+                平台授予管理员身份再前往管理后
+                台创建单位学习小组。
+            </p>
+            <a-button size="small" type="primary">前往创建</a-button>
         </x-prompt>
         <div class="createRightTop">
             <right-title>
@@ -89,6 +97,16 @@ export default {
 }
 .createGroupTopWrap{
     display: flex;
+    .middleWrap{
+        .promptContent{
+            p{
+                line-height: 1.8
+            }
+            button{
+                margin-top: 20px;
+            }
+        }
+    }
     .createRightTop{
         background-color: #ffffff;
         .createBtnWrap{
@@ -107,7 +125,7 @@ export default {
                 position: absolute;
                 width: 15px;
                 height: 15px;
-                bottom: -8px;
+                bottom: -9px;
                 background-color: #ffffff;
                 &::after{
                     content: "";
