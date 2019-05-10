@@ -142,6 +142,11 @@ export default {
         .ant-tabs-bar{
             margin-bottom: 0;
         }
+        .ant-tabs-tab{
+            height: 35px;
+            line-height: 35px !important;
+            margin-top: 5px !important;
+        }
     }
     .messageGroupTable{
         tr{
@@ -197,15 +202,20 @@ export default {
 
     }
     .messagePersonTable{
-        td{
-            &.username{
-                width: 178px;
-            }
-            &.name{
-                width: 90px;
-            }
-            &.part{
-                width: 304px;
+        tr{
+            td{
+                &.username{
+                    width: 178px;
+                }
+                &.name{
+                    width: 90px;
+                }
+                &.part{
+                    width: 200px;
+                }
+                &.joinReason{
+                    width: 215px;
+                }
             }
         }
     }
