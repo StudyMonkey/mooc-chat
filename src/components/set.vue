@@ -40,12 +40,10 @@
             <a-button size="small" @click="handleTopChatClick">聊天置顶</a-button>
             <a-button size="small" @click="handleClearChat">清除聊天</a-button>
             <a-button :disabled="hasClearRight" size="small" @click="handleClearTopic">清除话题</a-button>
-        </div>  
-        <div class="btnWrap">
             <a-button size="small" @click="handleQuitGroupClick">退出小组</a-button>
             <a-button size="small" @click="handleDismissGroupClick">解散小组</a-button>
-        </div>      
-        <a-button class="greenBtn" @click="handleSaveBtnClick">保存</a-button>
+        </div>       
+        <a-button class="saveBtn greenBtn" @click="handleSaveBtnClick">保存</a-button>
     </div>
 </template>
 
@@ -144,10 +142,15 @@ export default {
         color: #333333;
         &.greenBtn{
             color: #ffffff;
-            margin: 12px 0 0 293px;
             &:hover{
-                color: #40a9ff;
+                color: #ffffff;
             }
+        }
+        &.saveBtn{
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            margin-left: -26px;
         }
     }
     div{

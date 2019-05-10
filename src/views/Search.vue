@@ -78,7 +78,7 @@
                             <p class="groupDescrition" v-text="item.groupdesc"></p>
                             <div class="groupBtnWrap">
                                 <p><span>小组编号：</span><span v-text="item.groupId"></span></p>
-                                <a-button type="primary" size="small" @click="handleJoinClick(item)">加入</a-button>
+                                <a-button size="small" @click="handleJoinClick(item)">加入</a-button>
                             </div>  
                         </li>                       
                     </ul>
@@ -100,7 +100,6 @@
                                     <td class="part" v-text="item.part"></td>
                                     <td>
                                         <a-button 
-                                            type="primary" 
                                             size="small"
                                             @click="handleAddMemberClick(item)"
                                         >添加好友</a-button>
@@ -305,6 +304,7 @@ export default {
         height: 100%;
         border: 1px solid #c1bfba;
         border-left: none;
+        background-color: #ffffff;
         .searchTitle{
             text-indent: 15px;
             background-color: #f5f5f5;
@@ -375,6 +375,7 @@ export default {
             height: 632px;
             border: 1px solid #e5e5e5;
             margin: 15px;
+            position: relative;
             .limitadm_table1{
                 tr{                  
                     &.tr1{
@@ -394,7 +395,7 @@ export default {
                             width: 66px;
                         }
                         &.part{
-                            width: 288px;
+                            width: 305px;
                         }
                     }
                 }
