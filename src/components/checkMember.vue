@@ -27,6 +27,7 @@ export default {
     data() {
         return {
             searchVal: '',
+            pageNo: 1,
             checkMemberList: [],
             hasCheckedList: [], // 勾选上的好友列表
         }
@@ -62,22 +63,24 @@ export default {
          *  点击确定按钮传递给父组件所勾选的好友和隐藏状态
          */
         checkMemberSureBtn(){
+            console.log(this.hasCheckedList);
             this.$emit('checkMemberSureBtn', this.hasCheckedList);
 
             // this.hasCheckedList = []
         }
     },
     async created() {
-        const res = await this.$getData('checkMemberList', {});
-        const { data: { data } } = res;
-        this.checkMemberList = data;
+        const res = await this.$getData('/myFriends.do', {eid: 'ksz', pageNo: this.pageNo});
+        console.log(res);
+        const { data: { rows } } = res;
+        this.checkMemberList = rows;
 
-        // 节流操作
-        this.$watch('searchVal', debounce(async (newQuery) => {
-            // newQuery为输入的值
-            console.log(newQuery) 
-            this.$emit('changeSearchVal', newQuery);                            
-        }, 300))
+        // // 节流操作
+        // this.$watch('searchVal', debounce(async (newQuery) => {
+        //     // newQuery为输入的值
+        //     console.log(newQuery) 
+        //     this.$emit('changeSearchVal', newQuery);                            
+        // }, 300))
     },
 }
 </script>

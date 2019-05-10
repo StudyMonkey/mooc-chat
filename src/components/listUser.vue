@@ -3,11 +3,11 @@
         <li 
             v-for="item in checkMemberList" 
             :key="item.id"
-            :class="isActive === item.id ? 'bg_active' : ''"
+            :class="isActive === item.friendEid ? 'bg_active' : ''"
             @click="handleListUserClick(item)"
         >
-            <x-avatar :imgUrl="item.avatar" />
-            <span v-text="item.name"></span>
+            <x-avatar :imgUrl="item.imgUrl" />
+            <span v-text="item.remark"></span>
             <div class="checkboxWrap" @click="handleSendToCheckMember(item)">
                 <slot></slot>
             </div>            
@@ -46,9 +46,13 @@ export default {
         }
     },
     methods: {
-        handleListUserClick(item) {          
+        async handleListUserClick(item) {          
             if ( this.type ) {
-                this.isActive = item.id;
+                this.isActive = item.friendEid;
+                const res = await this.$getData('/friendDept.do', { eid: item.friendEid});
+                console.log(res);
+                const { data: { obj } } = res;
+                item.obj = obj;
                 this.$emit('toAddressList', item);
             }
         },

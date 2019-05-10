@@ -4,7 +4,7 @@
             <div v-show="quickCreateGroup">
                 <search-wrap @changeSearchVal="handleChangeSearchVal" @quickCreate="handleQuickCreateGroup" />
                 <list-user @toAddressList="handleAcceptAddressList" type="addressUserList" :listUser="addressUserList" />
-                <load-more @loadMoreBtnClick="handleLoadBtnClick" />            
+                <load-more v-show="showLoadMore" @loadMoreBtnClick="handleLoadBtnClick" />            
             </div>
             <div v-show="!quickCreateGroup">
                 <check-member @changeSearchVal="handleChangeSearchVal" @checkMemberSureBtn="handleCheckMemberSureBtn" @quickCreateGroup="handleQuickCreateGroup">
@@ -16,25 +16,25 @@
             <not-click v-if="hasChosed" />
             <div v-else>
                 <div class="addressTitleWrap">
-                    <x-avatar :imgUrl="oneUser.avatar" />
-                    <span v-text="oneUser.name"></span>
+                    <x-avatar :imgUrl="oneUser.imgUrl" />
+                    <span v-text="oneUser.remark"></span>
                 </div>
                 <div class="addressInfoWrap">
                     <p>
-                        <span>用户名：<i v-text="oneUser.username"></i></span>
+                        <span>用户名：<i v-text="oneUser.friendEid"></i></span>
                     </p>
                     <p>
-                        <span>姓名：<i v-text="oneUser.name"></i></span>
+                        <span>姓名：<i v-text="oneUser.userName"></i></span>
                     </p> 
                     <p>
-                        <span>单位：<i v-text="oneUser.part"></i></span>
+                        <span>单位：<i v-text="oneUser.obj"></i></span>
                     </p> 
                     <div class="memoNameDiv">
                         <span>备注名：</span>
-                        <memo-name @saveMemoName="handleSaveMemoName" />                       
-                    </div> 
+                        <memo-name :user="oneUser" @saveMemoName="handleSaveMemoName" />                       
+                    </div>   
                     <div class="addressBtnWrap">
-                        <a-button size="small" @click="handleIsTop" v-text="oneUser.isTop ? '取消置顶' : '置顶' "></a-button>
+                        <a-button size="small" @click="handleIsTop" v-text="oneUser.top ? '取消置顶' : '置顶' "></a-button>
                         <a-button class="greenBtn" size="small" @click="handleSendMessage">发消息</a-button>    
                     </div>                                                           
                 </div>
@@ -51,15 +51,18 @@ import MemoName from '@/components/memoName'
 import LoadMore from '@/components/loadMore'
 import NotClick from '@/components/notClick'
 import CheckMember from '@/components/checkMember'
+import axios from 'axios'
 export default {
     name: 'member',
     data() {
         return {
+            pageNo: 1,
             addressUserList: [],
             saveAddressUserList: [],
             hasChosed: true,
             oneUser: '',
             searchNoResult: false, // 搜索好友的结果显示
+            showLoadMore: true, // 加载更多组件的显示与隐藏
             quickCreateGroup: true
         }
     },
@@ -77,14 +80,18 @@ export default {
     },
     methods: {
         async commonGetAddressList(obj){
+            obj === false ? this.pageNo : this.pageNo++
             this.$store.commit('changeShowLoad', true);
-            const res = await this.$getData('addressUserList', {});
-            const { data: { data } } = res;
-            console.log(data);
+            const res = await this.$getData('/myFriends.do', {eid: 'ksz', pageNo: this.pageNo});
+            const { data: { rows } } = res;
+            console.log(rows);
+            if ( rows.length < 10 ) {
+                this.showLoadMore = false
+            }
             if ( obj === false ) {
-                this.addressUserList = data;
+                this.addressUserList = rows;
             } else {
-                this.addressUserList = data.concat(this.addressUserList);
+                this.addressUserList = rows.concat(this.addressUserList);
             }          
             this.saveAddressUserList = this.addressUserList;
             this.$store.commit('changeShowLoad', false);            
@@ -112,15 +119,28 @@ export default {
                 okText: '确认',
                 cancelText: '取消',
                 onOk(){
-                    _this.oneUser.isTop = !_this.oneUser.isTop;
-                    _this.$message.success(mes)
+                    axios.get('/group'+ '/stick.do', {
+                        params: {
+                            myEid: 'ksz', 
+                            friendEid: _this.oneUser.friendEid, 
+                            top: _this.oneUser.top
+                        }
+                    }).then( res => {
+                        if ( res.status === 200 ) {
+                            _this.oneUser.top = !_this.oneUser.top;
+                            _this.commonGetAddressList(false);
+                            _this.$message.success(mes)                            
+                        }
+                    }).then( err => {
+                        console.log(err)
+                    })              
                 }
             })            
         },
 
         /* 置顶和取消置顶的点击切换方法 */
         handleIsTop(){           
-            if ( this.oneUser.isTop ) {
+            if ( this.oneUser.top ) {
                 this.commonMessage('确认将该好友取消置顶？', '取消置顶好友成功');
             } else {
                 this.commonMessage('确认将该好友置顶？', '置顶好友成功');              
@@ -180,8 +200,8 @@ export default {
         /**
          *  接收子组件修改备注名的点击传递事件
          */        
-        handleSaveMemoName(name){
-            console.log(name)
+        handleSaveMemoName(){
+            this.commonGetAddressList(false);
         }
     },
 }

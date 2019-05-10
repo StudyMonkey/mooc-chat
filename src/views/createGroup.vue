@@ -14,32 +14,38 @@
                 <span>创建小组</span>
             </right-title>
             <div class="createBtnWrap">
-                <a-button class="createChatGroup">创建交流小组</a-button>
-                <a-button>创建单位学习小组</a-button>               
+                <a-button :class="[ userType !== 'maneger' ? 'bgActive' : '','createChatGroup']" @click="handleCreateGroup('normal')">创建交流小组</a-button>
+                <a-button :class="userType === 'maneger' ? 'bgActive' : '' "  @click="handleCreateGroup('maneger')">创建单位学习小组</a-button>   
+                <span :class="userType === 'maneger' ? 'left455' : 'left203' "></span>            
             </div>
-            <div class="createConWrap">           
-                <div class="groupNameWrap">
-                    <span>小组名称<i>*</i>：</span>
-                    <a-input class="groupName" v-model="groupName" placeholder="请输入想创建的交流小组名称" />
-                </div>
-                <upload-img>
-                    <span>小组头像：</span>
-                </upload-img>
-                <div class="">
-                    <span>是否审核：</span>
-                    <a-radio-group name="radioGroup" :defaultValue="0">
-                        <a-radio :value="0">需要审核</a-radio>
-                        <a-radio :value="1">不需要审核</a-radio>
-                    </a-radio-group>   
-                </div> 
-                <div class="groupDescriptionWrap">
-                    <span>小组描述：</span>
-                    <a-textarea class="groupDescription" :rows="4" v-model="groupDescription" placeholder="请输入小组描述......" />
-                </div> 
-                <div class="submitBtnWrap">
-                    <a-button class="greenBtn">提交</a-button> 
-                </div>
-                                            
+            <div class="createConWrap">  
+                <div v-if=" userType!== 'maneger'">
+                    <div class="groupNameWrap">
+                        <span>小组名称<i>*</i>：</span>
+                        <a-input class="groupName" v-model="groupName" placeholder="请输入想创建的交流小组名称" />
+                    </div>
+                    <upload-img>
+                        <span>小组头像：</span>
+                    </upload-img>
+                    <div class="">
+                        <span>是否审核：</span>
+                        <a-radio-group name="radioGroup" :defaultValue="0">
+                            <a-radio :value="0">需要审核</a-radio>
+                            <a-radio :value="1">不需要审核</a-radio>
+                        </a-radio-group>   
+                    </div> 
+                    <div class="groupDescriptionWrap">
+                        <span>小组描述：</span>
+                        <a-textarea class="groupDescription" :rows="4" v-model="groupDescription" placeholder="请输入小组描述......" />
+                    </div> 
+                    <div class="submitBtnWrap">
+                        <a-button class="greenBtn">提交</a-button> 
+                    </div>                    
+                </div>  
+                <div class="partGroupWrap" v-else>
+                    <a-button>前往创建单位学习小组</a-button>    
+                </div>       
+                                         
             </div>
         </div>
     </div>
@@ -55,6 +61,7 @@ export default {
     data() {
         return {
             groupName: '', 
+            userType: 'maneger', // 用户身份
             groupDescription: '' // 小组描述          
         }
     },
@@ -65,13 +72,21 @@ export default {
         UploadImg
     },
     methods: {
-
+        handleCreateGroup(str){
+            this.userType = str
+        }
     },
 
 }
 </script>
 
 <style lang='less' scoped>
+.left203{ left: 203px }
+.left455{ left: 455px }
+.bgActive{ 
+    background-color: #ff8a00;
+    color: #ffffff;
+}
 .createGroupTopWrap{
     display: flex;
     .createRightTop{
@@ -82,15 +97,38 @@ export default {
             align-items: center;
             width: 669px;
             height: 69px;
-            border-bottom: 1px solid #dcdcdc;
+            border-bottom: 1px solid #e2e2e2;
+            position: relative;
             button.createChatGroup{
                 margin-right: 102px;
+            }
+            span{
+                display: block;
+                position: absolute;
+                width: 15px;
+                height: 15px;
+                bottom: -8px;
+                background-color: #ffffff;
+                &::after{
+                    content: "";
+                    display: block;
+                    width: 15px;
+                    height: 15px;
+                    border-right: 1px solid #e2e2e2;
+                    border-top: 1px solid #e2e2e2;
+                    transform: rotate(-45deg);
+                }
             }
         }
         .createConWrap{
             padding: 40px 114px 0 114px;
             div{
-                display: flex;
+                &.groupNameWrap,
+                &.groupLogoWrap,
+                &.groupDescriptionWrap,
+                &.submitBtnWrap{
+                    display: flex;
+                }               
             }
             .groupNameWrap{
                 margin-bottom: 28px;
@@ -125,7 +163,10 @@ export default {
             .submitBtnWrap{
                 justify-content: center;
                 padding-top: 163px;
-            }                     
+            } 
+            .partGroupWrap{
+                text-align: center;
+            }                    
         }
     }
 }

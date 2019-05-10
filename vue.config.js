@@ -13,12 +13,12 @@ module.exports = {
         host: '0.0.0.0',
         disableHostCheck: true,
         proxy: {
-            '/v2': {
-                target: 'http://172.26.75.222',
+            '/group': {
+                target: 'http://172.26.75.218/moocGroupApi/group',
                 ws: true,
                 changeOrigin: true, // 允许跨域
                 pathRewrite: {
-                    '^/v2': ''
+                    '^/group': ''
                 }
             }
         }

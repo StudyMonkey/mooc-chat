@@ -21,10 +21,10 @@
             :footer="null"
         >
             <div class="modalHeaderWarap">
-                <x-avatar :imgUrl="chosedMember.avatar" />
+                <x-avatar :imgUrl="chosedMember.userImgUrl" />
                 <div>
                     <p>昵称</p>
-                    <p class="groupCard">用户名：<span v-text="chosedMember.username"></span></p>
+                    <p class="groupCard">用户名：<span v-text="chosedMember.userEid"></span></p>
                 </div>
             </div>
             <a-textarea v-model="addMemberReason" placeholder="请输入申请理由..." :rows="4" />
@@ -62,22 +62,22 @@
                 <div v-if="groupList.length > 0" class="groupResultWrap">
                     <ul class="groupList">
                         <li 
-                            v-for="item in groupList" 
-                            :key="item.id"
+                            v-for="(item,index) in groupList" 
+                            :key="index"
                         >
                             <div class="groupInfoWrap">
-                                <x-avatar :imgUrl="item.avatar" />
+                                <x-avatar :imgUrl="item.groupImgUrl" />
                                 <div>
-                                    <p class="overHidden" v-text="item.groupTitle"></p>
+                                    <p class="overHidden" v-text="item.groupName"></p>
                                     <p>
                                         <span class="iconfont iconqunliao1"></span>
-                                        <span class="colorSpan"><i v-text="item.number"></i>人</span>
+                                        <span class="colorSpan"><i v-text="item.groupMemberCount"></i>人</span>
                                     </p>
                                 </div>
                             </div>                           
-                            <p class="groupDescrition" v-text="item.groupdesc"></p>
+                            <p class="groupDescrition" v-text="item.groupDesc"></p>
                             <div class="groupBtnWrap">
-                                <p><span>小组编号：</span><span v-text="item.groupId"></span></p>
+                                <p><span>小组编号：</span><span v-text="item.groupNumber"></span></p>
                                 <a-button type="primary" size="small" @click="handleJoinClick(item)">加入</a-button>
                             </div>  
                         </li>                       
@@ -95,9 +95,9 @@
                                     <td></td>
                                 </tr>
                                 <tr v-for="item in memberList" :key="item.id">
-                                    <td class="username" v-text="item.username"></td>
-                                    <td class="name" v-text="item.name"></td>
-                                    <td class="part" v-text="item.part"></td>
+                                    <td class="username" v-text="item.userEid"></td>
+                                    <td class="name" v-text="item.userName"></td>
+                                    <td class="part" v-text="item.userDepartment"></td>
                                     <td>
                                         <a-button 
                                             type="primary" 
@@ -135,7 +135,8 @@ export default {
             addMemberReason: '', // 添加好友的理由
             groupNum: '',
             groupName: '',
-            hasResult: true
+            hasResult: true,
+            pageNo: 1, // 页数
         }
     },
     components: {
@@ -152,15 +153,16 @@ export default {
             this.$store.commit('changeShowLoad', true);
             const res = await this.$getData(url, params);
             this.$store.commit('changeShowLoad', false);
-            const { data: { data } } = res;
-            return data;    
+            const { data: { rows } } = res;
+            return rows;    
         },
         /*  点击查询用户事件处理
          *  判断用户名是否为空给出提示
          */
         async handleSearchMember() {
             if ( this.searchMember ) {
-                this.memberList = await this.commonGetData('searchMember', {});
+                this.pageNo = 1;
+                this.memberList = await this.commonGetData('/searchuser.do', { pageNo: this.pageNo, name: this.searchMember });
                 this.groupList = [];
                 this.hasResult = false;
                 this.searchMember = '';
@@ -174,7 +176,7 @@ export default {
          */
         async handleSearchGroup(){
             if ( this.groupNum || this.groupName ) {
-                this.groupList = await this.commonGetData('groupList', {});
+                this.groupList = await this.commonGetData('/searchgroup.do', { pageNo: this.pageNo, groupNo: this.groupNum, name: this.groupName});
                 this.memberList = [];
                 this.hasResult = false;
                 this.groupNum = '';
@@ -213,7 +215,8 @@ export default {
         },
         // 翻页点击事件
         async handlePageChange(pageNumber) {
-            this.groupList = await this.commonGetData('groupList', {page: pageNumber})       
+            this.pageNo = pageNumber;
+            this.groupList = await this.commonGetData('/searchgroup.do', { pageNo: this.pageNo, groupNo: this.groupNum, name: this.groupName})       
         },        
     },
 }
@@ -301,6 +304,7 @@ export default {
         height: 100%;
         border: 1px solid #c1bfba;
         border-left: none;
+        background-color: #ffffff;
         .searchTitle{
             text-indent: 15px;
             background-color: #f5f5f5;
