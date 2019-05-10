@@ -107,8 +107,9 @@
                                     </td>
                                 </tr>
                             </tbody>
-                        </table>
-                    </div>                    
+                        </table>                 
+                    </div> 
+                    <x-pagination @pageChange="handleUserPageChange"></x-pagination>                
                 </div>
             </div>           
         </div>
@@ -164,8 +165,9 @@ export default {
                 this.pageNo = 1;
                 this.memberList = await this.commonGetData('/searchuser.do', { pageNo: this.pageNo, name: this.searchMember });
                 this.groupList = [];
-                this.hasResult = false;
-                this.searchMember = '';
+                this.groupNum = '';
+                this.groupName = '';                
+                this.hasResult = false;              
                 this.$message.success('搜索用户成功');
             } else {
                 this.$message.error('请输入需要查找的用户名');
@@ -178,9 +180,8 @@ export default {
             if ( this.groupNum || this.groupName ) {
                 this.groupList = await this.commonGetData('/searchgroup.do', { pageNo: this.pageNo, groupNo: this.groupNum, name: this.groupName});
                 this.memberList = [];
+                this.searchMember = '';
                 this.hasResult = false;
-                this.groupNum = '';
-                this.groupName = '';
                 this.$message.success('搜索小组成功');  
             } else {
                 this.$message.error('请输入需要查找的小组编号或名称');
@@ -213,11 +214,16 @@ export default {
             this.addMemberReason = '';
             this.$message.success('添加好友请求已发送');            
         },
-        // 翻页点击事件
+        // 搜索小组的翻页点击事件
         async handlePageChange(pageNumber) {
             this.pageNo = pageNumber;
             this.groupList = await this.commonGetData('/searchgroup.do', { pageNo: this.pageNo, groupNo: this.groupNum, name: this.groupName})       
-        },        
+        },  
+        // 搜索用户的翻页点击事件
+        async handleUserPageChange(pageNumber) {
+            this.pageNo = pageNumber;
+            this.memberList = await this.commonGetData('/searchuser.do', { pageNo: this.pageNo, name: this.searchMember });       
+        },               
     },
 }
 </script>
@@ -375,6 +381,7 @@ export default {
             height: 632px;
             border: 1px solid #e5e5e5;
             margin: 15px;
+            position: relative;
             .limitadm_table1{
                 tr{                  
                     &.tr1{
