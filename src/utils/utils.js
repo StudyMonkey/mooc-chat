@@ -102,3 +102,25 @@ export function delCookie(c_name) {
     if(cval!=null) 
         document.cookie= c_name + "=;expires="+exp.toGMTString(); 
 } 
+
+/**
+ * 处理时间格式的函数
+ */
+export function timeFormat(timeStamp) {   
+    let time = new Date(timeStamp);
+    const year = time.getFullYear();
+    const month = time.getMonth() + 1;
+    const day = time.getDate()
+    return year + '-' + buLing(month) + '-' + buLing(day)   
+}
+
+/**
+ * 补零方法
+ */
+function buLing(str){
+    if ( str < 10 ) {
+        return '0' + str
+    } else {
+        return str
+    }
+}

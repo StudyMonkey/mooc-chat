@@ -108,7 +108,8 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>                    
+                    </div> 
+                    <x-pagination @pageChange="handleUserPageChange" />                   
                 </div>
             </div>           
         </div>
@@ -214,7 +215,10 @@ export default {
         // 翻页点击事件
         async handlePageChange(pageNumber) {
             this.groupList = await this.commonGetData('groupList', {page: pageNumber})       
-        },        
+        },
+        async handleUserPageChange(page) {
+            this.memberList = await this.commonGetData('searchMember', {page});
+        }        
     },
 }
 </script>
