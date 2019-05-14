@@ -14,10 +14,11 @@
                     </a-badge>
                     <div class="infoWrap">
                         <div class="titleWrap">
-                            <p class="title overHidden" v-text="item.username"></p>
-                            <a-icon type='github' v-if="item.official" />
+                            <p class="title overHidden" v-html="item.username"></p>
+                            <span class="iconfont iconV" v-if="item.official"></span>
                         </div>
-                        <p class="time" v-text="item.time"></p>
+                        <p v-show="inputSearchVal === ''" class="time" v-text="item.time"></p>
+                        <p v-show="inputSearchVal !== ''">备注名</p>
                     </div>
                 </li>                   
             </ul> 
@@ -47,6 +48,7 @@ export default {
             ], // 用户列表数据
             saveMessageList: [],  // 保存用户列表数据
             searchNoResult: false,  // 未搜索到用户时显示
+            inputSearchVal: '', // searchWrap组件的搜索值接收
         }
     },
     components: {
@@ -79,7 +81,6 @@ export default {
             let { data: { data } } = res;
             init ? this.messageList = this.messageList.concat(data) : this.messageList = data;
             this.saveMessageList = this.messageList;
-            console.log(this.saveMessageList);
             // 存储到vuex
             this.$store.commit('addUserList', this.messageList);
         },
@@ -98,9 +99,19 @@ export default {
          */
         async handleChangeSearchVal(searchVal){
             console.log(searchVal);
+            this.inputSearchVal = searchVal;
             if ( searchVal !== '' ) {
                 this.searchNoResult = false;
-                this.messageList = this.messageList.filter( v => v.username === searchVal);          
+                 
+                // 匹配关键字正则
+                let replaceReg = new RegExp(searchVal, 'g');
+                // 高亮替换v-html值
+                let replaceString = '<span class="searchText">' + searchVal + '</span>';
+                // 开始替换
+                this.messageList = this.messageList.filter( v => v.username.indexOf(searchVal) > -1); 
+                for ( let i = 0 ; i < this.messageList.length; i++ ) {
+                    this.messageList[i].username = this.messageList[i].username.replace(replaceReg, replaceString)
+                }
                 if ( this.messageList.length === 0 ) {
                     const res = await this.$getData('searchSomeMember', {});
                     console.log('搜索结果:', res);
@@ -151,6 +162,9 @@ export default {
                             width: 164px;                      
                             color: #333333;
                             font-size: 14px; 
+                            .searchText{
+                                color: red;
+                            }
                         } 
                         .time{
                             font-size: 13px;

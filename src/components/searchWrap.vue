@@ -1,6 +1,6 @@
 <template>
     <div class="searchWrap">
-        <a-input placeholder="搜索" v-model="searchVal" ref="userNameInput">
+        <a-input placeholder="搜索" v-model.trim="searchVal" ref="userNameInput">
             <a-icon slot="prefix" type="search" />
             <a-icon v-if="searchVal" slot="suffix" type="close-circle" @click="emitEmpty" />
         </a-input>
@@ -40,7 +40,7 @@ export default {
             // newQuery为输入的值
             console.log(newQuery) 
             this.$emit('changeSearchVal', newQuery);                            
-        }, 300))
+        }, 400))
     },
 }
 </script>
