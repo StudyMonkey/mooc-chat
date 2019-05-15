@@ -100,8 +100,8 @@ export default {
         .topicListLi{
             display: flex;
             padding: 0 20px;
-            height: 60px;
-            line-height: 60px;
+            height: 52px;
+            line-height: 52px;
             &:hover{
                 background-color: #fbf6ed
             }

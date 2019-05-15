@@ -18,11 +18,17 @@
                             <span class="iconfont iconV" v-if="item.official"></span>
                         </div>
                         <p v-show="inputSearchVal === ''" class="time" v-text="item.time"></p>
-                        <p v-show="inputSearchVal !== ''">备注名</p>
+                        <p v-show="inputSearchVal !== ''" v-html="item.memoName"></p>
                     </div>
                 </li>                   
             </ul> 
-            <div v-show="searchNoResult">未搜索到任何用户</div>   
+            <div class="searchNoResult" v-show="searchNoResult">
+                <span class="searchBg iconfont iconsousuo-copy"></span>
+                <div>
+                    <p>未匹配到任何用户</p>
+                    <p class="overHidden">搜索内容:<span>{{inputSearchVal}}</span></p>
+                </div>
+            </div>   
         </div>
         <load-more @loadMoreBtnClick="handleLoadBtnClick"  />
     </div>    
@@ -38,14 +44,7 @@ export default {
     data() {
         return {
             isActive: '', // li的下标，默认不选中任何
-            messageList: [
-                // { guid: 'dfsdfwerwerwer324234', avatar: '../assets/logo.png', username: '张三', official: false, time: '2018-05-12 09:38' },
-                // { guid: 'dfsdfwerwerwer487878', avatar: '@/assets/logo.png', username: '李四', official: false, time: '2018-05-12 09:38' },
-                // { guid: 'dfsdfwerwerwerwerwer', avatar: '@/assets/logo.png', username: '王五', official: false, time: '2018-05-12 09:38' },
-                // { guid: 'dfsdfwerwerwer567657', avatar: '@/assets/logo.png', username: '赵六', official: false, time: '2018-05-12 09:38' },
-                // { guid: 'dfsdfwerwerwer978978', avatar: '@/assets/logo.png', username: '张七', official: false, time: '2018-05-12 09:38' },
-                // { guid: 'dfsdfwerwerwer098089', avatar: '@/assets/logo.png', username: '刘八', official: false, time: '2018-05-12 09:38' }
-            ], // 用户列表数据
+            messageList: [], // 用户列表数据
             saveMessageList: [],  // 保存用户列表数据
             searchNoResult: false,  // 未搜索到用户时显示
             inputSearchVal: '', // searchWrap组件的搜索值接收
@@ -98,19 +97,27 @@ export default {
          *  接受searchWrap子组件传递过来的搜索的值
          */
         async handleChangeSearchVal(searchVal){
-            console.log(searchVal);
             this.inputSearchVal = searchVal;
             if ( searchVal !== '' ) {
-                this.searchNoResult = false;
-                 
+                let replaceReg_first = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
+                for ( let i = 0 ; i < this.messageList.length; i++ ) {
+                    this.messageList[i].username = this.messageList[i].username.replace(replaceReg_first, '$1');
+                    this.messageList[i].memoName = this.messageList[i].memoName.replace(replaceReg_first, '$1');
+                }
+                console.log(this.messageList);
+                this.searchNoResult = false;             
                 // 匹配关键字正则
                 let replaceReg = new RegExp(searchVal, 'g');
                 // 高亮替换v-html值
                 let replaceString = '<span class="searchText">' + searchVal + '</span>';
                 // 开始替换
-                this.messageList = this.messageList.filter( v => v.username.indexOf(searchVal) > -1); 
+                this.messageList = this.messageList.filter( 
+                    v => v.username.indexOf(searchVal) > -1 || v.memoName.indexOf(searchVal) > -1                   
+                ); 
+                console.log(this.messageList);
                 for ( let i = 0 ; i < this.messageList.length; i++ ) {
-                    this.messageList[i].username = this.messageList[i].username.replace(replaceReg, replaceString)
+                    this.messageList[i].username = this.messageList[i].username.replace(replaceReg, replaceString);
+                    this.messageList[i].memoName = this.messageList[i].memoName.replace(replaceReg, replaceString);
                 }
                 if ( this.messageList.length === 0 ) {
                     const res = await this.$getData('searchSomeMember', {});
@@ -122,7 +129,13 @@ export default {
                         this.searchNoResult = true;
                     }
                 }
-            } else {
+            } else {  
+                this.searchNoResult = false;              
+                let replaceReg = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
+                for ( let i = 0 ; i < this.saveMessageList.length; i++ ) {
+                    this.saveMessageList[i].username = this.saveMessageList[i].username.replace(replaceReg, '$1');
+                    this.saveMessageList[i].memoName = this.saveMessageList[i].memoName.replace(replaceReg, '$1');
+                }
                 this.messageList = this.saveMessageList;
             }
         }
@@ -162,15 +175,34 @@ export default {
                             width: 164px;                      
                             color: #333333;
                             font-size: 14px; 
-                            .searchText{
-                                color: red;
-                            }
                         } 
                         .time{
                             font-size: 13px;
                             color: #666666;
-                        }                   
+                        }                
+                    } 
+                    .searchText{
+                        color: red;
                     }                    
+                }
+            }
+        }
+        .searchNoResult{
+            display: flex;
+            padding: 10px;
+            .searchBg{
+                display: inline-block;
+                width: 40px;
+                height: 40px;
+                line-height: 40px;
+                text-align: center;
+                color: #ffffff;
+                background-color: #70b24c;
+                margin-right: 10px;
+            }
+            div{
+                p.overHidden{
+                    width: 170px;
                 }
             }
         }
