@@ -15,14 +15,21 @@
                     </a-badge>
                     <div class="infoWrap">
                         <div class="titleWrap">
-                            <p class="title overHidden" v-text="item.groupName"></p>
+                            <p class="title overHidden" v-html="item.groupName"></p>
                             <span class="iconfont iconV" v-if="item.isAuth === 1" />
                         </div>
-                        <p class="time">{{$timeFormat(item.lastMsgTime)}}</p>
+                        <p class="time" v-show="inputSearchVal === ''">{{$timeFormat(item.lastMsgTime)}}</p>
+                        <p v-show="inputSearchVal !== ''">备注名</p>
                     </div>
                 </li>                   
             </ul> 
-            <div v-show="searchNoResult">未搜索到任何用户</div>   
+            <div class="searchNoResult" v-show="searchNoResult">
+                <span class="searchBg iconfont iconsousuo-copy"></span>
+                <div>
+                    <p>未匹配到任何用户</p>
+                    <p class="overHidden">搜索内容:<span>{{inputSearchVal}}</span></p>
+                </div>
+            </div>  
         </div>
         <load-more v-show="showLoadMore" @loadMoreBtnClick="handleLoadBtnClick"  />
     </div>    
@@ -42,6 +49,7 @@ export default {
             messageList: [ ], // 用户列表数据
             saveMessageList: [],  // 保存用户列表数据
             searchNoResult: false,  // 未搜索到用户时显示
+            inputSearchVal: '', // 接收searchWrap组件的搜索值
             isGroup: false, // 区分群里和我加入的小组
         }
     },
@@ -118,20 +126,42 @@ export default {
          */
         async handleChangeSearchVal(searchVal){
             console.log(searchVal);
+            this.inputSearchVal = searchVal;
             if ( searchVal !== '' ) {
+                /**
+                 * 每次修改都需要清空一下可能存在的span标签
+                 */
+                let replaceReg_first = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
+                for(let i = 0; i < this.messageList.length; i++) {
+                    this.messageList[i].groupName = this.messageList[i].groupName.replace(replaceReg_first, "$1");
+                }
                 this.searchNoResult = false;
-                this.messageList = this.messageList.filter( v => v.groupName === searchVal);          
+                // this.messageList = this.messageList.filter( v => v.groupName === searchVal); 
+                this.messageList = this.messageList.filter( v => v.groupName.indexOf(searchVal) > -1); 
+                // 匹配关键字正则
+                let replaceReg = new RegExp(searchVal, 'g');
+                // 高亮替换v-html值
+                let replaceString = '<span class="searchText">' + searchVal + '</span>';
+                // 开始替换
+                for ( let i = 0 ; i < this.messageList.length; i++ ) {
+                    this.messageList[i].groupName = this.messageList[i].groupName.replace(replaceReg, replaceString)
+                }                         
                 if ( this.messageList.length === 0 ) {
-                    const res = await this.$getData('searchSomeMember', {});
-                    console.log('搜索结果:', res);
-                    if ( res.data.data ) {
-                        const { data: { data } } = res;
-                        this.messageList = data;
-                    } else {
+                    // const res = await this.$getData('searchSomeMember', {});
+                    // console.log('搜索结果:', res);
+                    // if ( res.data.data ) {
+                    //     const { data: { data } } = res;
+                    //     this.messageList = data;
+                    // } else {
                         this.searchNoResult = true;
-                    }
+                    // }
                 }
             } else {
+                this.searchNoResult = false;
+                let replaceReg = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
+                for(let i = 0; i < this.saveMessageList.length; i++) {
+                    this.saveMessageList[i].groupName = this.saveMessageList[i].groupName.replace(replaceReg, '$1');
+                }
                 this.messageList = this.saveMessageList;
             }
         },
@@ -175,6 +205,9 @@ export default {
                             width: 164px;                      
                             color: #333333;
                             font-size: 14px; 
+                            .searchText{
+                                color: red;
+                            }
                         } 
                         .time{
                             font-size: 13px;
@@ -184,6 +217,25 @@ export default {
                 }
             }
         }
+        .searchNoResult{
+            display: flex;
+            padding: 10px;
+            .searchBg{
+                display: inline-block;
+                width: 40px;
+                height: 40px;
+                line-height: 40px;
+                text-align: center;
+                color: #ffffff;
+                background-color: #70b24c;
+                margin-right: 10px;
+            }
+            div{
+                p.overHidden{
+                    width: 170px;
+                }
+            }
+        }        
     }
 }
 </style>
