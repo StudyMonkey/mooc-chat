@@ -124,3 +124,12 @@ function buLing(str){
         return str
     }
 }
+
+/**
+ * 去span标签公用方法
+ */
+ export function deleteSpan(str){
+     console.log(str);
+    let replaceReg = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
+    return str.replace(replaceReg, '$1');
+ }

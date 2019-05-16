@@ -13,7 +13,7 @@
             <div v-else>
                 <div class="chatTitleWrap">
                     <span :class="[ chosedChat.groupType === 1 ? 'iconqunliao' : 'iconsiliao', 'iconfont' ]"></span>
-                    <p v-text="chosedChat.username"><span></span></p>
+                    <p>{{deleteSpanF(chosedChat.username)}}</p>
                 </div>
                 <p class="chatGroupNum">小组编号：<span>54284122</span></p>
                 <div class="card-container">
@@ -45,6 +45,7 @@
 </template>
 
 <script>
+import { deleteSpan } from '@/utils/utils'
 import ChatList from '@/components/chatList'
 import CheckMember from '@/components/checkMember'
 import ChatMain from '@/components/chat'
@@ -115,6 +116,12 @@ export default {
             if ( arr.length > 0 ) {
                 this.$router.push({path: '/chat'});
             }          
+        },
+        /**
+         * utils 中的删除span标签方法套了一层   
+         */
+        deleteSpanF(str){
+            return deleteSpan(str);
         },
         /**
          * 处理快速创建小组
