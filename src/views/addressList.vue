@@ -17,14 +17,14 @@
             <div v-else>
                 <div class="addressTitleWrap">
                     <x-avatar :imgUrl="oneUser.avatar" />
-                    <span v-text="oneUser.name"></span>
+                    <span v-text="oneUser.username"></span>
                 </div>
                 <div class="addressInfoWrap">
                     <p>
                         <span>用户名：<i v-text="oneUser.username"></i></span>
                     </p>
                     <p>
-                        <span>姓名：<i v-text="oneUser.name"></i></span>
+                        <span>姓名：<i v-text="oneUser.memoName"></i></span>
                     </p> 
                     <p>
                         <span>单位：<i v-text="oneUser.part"></i></span>
@@ -132,7 +132,22 @@ export default {
         async handleChangeSearchVal(searchVal){
             console.log(searchVal);
             if ( searchVal !== '' ) {
-                this.addressUserList = this.addressUserList.filter( v => v.name === searchVal);
+                let replaceReg_first = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
+                for ( let i = 0 ; i < this.addressUserList.length; i++ ) {
+                    this.addressUserList[i].username = this.addressUserList[i].username.replace(replaceReg_first, '$1');
+                    this.addressUserList[i].memoName = this.addressUserList[i].memoName.replace(replaceReg_first, '$1');
+                }  
+                console.log(this.addressUserList);
+                this.searchNoResult = false;              
+                // 匹配关键字正则
+                let replaceReg = new RegExp(searchVal, 'g');
+                // 高亮替换v-html值
+                let replaceString = '<span class="searchText">' + searchVal + '</span>';
+                // 开始替换
+                this.addressUserList = this.addressUserList.filter( 
+                    v => v.username.indexOf(searchVal) > -1 || v.memoName.indexOf(searchVal) > -1                   
+                );
+                // this.addressUserList = this.addressUserList.filter( v => v.name === searchVal);
                 if ( this.addressUserList.length === 0 ) {
                     const res = await this.$getData('searchSomeMember', {});
                     console.log('搜索结果:', res);

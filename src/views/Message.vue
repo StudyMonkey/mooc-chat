@@ -38,7 +38,7 @@
                     </table>
                 </div>                
             </a-tab-pane>
-            <a-tab-pane tab="个人申请" key="person" forceRender>
+            <a-tab-pane tab="个人消息" key="person" forceRender>
                 <div class="table_area">
                     <table class="limitadm_table1 messageGroupTable messagePersonTable">
                         <tbody>

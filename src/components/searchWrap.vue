@@ -2,6 +2,7 @@
     <div class="searchWrap">
         <a-input placeholder="搜索" v-model.trim="searchVal" ref="userNameInput">
             <a-icon slot="prefix" type="search" />
+            <!-- <span  ></span> -->
             <a-icon v-if="searchVal" slot="suffix" type="close-circle" @click="emitEmpty" />
         </a-input>
         <a-tooltip>

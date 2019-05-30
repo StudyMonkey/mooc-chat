@@ -7,7 +7,7 @@
             @click="handleListUserClick(item)"
         >
             <x-avatar :imgUrl="item.avatar" />
-            <span v-text="item.name"></span>
+            <p v-html="item.username"></p>
             <div class="checkboxWrap" @click="handleSendToCheckMember(item)">
                 <slot></slot>
             </div>            
