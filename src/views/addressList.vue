@@ -158,7 +158,7 @@ export default {
                         this.searchNoResult = true;
                     }
                 }
-            } else {
+            } else { 
                 this.addressUserList = this.saveAddressUserList;
             }
         },
