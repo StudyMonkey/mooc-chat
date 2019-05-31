@@ -15,12 +15,15 @@
                                 <td class="operate">处理方法</td>
                             </tr>
                             <tr v-for="(item,index) in groupMesList" :key="index">
-                                <td class="username" v-text="item.username"></td>
-                                <td class="name" v-text="item.name"></td>
-                                <td class="part" v-text="item.part"></td>
-                                <td class="joinGroup" v-text="item.group"></td>
-                                <td class="joinReason" v-text="item.reason"></td>
-                                <td class="time" v-text="item.time"></td>
+                                <td class="username" v-text="item.userEid"></td>
+                                <td class="name" v-text="item.userName"></td>
+                                <td class="part" v-text="item.deptName"></td>
+                                <td class="joinGroup" v-text="item.groupName"></td>
+                                <td 
+                                    class="joinReason" 
+                                    v-text="item.applyContent ? item.applyContent : '未填写入群理由'"
+                                ></td>
+                                <td class="time">{{$timeFormat(item.applyTime)}}</td>
                                 <td class="operate">
                                     <a-button 
                                         class="sureBtn" 
@@ -38,7 +41,7 @@
                     </table>
                 </div>                
             </a-tab-pane>
-            <a-tab-pane tab="个人申请" key="person" forceRender>
+            <a-tab-pane tab="个人消息" key="person" forceRender>
                 <div class="table_area">
                     <table class="limitadm_table1 messageGroupTable messagePersonTable">
                         <tbody>
@@ -50,12 +53,12 @@
                                 <td class="time">申请时间</td>
                                 <td class="operate">处理方法</td>
                             </tr>
-                            <tr v-for="(item,index) in groupMesList" :key="index">
-                                <td class="username" v-text="item.username"></td>
-                                <td class="name" v-text="item.name"></td>
-                                <td class="part" v-text="item.part"></td>
-                                <td class="joinReason" v-text="item.reason"></td>
-                                <td class="time" v-text="item.time"></td>
+                            <tr v-for="(item,index) in personMesList" :key="index">
+                                <td class="username" v-text="item.userEid"></td>
+                                <td class="name" v-text="item.userName"></td>
+                                <td class="part" v-text="item.deptName"></td>
+                                <td class="joinReason" v-text="item.applyContent"></td>
+                                <td class="time">{{$timeFormat(item.applyDate)}}</td>
                                 <td class="operate">
                                     <a-button 
                                         class="sureBtn" 
@@ -87,13 +90,24 @@ export default {
          */
         async commonGetGroupMesList(){
             this.$store.commit('changeShowLoad', true);
-            const res = await this.$getData('groupMesList', {});
-            const { data: { data } } = res;
-            this.groupMesList = data;
+            const res = await this.$getData('/messagegroup.do', {
+                eid: 'ksz'
+            });
+            console.log(res);
+            const { data: { rows } } = res;
+            this.groupMesList = rows;
             this.$store.commit('changeShowLoad', false);
         },
-        handleTabsChange(key) {
-            console.log(key)
+        async handleTabsChange(key) {
+            console.log(key);
+            if ( key === 'person' ) {
+                const res = await this.$getData('/messageuser.do', {
+                    eid: '1xy01'
+                });
+                console.log(res); 
+                const { data: { rows } } = res;
+                this.personMesList = rows;               
+            }
         },
         /** 点击同意按钮的事件处理
          * 
@@ -120,7 +134,8 @@ export default {
     },
     data() {
         return {
-            groupMesList: [ ],
+            groupMesList: [],
+            personMesList: []
         }
     },
     created () {

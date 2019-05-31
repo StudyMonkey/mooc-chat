@@ -6,10 +6,10 @@
             :footer="null"
         >
             <div class="modalHeaderWarap">
-                <x-avatar :imgUrl="chosedGroup.avatar" />
+                <x-avatar :imgUrl="chosedGroup.groupImgUrl" />
                 <div>
-                    <p v-text="chosedGroup.groupTitle"></p>
-                    <p class="groupCard">小组编号：<span v-text="chosedGroup.groupId"></span></p>
+                    <p v-text="chosedGroup.groupName"></p>
+                    <p class="groupCard">小组编号：<span v-text="chosedGroup.groupNumber"></span></p>
                 </div>
             </div>
             <a-textarea v-model="joinGroupReason" placeholder="请输入申请理由..." :rows="4" />
@@ -21,10 +21,13 @@
             :footer="null"
         >
             <div class="modalHeaderWarap">
-                <x-avatar :imgUrl="chosedMember.avatar" />
+                <x-avatar :imgUrl="chosedMember.userImgUrl" />
                 <div>
-                    <p>昵称</p>
-                    <p class="groupCard">用户名：<span v-text="chosedMember.username"></span></p>
+                    <p 
+                        v-text="chosedMember.nickName ? chosedMember.nickName : chosedMember.userName"
+                        :title="chosedMember.nickName ? chosedMember.nickName : chosedMember.userName"
+                    ></p>
+                    <p class="groupCard">用户名: <span v-text="chosedMember.userEid"></span></p>
                 </div>
             </div>
             <a-textarea v-model="addMemberReason" placeholder="请输入申请理由..." :rows="4" />
@@ -35,7 +38,7 @@
                 <p class="searchTitle">小组:</p>
                 <div>
                     <span>编号：</span>
-                    <a-input v-model="groupNum" placeholder="请输入小组编号" />
+                    <a-input v-model="groupNum" placeholder="请输入精确的小组编号" />
                 </div>
                 <div>
                     <span>名称：</span>
@@ -51,7 +54,6 @@
                 </div>
                 <a-button size="small" @click="handleSearchMember">搜索</a-button> 
             </div>
-
         </div>
         <div class="searchRightWrap">
             <not-click v-if="hasResult" />
@@ -59,33 +61,42 @@
                 <right-title>
                     <span>搜索结果</span>
                 </right-title>
-                <div v-if="groupList.length > 0" class="groupResultWrap">
-                    <ul class="groupList">
+                <div class="groupResultWrap">
+                    <ul class="groupList" v-show="groupList.length > 0">
                         <li 
                             v-for="item in groupList" 
-                            :key="item.id"
+                            :key="item.groupNumber"
                         >
                             <div class="groupInfoWrap">
-                                <x-avatar :imgUrl="item.avatar" />
+                                <x-avatar :imgUrl="item.groupImgUrl" />
                                 <div>
-                                    <p class="overHidden" v-text="item.groupTitle"></p>
+                                    <p class="overHidden" v-text="item.groupName"></p>
                                     <p>
                                         <span class="iconfont iconqunliao1"></span>
-                                        <span class="colorSpan"><i v-text="item.number"></i>人</span>
+                                        <span class="colorSpan"><i v-text="item.groupMemberCount ? item.groupMemberCount : 0"></i>人</span>
                                     </p>
                                 </div>
                             </div>                           
-                            <p class="groupDescrition" v-text="item.groupdesc"></p>
+                            <p class="groupDescrition" v-text="item.groupDesc ? item.groupDesc : '这个小组管理员很懒，暂未写任何描述'"></p>
                             <div class="groupBtnWrap">
-                                <p><span>小组编号：</span><span v-text="item.groupId"></span></p>
+                                <p><span>小组编号：</span><span v-text="item.groupNumber "></span></p>
                                 <a-button size="small" @click="handleJoinClick(item)">加入</a-button>
                             </div>  
                         </li>                       
                     </ul>
-                    <x-pagination @pageChange="handlePageChange" />
+                    <x-pagination  
+                        :changePage="changePage" 
+                        :pageSize="groupPageSize" 
+                        :total="groupTotal" 
+                        @pageChange="handlePageChange" 
+                    />
+                    <div>未搜索到任何有关
+                        <span v-show="groupName">{{ '小组名称为'+ groupName}}</span>
+                        <span v-show="groupNum">{{',小组编号为'+groupNum }}</span>的内容
+                    </div>
                 </div>
-                <div v-if="memberList.length > 0" class="MemberResultWrap">
-                    <div class="table_area">
+                <div class="MemberResultWrap">
+                    <div class="table_area" v-show="memberList.length > 0">
                         <table class="limitadm_table1">
                             <tbody>
                                 <tr class="h50 tr1">
@@ -95,9 +106,9 @@
                                     <td></td>
                                 </tr>
                                 <tr v-for="item in memberList" :key="item.id">
-                                    <td class="username" v-text="item.username"></td>
-                                    <td class="name" v-text="item.name"></td>
-                                    <td class="part" v-text="item.part"></td>
+                                    <td class="username" v-text="item.userEid"></td>
+                                    <td class="name" v-text="item.userName"></td>
+                                    <td class="part" v-text="item.userDepartment"></td>
                                     <td>
                                         <a-button 
                                             size="small"
@@ -108,7 +119,7 @@
                             </tbody>
                         </table>
                     </div> 
-                    <x-pagination @pageChange="handleUserPageChange" />                   
+                    <x-pagination :changePage="changePage" :total="memberTotal" @pageChange="handleUserPageChange" />                   
                 </div>
             </div>           
         </div>
@@ -135,6 +146,10 @@ export default {
             addMemberReason: '', // 添加好友的理由
             groupNum: '',
             groupName: '',
+            groupTotal: '',  // 搜索小组的结果总条数
+            groupPageSize: 6, // 小组的每页显示条数
+            changePage: 0,   // 切换小组和用户显示时，需将 current 置为1 
+            memberTotal: '', // 搜索用户的结果总条数
             hasResult: true
         }
     },
@@ -151,19 +166,28 @@ export default {
         async commonGetData(url, params){
             this.$store.commit('changeShowLoad', true);
             const res = await this.$getData(url, params);
+            url === '/searchuser.do' ? this.memberTotal = res.data.count : this.groupTotal = res.data.count;
+            console.log(res);
             this.$store.commit('changeShowLoad', false);
-            const { data: { data } } = res;
-            return data;    
+            const { data: { rows } } = res;
+            return rows;    
         },
         /*  点击查询用户事件处理
          *  判断用户名是否为空给出提示
          */
         async handleSearchMember() {
             if ( this.searchMember ) {
-                this.memberList = await this.commonGetData('searchMember', {});
+                this.memberList = await this.commonGetData('/searchuser.do', {
+                    pageNo: 1,
+                    name: this.searchMember,
+                    myEid: this.$myEid,
+                });
+                this.changePage = 1;
                 this.groupList = [];
                 this.hasResult = false;
-                this.searchMember = '';
+                this.groupNum = '';
+                this.groupName = '';                
+                // this.searchMember = '';
                 this.$message.success('搜索用户成功');
             } else {
                 this.$message.error('请输入需要查找的用户名');
@@ -174,11 +198,18 @@ export default {
          */
         async handleSearchGroup(){
             if ( this.groupNum || this.groupName ) {
-                this.groupList = await this.commonGetData('groupList', {});
+                this.groupList = await this.commonGetData('/searchgroup.do', {
+                    pageNo: 1,
+                    name: this.groupName,
+                    groupNo: this.groupNum
+                });
+                this.changePage = 2;
+                console.log(this.groupList);
                 this.memberList = [];
                 this.hasResult = false;
-                this.groupNum = '';
-                this.groupName = '';
+                this.searchMember = '';
+                // this.groupNum = '';
+                // this.groupName = '';
                 this.$message.success('搜索小组成功');  
             } else {
                 this.$message.error('请输入需要查找的小组编号或名称');
@@ -191,32 +222,56 @@ export default {
             this.groupVisible = true;
             this.chosedGroup = item;
         },
-        /*  Modal框的点击发送事件处理
-        *
+        /*  
+        *  Modal框的点击发送事件处理
+        *  点击发送申请加入小组的请求
         */
-        handleSendJoinReq(){
-            this.groupVisible = false;
-            this.joinGroupReason = '';
-            this.$message.success('申请加入该小组的请求已发送');
+        async handleSendJoinReq(){
+            this.groupVisible = false;           
+            const res = await this.$getData('/applygroup.do', {
+                applyContent: this.joinGroupReason,  // 输入的申请理由
+                groupNo: this.chosedGroup.groupNumber,  // 选择的小组编号
+                applyEid: this.$myEid,
+            });
+            if ( res.data.success ) {
+                this.$message.success('申请加入该小组的请求已发送');
+                this.joinGroupReason = '';
+            }         
         },
-        /*  点击添加好友的事件处理
-         *  
+        /*  
+         *  点击添加好友的事件处理
          */
         handleAddMemberClick(item){
             this.chosedMember = item;
             this.memberVisible = true;
         },
+        /**
+         * 点击发送添加好友请求
+         */
         handleAddMemberReq(){
             this.memberVisible = false;
             this.addMemberReason = '';
             this.$message.success('添加好友请求已发送');            
         },
-        // 翻页点击事件
+        /**
+         * 搜索小组的结果翻页点击事件
+         */
         async handlePageChange(pageNumber) {
-            this.groupList = await this.commonGetData('groupList', {page: pageNumber})       
+            this.groupList = await this.commonGetData('/searchgroup.do', {
+                pageNo: pageNumber,
+                groupNo: this.groupNum,
+                name: this.groupName
+            })       
         },
+        /**
+         * 搜索用户的结果翻页点击事件
+         */        
         async handleUserPageChange(page) {
-            this.memberList = await this.commonGetData('searchMember', {page});
+            this.memberList = await this.commonGetData('/searchuser.do', {
+                pageNo: page,
+                name: this.searchMember,
+                myEid: this.$myEid,
+            });
         }        
     },
 }

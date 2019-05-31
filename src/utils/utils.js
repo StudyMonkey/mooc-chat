@@ -107,10 +107,12 @@ export function delCookie(c_name) {
  * 处理时间格式的函数
  */
 export function timeFormat(timeStamp) {   
+    
     let time = new Date(timeStamp);
+    
     const year = time.getFullYear();
     const month = time.getMonth() + 1;
-    const day = time.getDate()
+    const day = time.getDate();
     return year + '-' + buLing(month) + '-' + buLing(day)   
 }
 

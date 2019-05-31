@@ -40,6 +40,7 @@ Vue.prototype.$message = message;
 Vue.prototype.$confirm = Modal.confirm;
 Vue.prototype.emoji = emoji
 Vue.config.productionTip = false
+Vue.prototype.$myEid = 'yh79';
 Vue.use(Vuex);
 
 new Vue({

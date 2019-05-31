@@ -3,7 +3,12 @@
         <div class="middleWrap">
             <div v-show="quickCreateGroup">
                 <search-wrap @changeSearchVal="handleChangeSearchVal" @quickCreate="handleQuickCreateGroup" />
-                <list-user @toAddressList="handleAcceptAddressList" type="addressUserList" :listUser="addressUserList" />
+                <list-user 
+                    :inputSearchVal="inputSearchVal" 
+                    @toAddressList="handleAcceptAddressList" 
+                    type="addressUserList" 
+                    :listUser="addressUserList" 
+                />
                 <load-more v-show="showLoadMore" @loadMoreBtnClick="handleLoadBtnClick" />            
             </div>
             <div v-show="!quickCreateGroup">
@@ -63,7 +68,8 @@ export default {
             oneUser: '',
             searchNoResult: false, // 搜索好友的结果显示
             showLoadMore: true, // 加载更多组件的显示与隐藏
-            quickCreateGroup: true
+            quickCreateGroup: true,
+            inputSearchVal: '', // 接收搜索通讯录好友传递过来的值
         }
     },
     components: {
@@ -152,18 +158,39 @@ export default {
         async handleChangeSearchVal(searchVal){
             console.log(searchVal);
             if ( searchVal !== '' ) {
-                this.addressUserList = this.addressUserList.filter( v => v.name === searchVal);
+                let replaceReg_first = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
+                for ( let i = 0 ; i < this.addressUserList.length; i++ ) {
+                    this.addressUserList[i].remark = this.addressUserList[i].remark.replace(replaceReg_first, '$1');
+                    this.addressUserList[i].userName = this.addressUserList[i].userName.replace(replaceReg_first, '$1');
+                }  
+                
+                this.addressUserList = this.addressUserList.filter( v => v.remark.indexOf(searchVal) > -1); 
+                // 匹配关键字正则
+                let replaceReg = new RegExp(searchVal, 'g');
+                // 高亮替换v-html值
+                let replaceString = '<span class="searchText">' + searchVal + '</span>';
+                // 开始替换
+                for ( let i = 0 ; i < this.addressUserList.length; i++ ) {
+                    this.addressUserList[i].remark = this.addressUserList[i].remark.replace(replaceReg, replaceString)
+                }                  
+                console.log(this.addressUserList);
                 if ( this.addressUserList.length === 0 ) {
                     const res = await this.$getData('searchSomeMember', {});
                     console.log('搜索结果:', res);
-                    if ( res.data.data ) {
-                        const { data: { data } } = res;
+                    if ( res.data.rows ) {
+                        const { data: { rows } } = res;
                         this.addressUserList = data;
                     } else {
-                        this.searchNoResult = true;
+                        // this.searchNoResult = true;
+                        this.inputSearchVal = searchVal;
+                        console.log(this.inputSearchVal);
                     }
                 }
             } else {
+                let replaceReg = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
+                for( let i = 0; i < this.addressUserList.length; i++ ) {
+                    this.addressUserList[i].remark = this.addressUserList[i].remark.replace(replaceReg, '$1');
+                }                
                 this.addressUserList = this.saveAddressUserList;
             }
         },

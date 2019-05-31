@@ -1,18 +1,28 @@
 <template>
-    <ul class="lm_scroll listUserUlWrap">
-        <li 
-            v-for="item in checkMemberList" 
-            :key="item.id"
-            :class="isActive === item.friendEid ? 'bg_active' : ''"
-            @click="handleListUserClick(item)"
-        >
-            <x-avatar :imgUrl="item.imgUrl" />
-            <span v-text="item.remark"></span>
-            <div class="checkboxWrap" @click="handleSendToCheckMember(item)">
-                <slot></slot>
-            </div>            
-        </li>
-    </ul>
+    <div class="lm_scroll listUserUlWrap">
+        <ul>
+            <li 
+                v-for="item in checkMemberList" 
+                :key="item.id"
+                :class="isActive === item.friendEid ? 'bg_active' : ''"
+                @click="handleListUserClick(item)"
+            >
+                <x-avatar :imgUrl="item.imgUrl" />
+                <span v-html="item.remark"></span>
+                <div class="checkboxWrap" @click="handleSendToCheckMember(item)">
+                    <slot></slot>
+                </div>            
+            </li>
+        </ul>
+        <div class="searchNoResult" v-show="checkMemberList.length < 1">
+            <span class="searchBg iconfont iconsousuo-copy"></span>
+            <div>
+                <p>未匹配到任何用户</p>
+                <p class="overHidden">搜索内容:<span>{{inputSearchVal}}</span></p>
+            </div>
+        </div>        
+    </div>
+
 </template>
 
 <script>
@@ -27,12 +37,23 @@ export default {
         type: {
             type: String,
             default: ''
+        },
+        inputSearchVal: {
+            type: String,
         }
     },
     watch: {
         listUser(n, o) {
             if ( n !== o ){
                 this.checkMemberList = this.listUser;
+                if ( this.checkMemberList.length < 1 ) {
+                    this.searchNoResult = true;
+                }
+            }
+        },
+        inputSearchVal(n,o){
+            if ( n !== o ) {
+                console.log(this.inputSearchVal)
             }
         }
     },
@@ -42,7 +63,8 @@ export default {
     data() {
         return {
             checkMemberList: [],
-            isActive: ''
+            isActive: '',
+            searchNoResult: false
         }
     },
     methods: {
@@ -67,21 +89,42 @@ export default {
 <style lang="less" scoped>
 .listUserUlWrap{
     overflow-y: auto;
-    li{
+    ul{
+        li{
+            display: flex;
+            padding: 10px 20px 10px 10px;
+            line-height: 40px;
+            &:hover{
+                background-color: #f3e2cb;
+            }
+            &.bg_active{
+                background-color: #f3e2cb;
+            }
+            .ant-avatar{
+                margin-right: 9px;
+            }
+            .checkboxWrap{
+                margin-left: auto;
+            }
+        }
+    }
+    .searchNoResult{
         display: flex;
-        padding: 10px 20px 10px 10px;
-        line-height: 40px;
-        &:hover{
-            background-color: #f3e2cb;
+        padding: 10px;
+        .searchBg{
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            color: #ffffff;
+            background-color: #70b24c;
+            margin-right: 10px;
         }
-        &.bg_active{
-            background-color: #f3e2cb;
-        }
-        .ant-avatar{
-            margin-right: 9px;
-        }
-        .checkboxWrap{
-            margin-left: auto;
+        div{
+            p.overHidden{
+                width: 170px;
+            }
         }
     }    
 }
