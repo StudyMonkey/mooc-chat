@@ -12,17 +12,20 @@
                     <tr v-for="(item,index) in fileList" :key="index">
                         <td class="filename overHidden">
                             <span class="iconfont iconwenjian1"></span>
-                            <span v-text="item.filename"></span>
+                            <span v-text="item.fileName"></span>
                         </td>
-                        <td class="fileAuthor overHidden" v-text="item.fileauthor">
+                        <td class="fileAuthor overHidden" v-text="item.fileEidName">
                         </td>
-                        <td class="fileDateTime" v-text="item.time"></td>
+                        <td class="fileDateTime" v-text="item.createDate"></td>
                         <td class="operate">                          
                             <a-tooltip>
                                 <template slot="title">
                                     下载
                                 </template>
-                                <span class="iconfont iconxiazai"></span>
+                                <span 
+                                    class="iconfont iconxiazai"
+                                    @click="handleDownloadFile(item)"
+                                ></span>
                             </a-tooltip>                            
                             <a-tooltip>
                                 <template slot="title">
@@ -42,7 +45,11 @@
                 </tbody>
             </table>
         </div>
-        <x-pagination @pageChange="handlePageChange" />
+        <x-pagination 
+            v-show="total > 9" 
+            :total="total" 
+            @pageChange="handlePageChange" 
+        />
     </div>
 </template>
 
@@ -53,6 +60,14 @@ export default {
     props: {
         listFile: {
             type: Array,
+            required: true
+        },
+        total: {
+            type: Number,
+            required: true
+        },
+        chosedLi: {
+            type: Object,
             required: true
         }
     },
@@ -72,12 +87,21 @@ export default {
         XPagination,
     },
     methods: {
+        /**
+         *  翻页事件处理
+         */
         async handlePageChange(pageNum) {
             this.$store.commit('changeShowLoad', true);
-            const res = await this.$getData('fileList', {});
+            const res = await this.$getData('/member/groupFileList.action', {
+                groupId: this.chosedLi.groupId,
+                pageNo: pageNum               
+            });
             this.$store.commit('changeShowLoad', false);
             const { data: { data } } = res;
             this.fileList = data;
+        },
+        handleDownloadFile(item){
+            console.log(item);
         },
         handleDeleteFile(){
             let _this = this;
@@ -119,7 +143,7 @@ export default {
         }
         td{
             &.filename{
-                width: 360px;
+                width: 300px;
                 padding-left: 20px;              
                 span.iconfont{
                     float: left;
@@ -133,7 +157,7 @@ export default {
                 width: 90px;
             }
             &.fileDateTime{
-                width: 90px;
+                width: 156px;
                 text-align: center;
                 line-height: 25px;
                 padding-right: 10px;

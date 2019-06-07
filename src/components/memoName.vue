@@ -55,7 +55,7 @@ export default {
         async saveMemoName(){
             this.person.remark = this.memoName
             const res = await this.$getData('/modifyRemark.do', { 
-                myEid: 'ksz',
+                userEid: this.$myEid,
                 friendEid: this.person.friendEid,
                 remark: this.person.remark
             })

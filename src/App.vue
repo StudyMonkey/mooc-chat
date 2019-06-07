@@ -4,9 +4,9 @@
       <Loading v-if="showLoad" />
       <LeftMenu />
       <div>
-        <keep-alive exclude="setting">
+        <!-- <keep-alive exclude="setting"> -->
           <router-view />
-        </keep-alive>      
+        <!-- </keep-alive>       -->
       </div>
     </div>  
   </div>

@@ -47,7 +47,7 @@
                         <a-textarea class="groupDescription" :rows="4" v-model="groupDescription" placeholder="请输入小组描述......" />
                     </div> 
                     <div class="submitBtnWrap">
-                        <a-button class="greenBtn">提交</a-button> 
+                        <a-button class="greenBtn" @click="handleCreateBtnClick">提交</a-button> 
                     </div>                    
                 </div>  
                 <div class="partGroupWrap" v-else>
@@ -82,6 +82,16 @@ export default {
     methods: {
         handleCreateGroup(str){
             this.userType = str
+        },
+        async handleCreateBtnClick(){
+            const res = this.$getData('/creategroup.do', {
+                creator: this.$myEid,
+                groupName: this.groupName,
+                groupIcon: "/user/img.png",
+                affirmFlag: "1",
+                groupDesc: this.groupDescription,
+            });
+            console.log(res);
         }
     },
 

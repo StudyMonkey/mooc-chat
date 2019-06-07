@@ -28,12 +28,12 @@
                                     <a-button 
                                         class="sureBtn" 
                                         size="small"
-                                        @click="handleSureBtnClick"
+                                        @click="handleGroupSureBtnClick(item)"
                                     >同意</a-button>
                                     <a-button 
                                         class="cancelBtn" 
                                         size="small"
-                                        @click="handleCancelBtnClick"
+                                        @click="handleGroupCancelBtnClick(item)"
                                     >拒绝</a-button>                                    
                                 </td>
                             </tr>
@@ -58,17 +58,17 @@
                                 <td class="name" v-text="item.userName"></td>
                                 <td class="part" v-text="item.deptName"></td>
                                 <td class="joinReason" v-text="item.applyContent"></td>
-                                <td class="time">{{$timeFormat(item.applyDate)}}</td>
+                                <td class="time">{{$timeFormat(item.applyTime)}}</td>
                                 <td class="operate">
                                     <a-button 
                                         class="sureBtn" 
                                         size="small"
-                                        @click="handleSureBtnClick"
+                                        @click="handleSureBtnClick(item)"
                                     >同意</a-button>
                                     <a-button 
                                         class="cancelBtn" 
                                         size="small"
-                                        @click="handleCancelBtnClick"
+                                        @click="handleCancelBtnClick(item)"
                                     >拒绝</a-button>                                    
                                 </td>
                             </tr>
@@ -85,49 +85,105 @@
 export default {
     name: 'message',
     methods: {
+        async commonGetMessageList(tab){
+            let url = tab === 'group' ? '/messagegroup.do' : '/messageuser.do';
+            this.$store.commit('changeShowLoad', true);
+            const res = await this.$getData(url, {
+                eid: this.$myEid
+            }); 
+            console.log(res); 
+            this.$store.commit('changeShowLoad', false); 
+            const { data: { rows } } = res; 
+            if ( tab === 'group' ) {
+                this.groupMesList = rows;
+            } else {
+                this.personMesList = rows;
+            } 
+        },
         /**  相同的请求群组申请列表的方法
          *   调用了vuex里面的changeShowLoad方法，改变遮蔽层显示隐藏
          */
-        async commonGetGroupMesList(){
-            this.$store.commit('changeShowLoad', true);
-            const res = await this.$getData('/messagegroup.do', {
-                eid: 'ksz'
-            });
-            console.log(res);
-            const { data: { rows } } = res;
-            this.groupMesList = rows;
-            this.$store.commit('changeShowLoad', false);
-        },
+
         async handleTabsChange(key) {
             console.log(key);
-            if ( key === 'person' ) {
-                const res = await this.$getData('/messageuser.do', {
-                    eid: '1xy01'
-                });
-                console.log(res); 
-                const { data: { rows } } = res;
-                this.personMesList = rows;               
+            this.commonGetMessageList(key);
+        },
+        /**
+         *  加入小组的同意拒绝按钮事件处理
+         */        
+        async commonHandleJoinGroup(item, type){
+            const res = await this.$postData('/operatejoingroup.do', {
+                userEid: item.userEid,
+                userName: item.userName,
+                applyId: item.applyId,
+                groupNo: item.groupNo,
+                acceptEid: this.$myEid,
+                type
+            });
+            console.log(res);
+            if ( res.data.success ) {
+                this.$message.success('操作成功');
             }
+            this.commonGetMessageList('group');          
         },
-        /** 点击同意按钮的事件处理
-         * 
+        /**
+         *  同意按钮点击事件
          */
-        handleSureBtnClick(){
-            this.commonGetGroupMesList();
-            this.$message.success('同意加入小组成功');
+        handleGroupSureBtnClick(item){
+            console.log(item);
+            this.commonHandleJoinGroup(item, "1");
         },
-        /** 点击拒绝按钮的事件处理
-         * 
-         */
-        handleCancelBtnClick(){
+        /**
+         *  拒绝按钮点击事件
+         */        
+        handleGroupCancelBtnClick(item){
             let _this = this;
             this.$confirm({
                 title: '确定拒绝此人加入该学习小组？',
                 okText: '确认',
                 cancelText: '取消',
                 onOk(){
-                    _this.$message.success('成功拒绝此人加入学习小组');
-                    _this.commonGetGroupMesList();
+                    _this.commonHandleJoinGroup(item, '0');
+                }
+            })            
+        },        
+        /**
+         *  个人消息的同意拒绝按钮事件共同处理
+         */        
+        async commonHandlePersonMes(item, type){
+            const res = await this.$postData('/operatefriend.do', {
+                userEid: item.userEid,
+                userName: item.userName,
+                applyId: item.applyId,
+                acceptEid: this.$myEid,
+                optype: type
+            });
+            console.log(res);
+            if ( res.data.success ) {
+                this.$message.success('操作成功');
+            }
+            this.commonGetMessageList('person');
+            // return res.data.success;            
+        },        
+
+        /** 
+         *  同意按钮的事件处理
+         */
+        handleSureBtnClick(item){
+            this.commonHandlePersonMes(item, 'agree');
+
+        },
+        /** 
+         *  拒绝按钮的事件处理
+         */
+        handleCancelBtnClick(item){
+            let _this = this;
+            this.$confirm({
+                title: '确定拒绝添加此人为好友？',
+                okText: '确认',
+                cancelText: '取消',
+                onOk(){
+                    _this.commonHandlePersonMes(item, 'refuse');
                 }
             })
         }        
@@ -139,7 +195,7 @@ export default {
         }
     },
     created () {
-        this.commonGetGroupMesList();
+        this.commonGetMessageList('group');
     },
 }
 </script>

@@ -2,17 +2,25 @@
     <div class="addressListTopWrap">
         <div class="middleWrap">
             <div v-show="quickCreateGroup">
-                <search-wrap @changeSearchVal="handleChangeSearchVal" @quickCreate="handleQuickCreateGroup" />
+                <search-wrap 
+                    @changeSearchVal="handleChangeSearchVal" 
+                    @quickCreate="handleQuickCreateGroup" 
+                />
                 <list-user 
                     :inputSearchVal="inputSearchVal" 
                     @toAddressList="handleAcceptAddressList" 
                     type="addressUserList" 
                     :listUser="addressUserList" 
+                    :showLoadMore="showLoadMore"
                 />
                 <load-more v-show="showLoadMore" @loadMoreBtnClick="handleLoadBtnClick" />            
             </div>
             <div v-show="!quickCreateGroup">
-                <check-member @changeSearchVal="handleChangeSearchVal" @checkMemberSureBtn="handleCheckMemberSureBtn" @quickCreateGroup="handleQuickCreateGroup">
+                <check-member 
+                    @changeSearchVal="handleChangeSearchVal" 
+                    @checkMemberSureBtn="handleCheckMemberSureBtn" 
+                    @quickCreateGroup="handleQuickCreateGroup"
+                >
                     <span>勾选好友，快速创建小组</span>
                 </check-member>
             </div> 
@@ -57,6 +65,7 @@ import LoadMore from '@/components/loadMore'
 import NotClick from '@/components/notClick'
 import CheckMember from '@/components/checkMember'
 import axios from 'axios'
+import { matchChangeColor, clearMatchColor } from '../utils/utils'
 export default {
     name: 'member',
     data() {
@@ -88,7 +97,7 @@ export default {
         async commonGetAddressList(obj){
             obj === false ? this.pageNo : this.pageNo++
             this.$store.commit('changeShowLoad', true);
-            const res = await this.$getData('/myFriends.do', {eid: 'ksz', pageNo: this.pageNo});
+            const res = await this.$getData('/myFriends.do', {eid: '1xy01', pageNo: this.pageNo});
             const { data: { rows } } = res;
             console.log(rows);
             if ( rows.length < 10 ) {
@@ -97,7 +106,7 @@ export default {
             if ( obj === false ) {
                 this.addressUserList = rows;
             } else {
-                this.addressUserList = rows.concat(this.addressUserList);
+                this.addressUserList = this.addressUserList.concat(rows);
             }          
             this.saveAddressUserList = this.addressUserList;
             this.$store.commit('changeShowLoad', false);            
@@ -112,6 +121,7 @@ export default {
         },
         /*  接受listUser传递过来的选择对象 */
         handleAcceptAddressList(item) {
+            console.log(item);
             this.hasChosed = false;
             this.oneUser = item;
         },
@@ -125,20 +135,20 @@ export default {
                 okText: '确认',
                 cancelText: '取消',
                 onOk(){
-                    axios.get('/group'+ '/stick.do', {
-                        params: {
-                            myEid: 'ksz', 
+                    axios.post('/group/stick.do', {
+                            userEid: _this.$myEid, 
                             friendEid: _this.oneUser.friendEid, 
                             top: _this.oneUser.top
                         }
-                    }).then( res => {
+                    ).then( res => {
                         if ( res.status === 200 ) {
                             _this.oneUser.top = !_this.oneUser.top;
+                            _this.pageNo = 1;
                             _this.commonGetAddressList(false);
-                            _this.$message.success(mes)                            
+                            _this.$message.success(mes);                            
                         }
-                    }).then( err => {
-                        console.log(err)
+                    }).catch( err => {
+                        _this.$message.success(err); 
                     })              
                 }
             })            
@@ -158,26 +168,18 @@ export default {
         async handleChangeSearchVal(searchVal){
             console.log(searchVal);
             if ( searchVal !== '' ) {
-                let replaceReg_first = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
-                for ( let i = 0 ; i < this.addressUserList.length; i++ ) {
-                    this.addressUserList[i].remark = this.addressUserList[i].remark.replace(replaceReg_first, '$1');
-                    this.addressUserList[i].userName = this.addressUserList[i].userName.replace(replaceReg_first, '$1');
-                }  
-                
-                this.addressUserList = this.addressUserList.filter( v => v.remark.indexOf(searchVal) > -1); 
-                // 匹配关键字正则
-                let replaceReg = new RegExp(searchVal, 'g');
-                // 高亮替换v-html值
-                let replaceString = '<span class="searchText">' + searchVal + '</span>';
-                // 开始替换
-                for ( let i = 0 ; i < this.addressUserList.length; i++ ) {
-                    this.addressUserList[i].remark = this.addressUserList[i].remark.replace(replaceReg, replaceString)
-                }                  
+                clearMatchColor(this.addressUserList, 'remark'); 
+                this.addressUserList = this.addressUserList.filter( v => v.remark.indexOf(searchVal) > -1);
+                this.addressUserList = matchChangeColor(this.addressUserList, searchVal, 'remark');                  
                 console.log(this.addressUserList);
                 if ( this.addressUserList.length === 0 ) {
-                    const res = await this.$getData('searchSomeMember', {});
-                    console.log('搜索结果:', res);
-                    if ( res.data.rows ) {
+                    const res = await this.$getData('/myFriends.do', {
+                        eid: this.$myEid,
+                        name: searchVal,
+                        pageNo: 1
+                    });
+                    console.log(res);
+                    if ( res.data.rows.length > 0 ) {
                         const { data: { rows } } = res;
                         this.addressUserList = data;
                     } else {
@@ -187,10 +189,7 @@ export default {
                     }
                 }
             } else {
-                let replaceReg = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
-                for( let i = 0; i < this.addressUserList.length; i++ ) {
-                    this.addressUserList[i].remark = this.addressUserList[i].remark.replace(replaceReg, '$1');
-                }                
+                clearMatchColor(this.addressUserList, 'remark');                
                 this.addressUserList = this.saveAddressUserList;
             }
         },
@@ -203,15 +202,33 @@ export default {
         /**
          *  接收勾选好友checkMember组件点击确定按钮传递过来的事件
          */
-        handleCheckMemberSureBtn(arr){
+        async handleCheckMemberSureBtn(arr){
             // 若勾选好友人数大于1，则创建小组并跳转聊天页面，否则只隐藏操作
             this.quickCreateGroup = true;
             if ( arr.length > 0 ) {
-                console.log(arr);
-                // 接收勾选的好友的数组，发送接口创建小组，隐藏并跳转到聊天界面               
-                this.$router.push({
-                    path: '/chat'
-                })
+                let friendEidArr = '';
+                arr.map( (v,index) => {
+                    if ( index !== arr.length-1 ) {
+                        friendEidArr+=v.friendEid+','
+                    } else {
+                        friendEidArr+=v.friendEid
+                    }                
+                });
+                console.log(friendEidArr);
+                this.$store.commit('changeShowLoad', true); 
+                const res = await this.$getData('/multipersonchat.do', {
+                    eid: this.$myEid,
+                    friendEids: friendEidArr
+                });
+                this.$store.commit('changeShowLoad', false); 
+                console.log(res);
+                if ( res.data.success ) {
+                    this.$message.success(res.data.msg);
+                    // 接收勾选的好友的数组，发送接口创建小组，隐藏并跳转到聊天界面               
+                    this.$router.push({
+                        path: '/chat'
+                    })
+                }
             } 
         },
         /**
@@ -237,11 +254,6 @@ export default {
 <style lang="less" scoped>
 .addressListTopWrap{
     display: flex;
-    .middleWrap{
-        .listUserUlWrap{
-            height: 600px;
-        }
-    }
     .addressListRightWrap{
         width: 669px;
         height: 698px;

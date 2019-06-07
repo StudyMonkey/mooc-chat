@@ -1,5 +1,5 @@
 <template>
-    <div class="lm_scroll listUserUlWrap">
+    <div :class="[showLoadMore ? 'height600' : 'height628', 'lm_scroll listUserUlWrap']">
         <ul>
             <li 
                 v-for="item in checkMemberList" 
@@ -17,7 +17,7 @@
         <div class="searchNoResult" v-show="checkMemberList.length < 1">
             <span class="searchBg iconfont iconsousuo-copy"></span>
             <div>
-                <p>未匹配到任何用户</p>
+                <p>未匹配到任何好友</p>
                 <p class="overHidden">搜索内容:<span>{{inputSearchVal}}</span></p>
             </div>
         </div>        
@@ -40,6 +40,9 @@ export default {
         },
         inputSearchVal: {
             type: String,
+        },
+        showLoadMore: {
+            type: Boolean
         }
     },
     watch: {
@@ -87,6 +90,8 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.height600{height: 600px;}
+.height628{height: 628px;}
 .listUserUlWrap{
     overflow-y: auto;
     ul{

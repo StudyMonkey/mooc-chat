@@ -61,18 +61,18 @@
                 <li 
                     v-for="(item,index) in chatList" 
                     :key="index"
-                    :class="[ item.isMe ? 'fr' : 'fl' ]"
+                    :class="[ item.fromEid === $myEid ? 'fr' : 'fl' ]"
                 >
                     <a-popover
                         placement="rightBottom"
-                        :class="[ item.isMe ? 'fr' : 'fl' ]"
+                        :class="[ item.fromEid === $myEid ? 'fr' : 'fl' ]"
                     >
                         <template slot="content">
                             <div class="personInfoWrap">
-                                <x-avatar :imgUrl="item.avatar" />
+                                <x-avatar :imgUrl="item.fromPic" />
                                 <div>
                                     <memo-name from='1' @saveMemoName="handleSaveMemoName" />
-                                    <p>用户名：<span v-text="item.name"></span></p>
+                                    <p>用户名：<span v-text="item.fromName"></span></p>
                                 </div>
                             </div>
                             <div class="partInfoWrap">
@@ -93,22 +93,22 @@
                             </div>
                         </template>
                         <div>
-                            <x-avatar :class="[ item.isMe ? 'fr' : 'fl' ]" :imgUrl="item.avatar" />
+                            <x-avatar :class="[ item.fromEid === $myEid ? 'fr' : 'fl' ]" :imgUrl="item.fromPic" />
                         </div>
                     </a-popover>
-                    <div :class="[ item.isMe ? 'fr mr10 ' : 'fl ml10 textAlignL','chatInfoWrap' ]">
+                    <div :class="[ item.fromEid === $myEid ? 'fr mr10 ' : 'fl ml10 textAlignL','chatInfoWrap' ]">
                         <!-- <p><span v-text="item.name"></span></p> -->
-                        <div :class="[ item.isMe ? '' : '', 'mesContent' ]">
-                            <template v-if="item.chatType === '1'">
-                                <div v-html="emoji(item.content)"></div>
+                        <div :class="[ item.fromEid === $myEid ? '' : '', 'mesContent' ]">
+                            <template v-if="item.chatType === 1">
+                                <div v-html="emoji(item.text)"></div>
                             </template>
-                            <template v-else-if="item.chatType === '2'">
+                            <template v-else-if="item.chatType === 2">
                                 <div class="sendChatWrap">
                                     <div class="personInfoWrap">
-                                        <x-avatar :imgUrl="item.content.avatar" />
+                                        <x-avatar :imgUrl="item.content.fromPic" />
                                         <div>
                                             <memo-name from='1' @saveMemoName="handleSaveMemoName"></memo-name>
-                                            <p>用户名：<span>{{item.content.username}}</span></p>
+                                            <p>用户名：<span>{{item.content.fromName}}</span></p>
                                         </div>
                                     </div>
                                     <div class="partInfoWrap">
@@ -205,6 +205,11 @@ export default {
             ]            
         }
     },
+    props: {
+        // chatList: {
+        //     type: Array
+        // }
+    },
     computed: {
         getChatConList() {
             return this.$store.state.chatConList
@@ -235,6 +240,9 @@ export default {
             this.showEmoji = false
             this.chatCon += code;
         },
+        /**
+         *  处理点击加载历史记录 
+         */
         async handleLoadMoreChat() {
             this.$store.commit('changeShowLoad', true);
             const res = await this.$getData('chatCon', {});

@@ -14,7 +14,7 @@ module.exports = {
         disableHostCheck: true,
         proxy: {
             '/group': {
-                target: 'http://172.26.75.218/moocGroupApi/group',
+                target: 'http://172.26.75.217:8080/moocGroupApi/group',
                 ws: true,
                 changeOrigin: true, // 允许跨域
                 pathRewrite: {

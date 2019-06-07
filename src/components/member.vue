@@ -23,30 +23,41 @@
                             </tr>
                             <tr v-for="(item,index) in memberList" :key="index">
                                 <td class="username">
-                                    <span :class="identityClass(item.identityNum)"></span>
-                                    <span v-text="item.username"></span>
+                                    <span :class="identityClass(item.memberType)"></span>
+                                    <span v-text="item.memberEid"></span>
                                 </td>
-                                <td class="nickname" v-text="item.nickname">
+                                <td class="nickname" v-text="item.memberNick">
                                 </td>
-                                <td v-text="item.identity"></td>
+                                <td v-text="identityWord(item.memberType)"></td>
                                 <td class="operate">
                                     <a-tooltip>
                                         <template slot="title">
                                             私信
                                         </template>
-                                        <span class="iconfont iconliaotian"></span>
+                                        <span 
+                                            v-if="item.memberEid !== $myEid"
+                                            class="iconfont iconliaotian"
+                                        ></span>
                                     </a-tooltip>
                                     <a-tooltip>
                                         <template slot="title">
                                             授权为管理员
                                         </template>
-                                        <span v-if="item.identityNum !== 0" class="iconfont iconyuechi1"></span>
+                                        <span 
+                                            v-if="item.memberType !== 3" 
+                                            class="iconfont iconyuechi1"
+                                            @click="handleUpdateAdmin(item)"
+                                        ></span>
                                     </a-tooltip>                           
                                     <a-tooltip>
                                         <template slot="title">
                                             删除成员                                       
                                         </template>  
-                                        <span @click="handleDeleteMember" class="iconfont iconshanchengyuan"></span>                      
+                                        <span 
+                                            v-if="item.memberEid !== $myEid"
+                                            @click="handleDeleteMember(item)" 
+                                            class="iconfont iconshanchengyuan"
+                                        ></span>                      
                                     </a-tooltip>
                                     
                                 </td>
@@ -54,7 +65,11 @@
                         </tbody>
                     </table>
                 </div>
-                <x-pagination @pageChange="handlePageChange" />
+                <x-pagination 
+                    v-show =" total > 10 " 
+                    :total="total" 
+                    @pageChange="handlePageChange" 
+                />
             </div>
         </div>
         <div v-else class="addMemberWrap">
@@ -66,7 +81,7 @@
                 <div class="addMemberSearchWrap">
                     <span>用户名：</span>
                     <a-input v-model="searchMember" placeholder="请输入搜索用户名" />
-                    <a-button size="small" class="greenBtn">搜索</a-button>
+                    <a-button size="small" class="greenBtn" @click="handleSearchAllMember">搜索</a-button>
                 </div>
                 <table class="limitadm_table1">
                     <tbody>
@@ -78,18 +93,18 @@
                         </tr>
                         <tr v-for="(item,index) in searchMemberList" :key="index">
                             <td class="checkboxTd">
-                                <a-checkbox></a-checkbox>
+                                <a-checkbox @change="handleAddMember(item)"></a-checkbox>
                             </td>
                             <td class="username">
-                                <span v-text="item.username"></span>
+                                <span v-text="item.userEid"></span>
                             </td>
-                            <td class="name" v-text="item.name">
+                            <td class="name" v-text="item.userName">
                             </td>
-                            <td v-text="item.part"></td>
+                            <td v-text="item.userDepartment"></td>
                         </tr>
                     </tbody>
                 </table> 
-                <a-button size="small" class="greenBtn sureBtn">确定</a-button> 
+                <a-button size="small" class="greenBtn sureBtn" @click="handleAddMemberSureBtn">确定</a-button> 
                 <!-- <div v-else>未搜索到成员信息</div>               -->
             </div>                  
         </div>        
@@ -104,6 +119,14 @@ export default {
         listMember: {
             type: Array,
             required: true
+        },
+        chosedLi: {
+            type: Object,
+            required: true
+        },
+        total: {
+            type: Number,
+            required: true
         }
     },
     watch: {
@@ -116,26 +139,37 @@ export default {
     computed: {
         identityClass(num) {
             return function(num){
-                if ( num === 0 ) {
+                if ( num === 3 ) {
                     return 'iconfont iconqunzhu'
-                } else if ( num === 1 ) {
+                } else if ( num === 2 ) {
                     return 'iconfont iconguanliyuan'
                 } else {
                     return 'pl22'
                 } 
+            }
+        },
+        identityWord(num) {
+            return function(num){
+                if ( num === 3 ) {
+                    return '管理员'
+                } else if ( num === '2' ) {
+                    return '组长'
+                } else {
+                    return '成员'
+                }
             }
         }
     },
     data() {
         return {
             memberList: [], // 成员列表数据
-            searchMemberList: [
-                { username: '43081119941024001X', name: '张三', part: '戏精学院'  }
-            ], // 搜索的成员列表数据
+            searchMemberList: [], // 搜索的成员列表数据
             searchVal: '', // input框输入的搜索内容
             searchMember: '',
             btnDisabled: false,
             hasClickAdd: true, // 点击添加成员按钮
+            pageNo: 1,  // 翻页数，默认为1
+            memberArray: [],  // 所勾选的用户保存的数组
         }
     },
     components: {
@@ -143,31 +177,107 @@ export default {
     },
     methods: {
         // 删除小组成员事件处理
-        handleDeleteMember(){
+        handleDeleteMember(item){
             let _this = this;
             this.$confirm({
                 title: '确定删除该小组成员？',
-                onOk() {
+                async onOk() {
                     _this.$store.commit('changeShowLoad', true);
-                    setTimeout( () => {
-                        _this.$store.commit('changeShowLoad', false);
-                        _this.$message.success('删除小组成员成功');
-                    }, 1500)                  
+                    const res = await _this.$getData('/member/deleteMember.action', {
+                        id: item.id
+                    })
+                    console.log(res);
+                    _this.$store.commit('changeShowLoad', false);
+                    if ( res.data.success ) {
+                        _this.$message.success('删除小组成员成功'); 
+                    }                                 
                 },
                 okText: '确认',
                 cancelText: '取消',
             })
         },
-        // 翻页点击事件
-        async handlePageChange(pageNumber) {
+        /**
+         * 搜索和翻页的相同请求事件处理
+         */
+        async commonGetMembetList(){
             this.$store.commit('changeShowLoad', true);
-            const res = await this.$getData('memberList', {page: pageNumber});
+            const res = await this.$getData('/member/memberList.action', {
+                memberSearchWord: this.searchVal,
+                groupId: this.chosedLi.groupId,
+                pageNo: this.pageNo
+            });
             this.$store.commit('changeShowLoad', false);
-            const { data: { data } } = res;
-            this.memberList = data;         
+            const { data: { rows } } = res;
+            this.memberList = rows; 
+        },
+        // 翻页点击事件
+        handlePageChange(pageNumber) {
+            this.pageNo = pageNumber;
+            this.commonGetMembetList();
         },
         handleSearchBtn(){
-            this.$message.info('开始搜索');
+            // if ( this.searchVal !== '' ) {
+                this.pageNo = 1;
+                this.commonGetMembetList();
+            // }
+        },
+        /**
+         *  搜索所有用户的事件处理
+         */
+        async handleSearchAllMember(){
+            const res = await this.$getData('/searchuser.do', {
+                pageNo: 1,
+                name: this.searchMember,
+                myEid: this.$myEid,
+            });
+            console.log(res);
+            this.searchMemberList = res.data.rows;
+        },
+        /**
+         * 授权管理员操作
+         */
+        async handleUpdateAdmin(item){
+            console.log(item);
+            let _this = this;
+            this.$confirm({
+                title: '确定授权该成员为管理员身份么？',
+                async onOk(){
+                    _this.$store.commit('changeShowLoad', true);
+                    const res = await _this.$getData('/member/updateAdmin.action', {
+                        groupId: _this.chosedLi.groupId,
+                        id: item.id,
+                        userEid: item.memberEid
+                    });
+                    _this.$store.commit('changeShowLoad', false);
+                    console.log(res);
+                    if ( res.data.success ) {
+                        _this.$message.success('授权管理员成功');
+                        _this.pageNo = 1;
+                        _this.commonGetMembetList();                
+                    }
+                },
+                okText: '确认',
+                cancelText: '取消',                
+            })
+        },
+        /**
+         *  添加用户到数组
+         */
+        handleAddMember(item, e){
+            console.log(item);
+            console.log(e);
+            if ( e.target.checked ) {
+                this.memberArray.push(item);
+            } else {
+                const index = this.memberArray.findIndex( v => v.id === item.id);
+                console.log(index);
+            }
+        },
+        /**
+         *  添加用户到小组的确定事件
+         */
+        handleAddMemberSureBtn(){
+
         },
         /*  添加成员的按钮点击事件处理
          *  仅显示隐藏部分div

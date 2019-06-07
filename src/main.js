@@ -7,6 +7,7 @@ import store from './store/store'
 import '@/assets/font/iconfont.css'
 import { getData, postData, timeFormat } from './utils/utils'
 import { emoji } from './utils/emoji.js'
+// import "../http-interceptor"
 // import ws from '@/utils/ws.js'
 
 Vue.component(Button.name, Button);
@@ -40,7 +41,7 @@ Vue.prototype.$message = message;
 Vue.prototype.$confirm = Modal.confirm;
 Vue.prototype.emoji = emoji
 Vue.config.productionTip = false
-Vue.prototype.$myEid = 'yh79';
+Vue.prototype.$myEid = 'klinchao';  // 1xy01
 Vue.use(Vuex);
 
 new Vue({

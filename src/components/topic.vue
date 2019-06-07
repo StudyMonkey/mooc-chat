@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="chatTopicWrap" v-if="!showChat">
-            <ul class="lm_scroll">
+            <ul class="lm_scroll topicUlWrap">
                 <li 
                     class="topicListLi" 
                     v-for="(item,index) in topicList" 
@@ -9,9 +9,14 @@
                     @click="handleTopicLiClick(item)"
                 >
                     <span class="iconfont iconhuati"></span>
-                    <p class="topicTitle" v-text="item.title"></p>
-                    <p class="topicOwner">创建者：<span v-text="item.owner"></span></p>
+                    <p class="topicTitle" v-text="item.topicName"></p>
+                    <p class="topicOwner">创建者：<span v-text="item.topicEidName"></span></p>
                 </li>
+                <x-pagination 
+                    v-show="total > 10"
+                    :total="total" 
+                    @pageChange="handlePageChange"             
+                />                
             </ul>
             <div class="createTopicWrap">
                 <span>话题名称：</span>
@@ -35,53 +40,106 @@
 
 <script>
 import ChatMain from '@/components/chat'
+import XPagination from '@/components/pagination'
 export default {
     name: 'topic',
     components: {
-        ChatMain
+        ChatMain,
+        XPagination
     },
     props: {
         listTopic: {
             type: Array,
+            required: true
+        },
+        total: {
+            type: Number,
+            required: true
+        },
+        chosedLi: {
+            type: Object,
             required: true
         }
     },
     watch: {
         listTopic(n,o){
             this.topicList = this.listTopic;
+        },
+        total(n,o){
+            if ( n !== o ) {
+                console.log(this.total)
+            }
         }
     },
     data() {
         return {
             showLoad: false,
             showChat: false,
-            topicList: [],           
+            topicList: [],   
+            pageNo: 1,  // 当前页码数        
             chosedTopicTitle: '', // 所选话题标题
             chosedTopicOwner: '', // 所选话题创建者
             createTopicName: '' // 创建话题名称
         }
     },
     methods: {
-        handleTopicLiClick(item) {
-            this.chosedTopicTitle = item.title;
-            this.chosedTopicOwner = item.owner;
+        async handleTopicLiClick(item) {
+            this.chosedTopicTitle = item.topicName;
+            this.chosedTopicOwner = item.topicEidName;
             this.showChat = true;
+            const res = await this.$getData('/chat/enterTopic.action', {
+                topicId: 'a776d19e-29e8-484d-b506-f857bbe943d9',  // item.topicId
+            });
+            const { data: { rows } } = res;
+            console.log(res);
         },
         handleTopicBackBtn(){
             this.showChat = false
         },
-        handleTopicCreate(){
+        async handleTopicCreate(){
             if ( this.createTopicName ) {
-                let obj = {};
-                obj.title = this.createTopicName;
-                obj.owner = '本人';
-                this.topicList.push(obj);
+                this.$store.commit('changeShowLoad', true);
+                const res = await this.$getData('/chat/createTopic.action', {
+                    topicName: this.createTopicName,
+                    groupId: this.chosedLi.groupId
+                });
+                console.log(res);
+                this.$store.commit('changeShowLoad', false);
+                const { data } = res;
+                if ( data.success === true && data.msg === "createdSuccess" ) {
+                    this.$message.success('创建话题成功');
+                    this.$store.commit('changeShowLoad', true);
+                    const res = await this.$getData('/chat/getTopics.action', {
+                        pageNo: this.pageNo,
+                        groupId: this.chosedLi.groupId,
+                    });
+                    this.$store.commit('changeShowLoad', false);
+                    this.topicList = res.data.rows;
+                    console.log(this.topicList);                     
+                }
                 this.createTopicName = '';
             } else {
                 this.$message.error('话题名称不能为空');
             }
-        }
+        },
+        /**
+         * 翻页点击事件
+         */
+        async handlePageChange(pageNumber) {
+            this.pageNo = pageNumber;
+            this.$store.commit('changeShowLoad', true);
+            const res = await this.$getData('/chat/getTopics.action', {
+                pageNo: this.pageNo,
+                groupId: this.chosedLi.groupId,
+            });
+            const { data: { rows } } = res;
+            this.topicList = rows; 
+            this.$store.commit('changeShowLoad', false);      
+        },        
     },
+    created(){
+        console.log(this.total);
+    }
 }
 </script>
 
@@ -93,15 +151,16 @@ export default {
     border: 1px solid #e5e5e5;
     background-color: #ffffff;
     position: relative;
-    ul{
+    ul.topicUlWrap{
         height: 498px;
         overflow-y: auto;
         overflow-x: hidden;
+        position: relative;
         .topicListLi{
             display: flex;
             padding: 0 20px;
-            height: 52px;
-            line-height: 52px;
+            height: 42px;
+            line-height: 42px;
             &:hover{
                 background-color: #fbf6ed
             }

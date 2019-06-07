@@ -13,22 +13,34 @@
             <div v-else>
                 <div class="chatTitleWrap">
                     <span :class="[ chosedChat.groupType === 1 ? 'iconqunliao' : 'iconsiliao', 'iconfont' ]"></span>
-                    <p v-text="chosedChat.username"><span></span></p>
+                    <p v-text="chosedChat.groupName"><span></span></p>
                 </div>
-                <p class="chatGroupNum">小组编号：<span>54284122</span></p>
+                <p class="chatGroupNum">小组编号：<span>{{chosedChat.groupNo}}</span></p>
                 <div class="card-container">
                     <a-tabs type="card" @change="handleTabsChange" defaultActiveKey="chatMain">
                         <a-tab-pane tab="聊天" key="chatMain">
                             <chat-main />
                         </a-tab-pane>
                         <a-tab-pane tab="话题" key="chatTopic" forceRender>
-                            <chat-topic :listTopic="topicList" />                      
+                            <chat-topic 
+                                :listTopic="topicList" 
+                                :total="total" 
+                                :chosedLi="chosedLi"
+                            />                      
                         </a-tab-pane>
                         <a-tab-pane tab="成员" key="member">
-                            <chat-member :listMember="memberList" />
+                            <chat-member 
+                                :listMember="memberList"
+                                :total="total" 
+                                :chosedLi="chosedLi"                                
+                            />
                         </a-tab-pane>
                         <a-tab-pane tab="文件" key="file">
-                            <chat-file :listFile="fileList" />
+                            <chat-file 
+                                :listFile="fileList" 
+                                :chosedLi="chosedLi"
+                                :total="total" 
+                            />
                         </a-tab-pane>
                         <a-tab-pane tab="公告" key="notice">
                             <chat-notice :listNotice="noticeList"/>
@@ -59,6 +71,9 @@ export default {
     data() {
         return {
             chosedChat: '',
+            total: 0, // 分页总条数
+            chosedLi: {}, // 选中的左侧单个列表
+            chatList: [],  // 传递给聊天的数组
             topicList: [], // 传递给话题的数组 
             memberList: [], // 传递给成员的数组
             noticeList: [], // 传递给公告的数组
@@ -81,24 +96,45 @@ export default {
         async commonGetMethod(url, params){
             this.$store.commit('changeShowLoad', true);
             const res = await this.$getData(url, params);
-            const { data: { data } } = res;
+            console.log(res);
+            const { data } = res;
             this.$store.commit('changeShowLoad', false);
-            return data;
+            this.total = data.total;
+            return data.rows;
         },
         async handleTabsChange (key) {
-            if ( key === 'chatTopic' ){
-                this.topicList = await this.commonGetMethod('topicList', {});
+            if ( key === 'chatMain' ) {               
+                this.chatList = await this.commonGetMethod('/chat/detail.do', {
+                    groupId: this.chosedLi.groupId,
+                    chatEid: this.chosedLi.chatEid
+                });
+                console.log(this.chatList);
+            } else if ( key === 'chatTopic' ){
+                this.topicList = await this.commonGetMethod('/chat/getTopics.action', {
+                    groupId: this.chosedLi.groupId,
+                    pageNo: 1
+                });
+                console.log(this.topicList);
             } else if ( key === 'member' ) {
-                this.memberList = await this.commonGetMethod('memberList', {});                
+                this.memberList = await this.commonGetMethod('/member/memberList.action', {
+                    memberSearchWord: '',
+                    groupId: this.chosedLi.groupId,
+                    pageNo: 1
+                });                
             } else if ( key === 'notice' ) {
                 this.noticeList = await this.commonGetMethod('noticeList', {});
             } else if ( key === 'file' ) {
-                this.fileList = await this.commonGetMethod('fileList', {});
+                this.fileList = await this.commonGetMethod('/member/groupFileList.action', {
+                    groupId: this.chosedLi.groupId,
+                    pageNo: 1
+                });
+                console.log(this.fileList);
             }
         },
         // 接受chatList子组件所选择的聊天列表
-        handleClickChosedLi(item){
-            this.chosedChat = item;
+        handleClickChosedLi( obj, item ){
+            this.chosedChat = obj; // 点击选中之后调用接口获取到的对象信息
+            this.chosedLi = item
         },
         /**
          *  处理快速创建小组传递过来的显示隐藏参数
@@ -110,10 +146,41 @@ export default {
          * 处理快速创建小组确定按钮的事件传递
          * checkMember组件传递过来的勾选好友的数组值
          */
-        handleCheckMemberSureBtn(arr){
+        async handleCheckMemberSureBtn(arr){
             this.quickCreateGroup = true;
             if ( arr.length > 0 ) {
-                this.$router.push({path: '/chat'});
+                let friendEidArr = '';
+                arr.map( (v,index) => {
+                    if ( index !== arr.length-1 ) {
+                        friendEidArr+=v.friendEid+','
+                    } else {
+                        friendEidArr+=v.friendEid
+                    }                
+                });
+                console.log(friendEidArr);
+                this.$store.commit('changeShowLoad', true); 
+                const res = await this.$getData('/multipersonchat.do', {
+                    eid: this.$myEid,
+                    friendEids: friendEidArr
+                });
+                this.$store.commit('changeShowLoad', false); 
+                console.log(res); 
+                if ( res.data.success ) {
+                    this.$message.success(res.data.msg);
+                    // if ( this.$route.path === '/chat' ) {
+                    //     this.$store.commit('changeShowLoad', true);
+                    //     const res = await this.$getData('/leftHotGroups.do', 
+                    //         { 
+                    //             eid: this.$myEid, 
+                    //             pageNo: this.pageNo, 
+                    //             isGroup: this.isGroup 
+                    //         }
+                    //     )
+                    //     this.$store.commit('changeShowLoad', false);
+                    // }
+                    this.$router.push({path: '/chat'});
+                }               
+                
             }          
         },
         /**
@@ -121,23 +188,7 @@ export default {
          * checkMember组件传递过来的搜索值
          */
         handleChangeSearchVal(str){
-            console.log(str);
-            // if ( searchVal !== '' ) {
-            //     this.searchNoResult = false;
-            //     this.messageList = this.messageList.filter( v => v.title === searchVal);          
-            //     if ( this.messageList.length === 0 ) {
-            //         const res = await this.$getData('searchSomeMember', {});
-            //         console.log('搜索结果:', res);
-            //         if ( res.data.data ) {
-            //             const { data: { data } } = res;
-            //             this.messageList = data;
-            //         } else {
-            //             this.searchNoResult = true;
-            //         }
-            //     }
-            // } else {
-            //     this.messageList = this.saveMessageList;
-            // }            
+            console.log(str);           
         }
     },    
 

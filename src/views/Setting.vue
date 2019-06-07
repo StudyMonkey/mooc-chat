@@ -12,23 +12,23 @@
                 <div class="setSelect">
                     <span>好友请求验证：</span>            
                     <a-select v-model="selectFriend" style="width: 209px">
-                        <a-select-option value="0">直接通过，无需验证</a-select-option>
-                        <a-select-option value="1">需通过验证添加好友</a-select-option>
-                        <a-select-option value="2">拒绝添加好友</a-select-option>                    
+                        <a-select-option :value="1">直接通过，无需验证</a-select-option>
+                        <a-select-option :value="2">需通过验证添加好友</a-select-option>
+                        <a-select-option :value="3">拒绝添加好友</a-select-option>                    
                     </a-select>
                 </div>
-                <div class="setSelect">
+                <!-- <div class="setSelect">
                     <span>小组请求验证：</span>            
                     <a-select v-model="selectGroup" style="width: 209px">
                         <a-select-option value="0">直接通过，无需验证</a-select-option>
                         <a-select-option value="1">通过验证添加小组</a-select-option>                  
                     </a-select>
-                </div>
+                </div> -->
                 <div class="setSelect">
                     <span>是否允许推荐：</span>            
                     <a-select v-model="selectRecommand" style="width: 209px">
-                        <a-select-option value="0">允许推荐</a-select-option>
-                        <a-select-option value="1">拒绝推荐</a-select-option>
+                        <a-select-option :value="1">允许推荐</a-select-option>
+                        <a-select-option :value="2">拒绝推荐</a-select-option>
                     </a-select>
                 </div>
                 <a-button @click="handleSubmit">提交</a-button> 
@@ -44,9 +44,9 @@ export default {
     name: 'setting',
     data() {
         return {
-            selectFriend: "0",
+            selectFriend: 1,
             selectGroup: "0",
-            selectRecommand: "0"
+            selectRecommand: 1
         }
     },
     components: {
@@ -54,10 +54,35 @@ export default {
         RightTitle
     },
     methods: {
-        handleSubmit(){
+        async handleSubmit(){
             console.log(this.selectFriend, this.selectGroup, this.selectRecommand);
-            this.$message.success('修改系统设置成功');
+            const res = await this.$getData('/systemmanage.do', {
+                userEid: this.$myEid,
+                userAuth: this.selectFriend,
+                recommend: this.selectRecommand
+            })
+            console.log(res);
+            if ( res.data.success === true ) {
+                this.$message.success('修改系统设置成功');
+            }          
         }
+    },
+    async created() {
+        const res = await this.$postData('/getsystem.do', {
+            eid: this.$myEid
+        });
+        console.log(res);
+        const { data: { obj } } = res;
+        if ( obj.userAuth === null ) {
+            this.selectFriend = 1;
+        } else {
+            this.selectFriend = obj.userAuth;
+        }
+        if ( obj.recommend === null ) {
+            this.selectRecommand = 1;
+        } else {
+            this.selectRecommand = obj.recommend;
+        }      
     },
 }
 </script>

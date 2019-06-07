@@ -110,12 +110,19 @@ div{
     color: #333;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
-  .ant-tooltip-content{
+  &.ant-tooltip-placement-right{
     .ant-tooltip-arrow{
-      border-top-color: #fff;
+      border-right-color: #fff;
+      border-left-color: #fff;
+      border-width: 5px 5px 5px 0;
+    }
+  }
+  &.ant-tooltip-placement-top{
+    .ant-tooltip-arrow{
+      border-width: 5px 5px 0 5px;
+      border-top-color: #ffffff;
       border-bottom-color: #ffffff;
     }
-
   }
 }
 

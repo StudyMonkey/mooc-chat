@@ -11,7 +11,7 @@
             v-for="(item,index) in menuList" 
             :key="index"
           >
-            <a-tooltip placement="topLeft">
+            <a-tooltip placement="right">
               <template slot="title">
                 {{item.title}}
               </template>
@@ -26,7 +26,7 @@
             <router-link 
               to='/message' 
             >
-              <a-tooltip placement="topLeft">
+              <a-tooltip placement="right">
                 <template slot="title">
                   消息
                 </template>  
@@ -38,7 +38,7 @@
           </li>
           <li class="menuIconWrap">
 
-              <a-tooltip placement="topLeft">
+              <a-tooltip placement="right">
                 <template slot="title">
                   设置
                 </template> 

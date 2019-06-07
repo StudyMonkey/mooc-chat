@@ -21,7 +21,7 @@
 
 <script>
 import ListUser from '@/components/listUser'
-import { debounce } from '@/utils/utils'
+import { debounce, matchChangeColor, clearMatchColor } from '@/utils/utils'
 export default {
     name: 'checkMember',
     data() {
@@ -29,6 +29,7 @@ export default {
             searchVal: '',
             pageNo: 1,
             checkMemberList: [],
+            saveCheckMemberList: [], // 暂存请求到的数据
             hasCheckedList: [], // 勾选上的好友列表
         }
     },
@@ -70,17 +71,26 @@ export default {
         }
     },
     async created() {
-        const res = await this.$getData('/myFriends.do', {eid: 'ksz', pageNo: this.pageNo});
+        const res = await this.$getData('/myFriends.do', {eid: this.$myEid, pageNo: this.pageNo});
         console.log(res);
         const { data: { rows } } = res;
         this.checkMemberList = rows;
+        this.saveCheckMemberList = this.checkMemberList;
 
-        // // 节流操作
-        // this.$watch('searchVal', debounce(async (newQuery) => {
-        //     // newQuery为输入的值
-        //     console.log(newQuery) 
-        //     this.$emit('changeSearchVal', newQuery);                            
-        // }, 300))
+        // 节流操作
+        this.$watch('searchVal', debounce(async (newQuery) => {
+            // newQuery为输入的值
+            console.log(newQuery) 
+            if ( newQuery !== '' ) {
+                this.checkMemberList = this.checkMemberList.filter( v => v.remark.indexOf(newQuery) > -1);
+                this.checkMemberList = matchChangeColor(this.checkMemberList, newQuery, 'remark');
+                this.$emit('changeSearchVal', newQuery); 
+            } else {
+                clearMatchColor(this.checkMemberList, 'remark');
+                this.checkMemberList = this.saveCheckMemberList;
+            }
+                                       
+        }, 300))
     },
 }
 </script>
@@ -89,6 +99,7 @@ export default {
 .checkMemberTopWrap{
     width: 250px;
     height: 698px;
+    position: relative;
     .checkSearchWarap{
         width: 250px;
         height: 70px;
@@ -116,6 +127,10 @@ export default {
         background-color: #dddddd;
         display: flex;
         padding: 8px 8px 7px 17px;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        left: 0;
         .word{
             color: #333333;
             i{

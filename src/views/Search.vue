@@ -61,7 +61,7 @@
                 <right-title>
                     <span>搜索结果</span>
                 </right-title>
-                <div class="groupResultWrap">
+                <div class="groupResultWrap" v-show="searchMember === ''">
                     <ul class="groupList" v-show="groupList.length > 0">
                         <li 
                             v-for="item in groupList" 
@@ -85,17 +85,18 @@
                         </li>                       
                     </ul>
                     <x-pagination  
+                        v-show="groupList.length > 0"
                         :changePage="changePage" 
                         :pageSize="groupPageSize" 
                         :total="groupTotal" 
                         @pageChange="handlePageChange" 
                     />
-                    <div>未搜索到任何有关
+                    <div  v-show="groupList.length < 0">未搜索到任何有关
                         <span v-show="groupName">{{ '小组名称为'+ groupName}}</span>
                         <span v-show="groupNum">{{',小组编号为'+groupNum }}</span>的内容
                     </div>
                 </div>
-                <div class="MemberResultWrap">
+                <div class="MemberResultWrap" v-show="searchMember !== ''">
                     <div class="table_area" v-show="memberList.length > 0">
                         <table class="limitadm_table1">
                             <tbody>
@@ -111,15 +112,24 @@
                                     <td class="part" v-text="item.userDepartment"></td>
                                     <td>
                                         <a-button 
+                                            :disabled="item.friend"
                                             size="small"
                                             @click="handleAddMemberClick(item)"
-                                        >添加好友</a-button>
+                                        >{{item.friend ? '已是好友': '添加好友'}}</a-button>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div> 
-                    <x-pagination :changePage="changePage" :total="memberTotal" @pageChange="handleUserPageChange" />                   
+                    <x-pagination  
+                        v-show="memberList.length > 0" 
+                        :changePage="changePage" 
+                        :total="memberTotal" 
+                        @pageChange="handleUserPageChange" 
+                    />                   
+                    <div v-show="memberList.length < 0">未搜索到任何有关
+                        <span v-show="searchMember">{{'用户名为'+ searchMember}}</span>
+                    </div>                    
                 </div>
             </div>           
         </div>
@@ -146,7 +156,7 @@ export default {
             addMemberReason: '', // 添加好友的理由
             groupNum: '',
             groupName: '',
-            groupTotal: '',  // 搜索小组的结果总条数
+            groupTotal: 0,  // 搜索小组的结果总条数
             groupPageSize: 6, // 小组的每页显示条数
             changePage: 0,   // 切换小组和用户显示时，需将 current 置为1 
             memberTotal: '', // 搜索用户的结果总条数
@@ -167,7 +177,6 @@ export default {
             this.$store.commit('changeShowLoad', true);
             const res = await this.$getData(url, params);
             url === '/searchuser.do' ? this.memberTotal = res.data.count : this.groupTotal = res.data.count;
-            console.log(res);
             this.$store.commit('changeShowLoad', false);
             const { data: { rows } } = res;
             return rows;    
@@ -208,8 +217,6 @@ export default {
                 this.memberList = [];
                 this.hasResult = false;
                 this.searchMember = '';
-                // this.groupNum = '';
-                // this.groupName = '';
                 this.$message.success('搜索小组成功');  
             } else {
                 this.$message.error('请输入需要查找的小组编号或名称');
@@ -227,16 +234,22 @@ export default {
         *  点击发送申请加入小组的请求
         */
         async handleSendJoinReq(){
-            this.groupVisible = false;           
-            const res = await this.$getData('/applygroup.do', {
+            this.groupVisible = false;  
+            this.$store.commit('changeShowLoad', true);         
+            const res = await this.$postData('/applygroup.do', {
                 applyContent: this.joinGroupReason,  // 输入的申请理由
                 groupNo: this.chosedGroup.groupNumber,  // 选择的小组编号
-                applyEid: this.$myEid,
+                userEid: this.$myEid,
             });
-            if ( res.data.success ) {
-                this.$message.success('申请加入该小组的请求已发送');
+            this.$store.commit('changeShowLoad', false);
+            if ( res.data.success && res.data.code === 200 ) {
+                this.$message.success(res.data.msg);
                 this.joinGroupReason = '';
-            }         
+            } else if( res.data.success && res.data.code === 300 ) {
+                this.$message.warning(res.data.msg);
+            } else {
+                this.$message.warning('申请加入小组失败');
+            }        
         },
         /*  
          *  点击添加好友的事件处理
@@ -248,10 +261,20 @@ export default {
         /**
          * 点击发送添加好友请求
          */
-        handleAddMemberReq(){
+        async handleAddMemberReq(){
+            this.$store.commit('changeShowLoad', true);
+            const res = await this.$getData('/applyfriend.do', {
+                applyContent: this.addMemberReason,
+                applyEid: this.$myEid,
+                friendEid: this.chosedMember.userEid
+            })
+            this.$store.commit('changeShowLoad', false);
+            console.log(res);            
             this.memberVisible = false;
             this.addMemberReason = '';
-            this.$message.success('添加好友请求已发送');            
+            if ( res.data.success === true ) {
+                this.$message.success(res.data.msg);
+            }                     
         },
         /**
          * 搜索小组的结果翻页点击事件
