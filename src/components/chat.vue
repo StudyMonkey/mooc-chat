@@ -182,6 +182,7 @@ export default {
             chatCon: '', // 用户输入的聊天内容
             chatType: '0', // 聊天形式，0 为 普通文本， 1 为 图片类型， 2 为 文本带链接， 3 为 名片类型
             chatList: [],
+            chosedLi: this.$store.state.chosedLi, // 从vuex里面获取到的所点击的左侧某个列表
             checkMemberList: [], // 接收checkMember组件传递过来的好友列表
             showAddFriendWrap: false, // 聊天信息头像框的信息显示隐藏
             isUploadImg: false, // 是否上传图片，接收upload-img组件传递过来的值改变，点击确定之后又改为false
@@ -194,6 +195,7 @@ export default {
             imgLinkAddress: '', // 图片的链接地址
             textLinkAddress: '', // 文本的链接地址
             textLinkTitle: '',  // 文本链接标题
+            historyPage: 1,  // 加载历史记录的分页数
             // wsReadyState: this.ws.readyState,  // websocket连接状态， 0 未建立连接， 1 已建立连接，可通信。 2 连接正在关闭，3 连接已关闭
             iconList: [
                 { type: 'iconaite', title: '艾特' },
@@ -245,11 +247,15 @@ export default {
          */
         async handleLoadMoreChat() {
             this.$store.commit('changeShowLoad', true);
-            const res = await this.$getData('chatCon', {});
-            const { data: { data } } = res;
-            this.chatList = data.concat(this.chatList);
+            const res = await this.$getData('/chat/history.action', {
+                groupId: this.chosedLi.groupId,
+                pageNo: this.historyPage
+            });
+            const { data: { rows } } = res;
+            this.chatList = rows.concat(this.chatList);
             this.$store.commit('changeShowLoad', false);
             this.$store.commit('addChatConList', this.chatList);
+            this.historyPage++;
         },
         /**
          * memoName组件传递过来的参数

@@ -93,6 +93,7 @@ export default {
             this.$store.commit('changeShowLoad', false);
             const { data: { obj } } = res;
             console.log(obj);
+            this.$store.commit('handleChosedLi', item);  // 将所选中的左侧列表存到vuex里面，还有其他的组件需要用到
             this.$emit('clickChosedLi', obj, item);
             this.$store.commit('addChatConList', obj.chatList);
         },

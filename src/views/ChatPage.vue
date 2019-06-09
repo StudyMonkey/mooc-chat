@@ -25,14 +25,12 @@
                             <chat-topic 
                                 :listTopic="topicList" 
                                 :total="total" 
-                                :chosedLi="chosedLi"
                             />                      
                         </a-tab-pane>
                         <a-tab-pane tab="成员" key="member">
                             <chat-member 
                                 :listMember="memberList"
-                                :total="total" 
-                                :chosedLi="chosedLi"                                
+                                :total="total"                               
                             />
                         </a-tab-pane>
                         <a-tab-pane tab="文件" key="file">
@@ -116,6 +114,7 @@ export default {
                 });
                 console.log(this.topicList);
             } else if ( key === 'member' ) {
+                console.log(this.chosedLi.groupId);
                 this.memberList = await this.commonGetMethod('/member/memberList.action', {
                     memberSearchWord: '',
                     groupId: this.chosedLi.groupId,
@@ -133,8 +132,9 @@ export default {
         },
         // 接受chatList子组件所选择的聊天列表
         handleClickChosedLi( obj, item ){
+            console.log(obj);
             this.chosedChat = obj; // 点击选中之后调用接口获取到的对象信息
-            this.chosedLi = item
+            this.chosedLi = item;
         },
         /**
          *  处理快速创建小组传递过来的显示隐藏参数
@@ -190,8 +190,7 @@ export default {
         handleChangeSearchVal(str){
             console.log(str);           
         }
-    },    
-
+    },   
 }
 </script>
 

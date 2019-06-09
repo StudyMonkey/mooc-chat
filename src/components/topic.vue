@@ -56,10 +56,6 @@ export default {
             type: Number,
             required: true
         },
-        chosedLi: {
-            type: Object,
-            required: true
-        }
     },
     watch: {
         listTopic(n,o){
@@ -75,7 +71,8 @@ export default {
         return {
             showLoad: false,
             showChat: false,
-            topicList: [],   
+            topicList: [], 
+            chosedLi: this.$store.state.chosedLi,  // 从vuex里面获取  
             pageNo: 1,  // 当前页码数        
             chosedTopicTitle: '', // 所选话题标题
             chosedTopicOwner: '', // 所选话题创建者
@@ -88,7 +85,7 @@ export default {
             this.chosedTopicOwner = item.topicEidName;
             this.showChat = true;
             const res = await this.$getData('/chat/enterTopic.action', {
-                topicId: 'a776d19e-29e8-484d-b506-f857bbe943d9',  // item.topicId
+                topicId: item.topicId,  // 'a776d19e-29e8-484d-b506-f857bbe943d9'
             });
             const { data: { rows } } = res;
             console.log(res);
@@ -139,6 +136,7 @@ export default {
     },
     created(){
         console.log(this.total);
+        console.log(this.$store.state.chosedLi);
     }
 }
 </script>

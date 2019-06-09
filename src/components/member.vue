@@ -2,7 +2,9 @@
     <div>
         <div v-if="hasClickAdd">
             <div class="memberSearchWrap">
-                <a-input v-model="searchVal" placeholder="请输入用户名或昵称......" />
+                <a-input v-model="searchVal" placeholder="请输入用户名或昵称......" >
+                    <a-icon v-if="searchVal" slot="suffix" type="close-circle" @click="emitSearchValEmpty" />
+                </a-input>
                 <a-button class="searchBtn greenBtn" size="small" @click="handleSearchBtn">搜索</a-button>
                 <a-tooltip placement="bottomRight">
                     <template slot="title">
@@ -37,6 +39,7 @@
                                         <span 
                                             v-if="item.memberEid !== $myEid"
                                             class="iconfont iconliaotian"
+                                            @click="handlePrivateChat(item)"
                                         ></span>
                                     </a-tooltip>
                                     <a-tooltip>
@@ -66,8 +69,8 @@
                     </table>
                 </div>
                 <x-pagination 
-                    v-show =" total > 10 " 
-                    :total="total" 
+                    v-show =" memberTotal > 10 " 
+                    :total="memberTotal" 
                     @pageChange="handlePageChange" 
                 />
             </div>
@@ -82,29 +85,31 @@
                     <span>用户名：</span>
                     <a-input v-model="searchMember" placeholder="请输入搜索用户名" />
                     <a-button size="small" class="greenBtn" @click="handleSearchAllMember">搜索</a-button>
-                </div>
-                <table class="limitadm_table1">
-                    <tbody>
-                        <tr class="h50 tr1">
-                            <td class="checkboxTd"></td>
-                            <td class="username">用户名</td>
-                            <td class="name">姓名</td>
-                            <td class="part">单位</td>
-                        </tr>
-                        <tr v-for="(item,index) in searchMemberList" :key="index">
-                            <td class="checkboxTd">
-                                <a-checkbox @change="handleAddMember(item)"></a-checkbox>
-                            </td>
-                            <td class="username">
-                                <span v-text="item.userEid"></span>
-                            </td>
-                            <td class="name" v-text="item.userName">
-                            </td>
-                            <td v-text="item.userDepartment"></td>
-                        </tr>
-                    </tbody>
-                </table> 
-                <a-button size="small" class="greenBtn sureBtn" @click="handleAddMemberSureBtn">确定</a-button> 
+                </div>  
+                <div class="memberTableArea">            
+                    <table class="limitadm_table1">
+                        <tbody>
+                            <tr class="h50 tr1">
+                                <td class="checkboxTd"></td>
+                                <td class="username">用户名</td>
+                                <td class="name">姓名</td>
+                                <td class="part">单位</td>
+                            </tr>                       
+                            <tr v-for="(item,index) in searchMemberList" :key="index">
+                                <td class="checkboxTd">
+                                    <a-checkbox @change="handleAddMember($event, item)"></a-checkbox>
+                                </td>
+                                <td class="username">
+                                    <span v-text="item.userEid"></span>
+                                </td>
+                                <td class="name" v-text="item.userName">
+                                </td>
+                                <td v-text="item.userDepartment"></td>
+                            </tr>                  
+                        </tbody>
+                    </table>
+                </div>               
+                <a-button size="small" class="greenBtn sureBtn" @click="handleAddMemberSureBtn" :disabled="memberArray.length < 1">确定</a-button> 
                 <!-- <div v-else>未搜索到成员信息</div>               -->
             </div>                  
         </div>        
@@ -120,10 +125,6 @@ export default {
             type: Array,
             required: true
         },
-        chosedLi: {
-            type: Object,
-            required: true
-        },
         total: {
             type: Number,
             required: true
@@ -133,6 +134,11 @@ export default {
         listMember(newValue, oldValue) {
             if ( newValue !== oldValue ){
                 this.memberList = this.listMember
+            }
+        },
+        total(n, o){
+            if ( n !== o ) {
+                this.memberTotal = this.total;
             }
         }
     },
@@ -168,8 +174,10 @@ export default {
             searchMember: '',
             btnDisabled: false,
             hasClickAdd: true, // 点击添加成员按钮
+            chosedLi: this.$store.state.chosedLi,  // 从vuex里面获取
             pageNo: 1,  // 翻页数，默认为1
             memberArray: [],  // 所勾选的用户保存的数组
+            memberTotal: '', // 传递过来的total总数目
         }
     },
     components: {
@@ -190,6 +198,7 @@ export default {
                     _this.$store.commit('changeShowLoad', false);
                     if ( res.data.success ) {
                         _this.$message.success('删除小组成员成功'); 
+                        _this.commonGetMembetList();
                     }                                 
                 },
                 okText: '确认',
@@ -206,8 +215,10 @@ export default {
                 groupId: this.chosedLi.groupId,
                 pageNo: this.pageNo
             });
+            console.log(res);
             this.$store.commit('changeShowLoad', false);
             const { data: { rows } } = res;
+            this.memberTotal = res.data.total;
             this.memberList = rows; 
         },
         // 翻页点击事件
@@ -216,20 +227,46 @@ export default {
             this.commonGetMembetList();
         },
         handleSearchBtn(){
-            // if ( this.searchVal !== '' ) {
+            if ( this.searchVal !== '' ) {
                 this.pageNo = 1;
                 this.commonGetMembetList();
-            // }
+            } else {
+                this.$message.info('搜索内容不能为空');
+            }
+        },
+        /**
+         * 请求搜索内容并请求一次空值
+         */
+        emitSearchValEmpty(){
+            this.searchVal = '';
+            this.commonGetMembetList();
+        },
+        /**
+         * 私信接口的处理
+         * 返回的obj对象里包含了一个groupId,这时应该刷新左侧用户列表
+           才能产生所建立的聊天关系
+         */
+        async handlePrivateChat(item){
+            console.log(item);
+            const res = await this.$getData('/member/privateMessage.action', {
+                memberEid: item.memberEid,
+                memberNick: item.memberNick
+            });
+            console.log(res);
+            // 传递给chatPage一个事件，然后chatPage告诉chatList应该要请求一次列表，
+            // 且在对应的groupId上有激活状态
         },
         /**
          *  搜索所有用户的事件处理
          */
         async handleSearchAllMember(){
+            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData('/searchuser.do', {
                 pageNo: 1,
                 name: this.searchMember,
                 myEid: this.$myEid,
             });
+            this.$store.commit('changeShowLoad', false);
             console.log(res);
             this.searchMemberList = res.data.rows;
         },
@@ -254,6 +291,8 @@ export default {
                         _this.$message.success('授权管理员成功');
                         _this.pageNo = 1;
                         _this.commonGetMembetList();                
+                    } else {
+                        _this.$message.error('授权失败，管理员数量已达最大值');
                     }
                 },
                 okText: '确认',
@@ -263,21 +302,45 @@ export default {
         /**
          *  添加用户到数组
          */
-        handleAddMember(item, e){
-            console.log(item);
-            console.log(e);
+        handleAddMember(e, item){
             if ( e.target.checked ) {
                 this.memberArray.push(item);
             } else {
                 const index = this.memberArray.findIndex( v => v.id === item.id);
-                console.log(index);
+                this.memberArray.splice(index, 1);            
             }
+            console.log(this.memberArray);
         },
         /**
          *  添加用户到小组的确定事件
          */
-        handleAddMemberSureBtn(){
-
+        async handleAddMemberSureBtn(){
+            let membersId = '';
+            let membersName = '';
+            this.memberArray.forEach( (v,i) => {
+                if ( i !== this.memberArray.length-1 ) {
+                    membersId += v.userEid + ',';
+                    membersName += v.userName + ','
+                } else {
+                    membersId += v.userEid;
+                    membersName += v.userName;
+                }
+            });
+            this.$store.commit('changeShowLoad', true);
+            const res = await this.$getData('/member/addGroupMemberNum.action', {
+                groupId: this.chosedLi.groupId,
+                joinNum: this.memberArray.length,
+                membersId,
+                membersName,
+            });
+            this.$store.commit('changeShowLoad', false);
+            if ( res.data.success ) {
+                this.$message.success('添加成员成功');
+                this.$message.info(`${res.data.cacheId}已是小组成员，${res.data.sortName}添加成功`);
+                this.memberArray = [];
+                this.searchMember = '';
+                this.handleSearchAllMember();
+            }
         },
         /*  添加成员的按钮点击事件处理
          *  仅显示隐藏部分div
@@ -290,6 +353,7 @@ export default {
          */        
         handleAddMemberBackBtn(){
             this.hasClickAdd = true;
+            this.commonGetMembetList();
         }
     },
 
@@ -303,6 +367,9 @@ export default {
     margin: 15px 0 5px 0;
     input{
         width: 507px;
+        height: 27px;
+    }
+    /deep/.ant-input{
         height: 27px;
     }
     button{
@@ -320,16 +387,16 @@ export default {
     width: 638px;
     height: 566px;
     border: 1px solid #e5e5e5;
+    .table_area{ 
+        height: 500px; 
+        overflow-y: scroll
+    }
     .limitadm_table1{
         tr{
             &.tr1{
                 td{
                     &.username{
                         padding-left: 38px;
-                    }
-                    &.operate{
-                        padding-right: 18px;
-                        justify-content: center;
                     }
                 }
             } 
@@ -355,19 +422,25 @@ export default {
                     width: 100px;
                     text-align: center;                
                     padding-right: 18px;
-                    display: flex;
+                    position: relative;
                     span{
+                        position: absolute;
                         cursor: pointer;
                         color: #999999;
+                        top: 0;
+                        &.iconliaotian{
+                            left: 0
+                        }
+                        &.iconyuechi1{
+                            left: 30px;
+                            font-size: 23px;
+                        }  
+                        &.iconshanchengyuan{
+                            left: 60px
+                        }                      
                         &:hover{
                             color: #f1bd85;
                         }
-                    }
-                    span.iconliaotian{
-                        margin-right: auto
-                    }
-                    span.iconshanchengyuan{
-                        margin-left: auto
                     }
                 }
             }                     
@@ -402,21 +475,25 @@ export default {
                 margin-right: 6px;
             }
         }
-        table{
-            tr{
-                td{
-                    &.checkboxTd{
-                        width: 20px;
-                        padding: 0 21px 0 15px;
-                    }
-                    &.username{
-                        width: 175px;
-                    }
-                    &.name{
-                        width: 85px;
-                    }
-                    &.part{
-                        width: 300px;
+        .memberTableArea{
+            height: 400px;
+            overflow-y: scroll;
+            table{
+                tr{
+                    td{
+                        &.checkboxTd{
+                            width: 20px;
+                            padding: 0 21px 0 15px;
+                        }
+                        &.username{
+                            width: 175px;
+                        }
+                        &.name{
+                            width: 85px;
+                        }
+                        &.part{
+                            width: 300px;
+                        }
                     }
                 }
             }
