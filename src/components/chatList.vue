@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { getData } from '@/utils/utils'
+import { getData, matchChangeColor, clearMatchColor } from '@/utils/utils'
 import XAvatar from '@/components/avatar'
 import SearchWrap from '@/components/searchWrap'
 import LoadMore from '@/components/loadMore'
@@ -61,7 +61,8 @@ export default {
          * 将点击的数据对象传递到父组件
          * 通过vuex改变Loading的状态
          */
-        async handleLiClick(item){
+        async handleLiClick(item){           
+            this.$store.commit('handleChosedLi', item);
             this.$emit('clickChosedLi', item);
             this.isActive = item.guid;
             this.$store.commit('changeShowLoad', true);
@@ -69,6 +70,7 @@ export default {
             this.$store.commit('changeShowLoad', false);
             const { data: { data } } = res;
             this.$store.commit('addChatConList', data);
+            console.log(this.$store);
         },
         /** 获取用户列表数据方法
          *  init为布尔值，初始化请求为false，加载更多按钮点击为true
@@ -99,26 +101,16 @@ export default {
         async handleChangeSearchVal(searchVal){
             this.inputSearchVal = searchVal;
             if ( searchVal !== '' ) {
-                let replaceReg_first = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
+/*                 let replaceReg_first = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
                 for ( let i = 0 ; i < this.messageList.length; i++ ) {
                     this.messageList[i].username = this.messageList[i].username.replace(replaceReg_first, '$1');
                     this.messageList[i].memoName = this.messageList[i].memoName.replace(replaceReg_first, '$1');
-                }
+                } */
+                clearMatchColor(this.messageList, 'username', 'memoName');
                 console.log(this.messageList);
                 this.searchNoResult = false;             
-                // 匹配关键字正则
-                let replaceReg = new RegExp(searchVal, 'g');
-                // 高亮替换v-html值
-                let replaceString = '<span class="searchText">' + searchVal + '</span>';
-                // 开始替换
-                this.messageList = this.messageList.filter( 
-                    v => v.username.indexOf(searchVal) > -1 || v.memoName.indexOf(searchVal) > -1                   
-                ); 
+                this.messageList = matchChangeColor(this.messageList, searchVal, 'username', 'memoName');
                 console.log(this.messageList);
-                for ( let i = 0 ; i < this.messageList.length; i++ ) {
-                    this.messageList[i].username = this.messageList[i].username.replace(replaceReg, replaceString);
-                    this.messageList[i].memoName = this.messageList[i].memoName.replace(replaceReg, replaceString);
-                }
                 if ( this.messageList.length === 0 ) {
                     const res = await this.$getData('searchSomeMember', {});
                     console.log('搜索结果:', res);
@@ -131,11 +123,12 @@ export default {
                 }
             } else {  
                 this.searchNoResult = false;              
-                let replaceReg = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
+/*                 let replaceReg = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
                 for ( let i = 0 ; i < this.saveMessageList.length; i++ ) {
                     this.saveMessageList[i].username = this.saveMessageList[i].username.replace(replaceReg, '$1');
                     this.saveMessageList[i].memoName = this.saveMessageList[i].memoName.replace(replaceReg, '$1');
-                }
+                } */
+                clearMatchColor(this.messageList, 'username', 'memoName');
                 this.messageList = this.saveMessageList;
             }
         }
@@ -180,9 +173,6 @@ export default {
                             font-size: 13px;
                             color: #666666;
                         }                
-                    } 
-                    .searchText{
-                        color: red;
                     }                    
                 }
             }

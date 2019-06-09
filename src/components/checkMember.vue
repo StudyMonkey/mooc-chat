@@ -21,13 +21,14 @@
 
 <script>
 import ListUser from '@/components/listUser'
-import { debounce } from '@/utils/utils'
+import { debounce, matchChangeColor, clearMatchColor } from '@/utils/utils'
 export default {
     name: 'checkMember',
     data() {
         return {
             searchVal: '',
             checkMemberList: [],
+            saveCheckMemberList: [],  // 暂存所有好友列表数据
             hasCheckedList: [], // 勾选上的好友列表
         }
     },
@@ -71,12 +72,22 @@ export default {
         const res = await this.$getData('checkMemberList', {});
         const { data: { data } } = res;
         this.checkMemberList = data;
+        this.saveCheckMemberList = this.checkMemberList;
 
         // 节流操作
+        // const _this = this;
         this.$watch('searchVal', debounce(async (newQuery) => {
             // newQuery为输入的值
-            console.log(newQuery) 
-            this.$emit('changeSearchVal', newQuery);                            
+            // clearMatchColor(this.checkMemberList, 'username', 'memoName');
+            if ( newQuery !== '' ) {
+                console.log(newQuery);
+                this.checkMemberList = matchChangeColor(this.checkMemberList, newQuery, 'username', 'memoName'); 
+                this.$emit('changeSearchVal', newQuery); 
+            } else {
+                clearMatchColor(this.checkMemberList, 'username', 'memoName');
+                this.checkMemberList = this.saveCheckMemberList;
+            }
+                           
         }, 300))
     },
 }

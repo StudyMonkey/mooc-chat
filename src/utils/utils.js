@@ -48,6 +48,45 @@ export function debounce(func, delay) {
     }
 }
 
+/* 
+ * 搜索匹配替换变色的方法
+ * @param {*传递进来的数组} arr
+ * @param {*数组循环之后对象的属性值} obj
+*/
+export function matchChangeColor(arr, searchVal, obj1, obj2 ) {
+    console.log(arr);
+    // 匹配关键字正则
+    let replaceReg = new RegExp(searchVal, 'g');
+    // 高亮替换v-html值
+    let replaceString = '<span class="searchText">' + searchVal + '</span>';
+    // 过滤
+    arr = arr.filter( 
+        v => v[obj1].indexOf(searchVal) > -1 || v[obj2].indexOf(searchVal) > -1                   
+    ); 
+    console.log(arr);
+    // 替换
+    for ( let i = 0 ; i < arr.length; i++ ) {
+        arr[i][obj1] = arr[i][obj1].replace(replaceReg, replaceString);
+        arr[i][obj2] = arr[i][obj2].replace(replaceReg, replaceString);
+    }
+    return arr;
+}
+
+/* 
+ * 清除搜索匹配的样式
+ * @params arr   传递进来的数组
+ * @params obj1  匹配的属性1
+ * @params obj2  匹配的属性2 
+*/
+export function clearMatchColor(arr, obj1, obj2){
+    let replaceReg = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
+    for ( let i = 0 ; i < arr.length; i++ ) {
+        arr[i][obj1] = arr[i][obj1].replace(replaceReg, '$1');
+        arr[i][obj2] = arr[i][obj2].replace(replaceReg, '$1');
+    } 
+    // return arr;    
+}
+
 /**
  * 公用的获取数据的方法
  * @param {*获取数据的url} url 

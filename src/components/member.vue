@@ -65,8 +65,10 @@
             <div class="memberTableWrap">
                 <div class="addMemberSearchWrap">
                     <span>用户名：</span>
-                    <a-input v-model="searchMember" placeholder="请输入搜索用户名" />
-                    <a-button size="small" class="greenBtn">搜索</a-button>
+                    <a-input v-model="searchMember" placeholder="请输入搜索用户名" >
+                        <!-- <a-icon v-if="searchMember" slot="suffix" type="close-circle" @click="searchMemberEmpty" /> -->
+                    </a-input>
+                    <a-button size="small" class="greenBtn" @click="handleSearchMember">搜索</a-button>
                 </div>
                 <table class="limitadm_table1">
                     <tbody>
@@ -76,9 +78,13 @@
                             <td class="name">姓名</td>
                             <td class="part">单位</td>
                         </tr>
-                        <tr v-for="(item,index) in searchMemberList" :key="index">
+                        <tr 
+                            v-for="(item,index) in searchMemberList" 
+                            :key="index"
+                            @click="handleCheckboxClicked(item)"
+                        >
                             <td class="checkboxTd">
-                                <a-checkbox></a-checkbox>
+                                <a-checkbox @change="handleAddMemberCheck($event, item)"></a-checkbox>
                             </td>
                             <td class="username">
                                 <span v-text="item.username"></span>
@@ -129,9 +135,8 @@ export default {
     data() {
         return {
             memberList: [], // 成员列表数据
-            searchMemberList: [
-                { username: '43081119941024001X', name: '张三', part: '戏精学院'  }
-            ], // 搜索的成员列表数据
+            searchMemberList: [], // 搜索的成员列表数据
+            memberListCheckArray: [], // 勾选上的搜索的成员列表数据
             searchVal: '', // input框输入的搜索内容
             searchMember: '',
             btnDisabled: false,
@@ -166,9 +171,51 @@ export default {
             const { data: { data } } = res;
             this.memberList = data;         
         },
+        /* 
+         *  搜索出来的结果的checkbox点击事件
+        */
+       handleAddMemberCheck(e, item){
+           console.log(e.target.checked);
+           console.log(item);
+       },
+       /* 
+        *  搜索出来的结果的checkbox所在列的点击事件
+       */
+       handleCheckboxClicked(item){
+           const index = this.memberListCheckArray.findIndex( v => v.name === item.name );
+           if ( index < 0 ) {
+               this.memberListCheckArray.push(item)
+           } else {
+               this.memberListCheckArray.splice(index, 1);
+           }
+       },
         handleSearchBtn(){
             this.$message.info('开始搜索');
         },
+        /* 
+         * 添加成员里面的搜索用户列表
+        */
+       handleSearchMember(){
+            if ( this.searchMember !== '' ) {
+                let _this = this;
+                this.$store.commit('changeShowLoad', true);
+                setTimeout( () => {
+                    _this.$store.commit('changeShowLoad', false);
+                    _this.searchMemberList = [
+                        { username: '430815464661321544', name: '张三', part: '戏精学院'  },
+                        { username: '430144113134979464', name: '李四', part: '逗比学院'  }
+                    ]
+                }, 1000);
+            } else {
+                this.$message.info('搜索内容不能为空');
+            }
+       },
+       /* 
+        * 清空searchMember的搜索条件
+       */
+/*        searchMemberEmpty(){
+           this.searchMember = ''
+       }, */
         /*  添加成员的按钮点击事件处理
          *  仅显示隐藏部分div
          */

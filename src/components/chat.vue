@@ -417,6 +417,9 @@ export default {
         }        
     },
     created() {
+        console.log(this.$store.state.chosedLi);
+        console.log(this.$store.state.chatConList);
+        this.chatList = this.$store.state.chatConList;
         // console.log(this.ws.readyState);
     },
 }
