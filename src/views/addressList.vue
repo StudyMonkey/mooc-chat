@@ -97,7 +97,10 @@ export default {
         async commonGetAddressList(obj){
             obj === false ? this.pageNo : this.pageNo++
             this.$store.commit('changeShowLoad', true);
-            const res = await this.$getData('/myFriends.do', {eid: '1xy01', pageNo: this.pageNo});
+            const res = await this.$getData('/myFriends.do', {
+                eid: this.$myEid, 
+                pageNo: this.pageNo
+            });
             const { data: { rows } } = res;
             console.log(rows);
             if ( rows.length < 10 ) {
@@ -169,24 +172,24 @@ export default {
             console.log(searchVal);
             if ( searchVal !== '' ) {
                 clearMatchColor(this.addressUserList, 'remark'); 
-                this.addressUserList = this.addressUserList.filter( v => v.remark.indexOf(searchVal) > -1);
-                this.addressUserList = matchChangeColor(this.addressUserList, searchVal, 'remark');                  
+
+                // this.addressUserList = this.addressUserList.filter( v => v.remark.indexOf(searchVal) > -1);
+                // this.addressUserList = matchChangeColor(this.addressUserList, searchVal, 'remark'); 
+
                 console.log(this.addressUserList);
-                if ( this.addressUserList.length === 0 ) {
-                    const res = await this.$getData('/myFriends.do', {
-                        eid: this.$myEid,
-                        name: searchVal,
-                        pageNo: 1
-                    });
-                    console.log(res);
-                    if ( res.data.rows.length > 0 ) {
-                        const { data: { rows } } = res;
-                        this.addressUserList = data;
-                    } else {
-                        // this.searchNoResult = true;
-                        this.inputSearchVal = searchVal;
-                        console.log(this.inputSearchVal);
-                    }
+                this.$store.commit('changeShowLoad', true);
+                const res = await this.$getData('/myFriends.do', {
+                    eid: this.$myEid,
+                    name: searchVal,
+                    pageNo: 1
+                });
+                this.$store.commit('changeShowLoad', false);
+                const { data: { rows } } = res;
+                if ( rows.length > 0 ) {                   
+                    this.addressUserList = matchChangeColor(rows, searchVal, 'remark');
+                } else {
+                    // this.searchNoResult = true;
+                    this.inputSearchVal = searchVal;
                 }
             } else {
                 clearMatchColor(this.addressUserList, 'remark');                
@@ -236,9 +239,17 @@ export default {
          * 这里需要把这个人的id传到聊天页面
          * 让聊天界面的this.isActive等于这个id设置选中状态
          */
-        handleSendMessage(){
+        async handleSendMessage(){
+            const res = await this.$postData('/personalchat.do', {
+                userEid: this.$myEid,
+                friendEid: this.oneUser.friendEid
+            });
+            console.log(res);
             this.$router.push({
-                path: '/chat'
+                name: 'chatPage',
+                params: {
+                    groupId: res.data.obj
+                }
             })
         },
         /**

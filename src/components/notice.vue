@@ -5,11 +5,11 @@
                 <li v-for="(item,index) in noticeList" :key="index">
                     <div class="noticeInfoWrap">
                         <span class="iconfont icongonggao"></span>
-                        <p  @click="handleDivClick(index)" class="noticeTitle" v-text="item.title"></p>
+                        <p  @click="handleDivClick(index)" class="noticeTitle" v-text="item.noticeTitle"></p>
                         <p class="dateTime" v-text="item.time"></p>
                     </div>
                     <div v-show="isActive === index">
-                        <div class="noticeContentWrap" v-text="item.content"></div>
+                        <div class="noticeContentWrap" v-text="item.noticeContent"></div>
                         <a-button size="small" class="fr" @click="handleNoticeDelete(item)">删除</a-button>
                     </div>               
                 </li>
@@ -22,7 +22,13 @@
                 <span>公告内容：</span>
                 <a-textarea v-model="noticeContent" placeholder="请输入您想创建的公告内容......" :rows="4" />
             </div>
-            <a-button size="small" @click="handleCreateNotice">创建</a-button>
+            <div>
+                <a-checkbox class="fl" @change="handleSendPartCheck">
+                    <span class="fl">是否群发给所有的下级单位：</span>    
+                </a-checkbox>
+                <a-button class="fr" size="small" @click="handleCreateNotice">创建</a-button>
+            </div>
+            
         </div>
     </div>
 </template>
@@ -42,6 +48,8 @@ export default {
             noticeList: [],
             noticeTitle: '', // 创建的话题标题
             noticeContent: '', // 创建的话题内容 
+            chosedLi: this.$store.state.chosedLi,
+            sendPart: false  // 群发给下级单位
         }
     },
     watch: {
@@ -52,6 +60,18 @@ export default {
         },
     },
     methods: {
+        /**
+         *  获取公告列表
+         */
+        async getNoticeList(){
+            this.$store.commit('changeShowLoad', true);
+            const res = await this.$getData('/chat/getNoticeList.action', {
+                groupId: this.chosedLi.groupId
+            });
+            const { data: { rows } } = res;
+            this.$store.commit('changeShowLoad', false);
+            this.noticeList = rows;
+        },
         /*  展开收起按钮操作事件处理
         *   根据传入的index修改值
         */
@@ -66,13 +86,19 @@ export default {
         *  获取到公告的标题noticeTitle和内容noticeContent的值，push到数组
         *  再调用后台接口
         */
-        handleCreateNotice(){
+        async handleCreateNotice(){
             if ( this.noticeTitle && this.noticeContent ) {
-                let obj = {};
-                obj.title = this.noticeTitle;
-                obj.content = this.noticeContent;
-                obj.creator = 'me'
-                this.noticeList.push(obj);
+                const res = await this.$getData('/chat/publishNotice.action', {
+                    groupId: this.chosedLi.groupId,
+                    title: this.noticeTitle,
+                    content: this.noticeContent,
+                    isMassSend: false   // 是否群发给下级单位
+                });
+                console.log(res);
+                if ( res.data.success ) {
+                    this.$message.success('发布新公告成功');
+                    this.getNoticeList();
+                }
                 this.noticeTitle = '';
                 this.noticeContent = '';
             } else {
@@ -80,13 +106,37 @@ export default {
             }
         },
         /**
+         *  群发给下级单位
+         */
+        handleSendPartCheck(e){
+            if ( e.target.checked ) {
+                this.sendPart = true
+            } else {
+                this.sendPart = false
+            }
+        },
+        /**
          * 公告的点击删除事件处理
          */
-        handleNoticeDelete(item){
+        async handleNoticeDelete(item){
             console.log(item);
-            const index = this.noticeList.findIndex( v => v === item );
-            this.noticeList.splice(index, 1);
-            this.isActive = '';
+            let _this = this;
+            this.$confirm({
+                title: '确定删除该公告？',
+                okText: '确认',
+                cancelText: '取消',
+                async onOk(){
+                    _this.$store.commit('changeShowLoad', true);
+                    const res = await _this.$getData('/chat/delNoticeById.action', {
+                        noticeId: item.noticeId
+                    });
+                    _this.$store.commit('changeShowLoad', false);
+                    if ( res.data.success ) {
+                        _this.$message.success('删除公告成功');
+                        _this.getNoticeList();
+                    }
+                }
+            })         
         }
     },
     

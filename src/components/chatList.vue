@@ -47,7 +47,7 @@ export default {
             pageNo: 1,
             showLoadMore: true, // 默认显示加载更多，取出数据小于10条则隐藏
             isActive: '', // li的下标，默认不选中任何
-            messageList: [ ], // 用户列表数据
+            messageList: [], // 用户列表数据
             saveMessageList: [],  // 保存用户列表数据
             searchNoResult: false,  // 未搜索到用户时显示
             inputSearchVal: '', // 接收searchWrap组件的搜索值
@@ -89,10 +89,8 @@ export default {
                 groupId: item.groupId,
                 chatEid: item.chatEid
             });
-            console.log(res);
             this.$store.commit('changeShowLoad', false);
             const { data: { obj } } = res;
-            console.log(obj);
             this.$store.commit('handleChosedLi', item);  // 将所选中的左侧列表存到vuex里面，还有其他的组件需要用到
             this.$emit('clickChosedLi', obj, item);
             this.$store.commit('addChatConList', obj.chatList);
@@ -109,7 +107,7 @@ export default {
             this.$store.commit('changeShowLoad', false);
             console.log(res);
             let { data: { rows } } = res;
-            if ( rows.length < 10 ) {
+            if ( rows.length < res.data.count ) {
                 this.showLoadMore = false
             } else {
                 this.showLoadMore = true
@@ -132,7 +130,7 @@ export default {
         },
         /**
          *  接受searchWrap子组件传递过来的搜索的值进行搜索匹配
-         *  先从已存在的数组数据里面匹配，如果匹配数组为0，则走接口查询
+         *  走接口查询
          *  接口也没查询到任何数据的话，最后显示未搜索到的结果
          */
         async handleChangeSearchVal(searchVal){
@@ -148,7 +146,7 @@ export default {
                 let isGroup = this.$route.path === '/chat' ? false : true;
                 this.$store.commit('changeShowLoad', true);
                 const res = await this.$getData('/leftHotGroups.do', {
-                    eid: this.$meEid,
+                    eid: this.$myEid,
                     name: searchVal,
                     pageNo: 1,
                     isGroup
@@ -156,34 +154,10 @@ export default {
                 const { data: { rows } } = res;
                 this.$store.commit('changeShowLoad', false);
                 if ( rows.length > 0 ) {
-                    // this.messageList = rows;
                     this.messageList = matchChangeColor(rows, searchVal, 'name');
                 } else {
                     this.searchNoResult = true;
                 }
-
-                // this.messageList = this.messageList.filter( v => v.name.indexOf(searchVal) > -1);    
-                // this.messageList = matchChangeColor(this.messageList, searchVal, 'name');                     
-                // if ( this.messageList.length === 0 && this.showLoadMore !== false ) {
-                //     let isGroup = this.$route.path === '/chat' ? false : true;
-                //     this.$store.commit('changeShowLoad', true);
-                //     const res = await this.$getData('/leftHotGroups.do', {
-                //         eid: 'ksz',
-                //         name: searchVal,
-                //         pageNo: 1,
-                //         isGroup
-                //     });
-                //     const { data: { rows } } = res;
-                //     this.$store.commit('changeShowLoad', false);
-                //     if ( rows.length > 0 ) {
-                //         // this.messageList = rows;
-                //         this.messageList = matchChangeColor(rows, searchVal, 'name');
-                //     } else {
-                //         this.searchNoResult = true;
-                //     }
-                // } else if ( this.messageList.length === 0 ) {
-                //     this.searchNoResult = true;
-                // }
             } else {
                 clearMatchColor(this.messageList, 'name');
                 this.messageList = this.saveMessageList;

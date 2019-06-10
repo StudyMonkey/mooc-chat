@@ -11,7 +11,7 @@ export function getData(url, data){
             }
         }).then( res => {
             return resolve(res)
-        }).then( err => {
+        }).catch( err => {
             return reject(err)
         })
     })
@@ -28,7 +28,7 @@ export function postData(url, data){
             ...data
         }).then( res => {
             return resolve(res)
-        }).then( err => {
+        }).catch( err => {
             return reject(err)
         })
     })

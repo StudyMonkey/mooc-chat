@@ -1,5 +1,50 @@
 <template>
     <div class="fileTopWrap">
+        <a-modal 
+            title="分享到其他小组"
+            v-model="shareVisible"
+            centered
+            :footer="null">
+            <div class="shareSearchWrap">
+                <span class="searchWordSpan">查找相关小组：</span>
+                <a-input class="searchGroupInput" v-model="searchGroup">
+                    <a-icon v-if="searchGroup" slot="suffix" type="close-circle" @click="emitSearchGroupEmpty" />
+                </a-input>
+                <a-button @click="handleShareGroupSearch">搜索</a-button>
+            </div>
+            <div class="searchGroupTableWrap">
+                <table class="limitadm_table1 searchGroupTable">
+                    <thead>
+                        <tr class="h50 tr1">
+                            <td class="checkboxTd" style="width:50px"></td>
+                            <td class="groupName">小组名称</td>
+                            <td class="groupNo">小组编号</td>
+                            <td class="groupDesc">小组描述</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="item in searchGroupResult" :key="item.groupId">
+                            <td class="checkboxTd" style="width:50px">
+                                <a-checkbox 
+                                    :checked="fileChecked"
+                                    @change="handleGroupResultCheck($event, item)"
+                                ></a-checkbox>
+                            </td>
+                            <td v-text="item.name"></td>
+                            <td v-text="item.groupId" :title="item.groupId"></td>
+                            <td v-text="item.description"></td>
+                        </tr>
+                    </tbody>               
+                </table>
+            </div>
+            <div class="searchGroupBtnWrap">
+                <a-checkbox 
+                    @change="handleAllCheck" 
+                    :checked="this.searchResultCheck.length > 0 && this.searchResultCheck.length === this.searchGroupResult.length"
+                ><span class="fl">全选：</span></a-checkbox>
+                <a-button @click="handleSearchGroupShareBtn">分享</a-button>
+            </div>
+        </a-modal> 
         <div class="table_area">
             <table class="limitadm_table1">
                 <tbody>
@@ -31,15 +76,17 @@
                                 <template slot="title">
                                     分享
                                 </template>
-                                <span class="iconfont iconfenxiang"></span>
+                                <span 
+                                    class="iconfont iconfenxiang"
+                                    @click="handleShareModalShow(item)"
+                                ></span>
                             </a-tooltip>
                             <a-tooltip>
                                 <template slot="title">
                                     删除                                      
                                 </template>  
-                                <span @click="handleDeleteFile" class="iconfont icondelete"></span>                      
-                            </a-tooltip>
-                            
+                                <span @click="handleDeleteFile(item)" class="iconfont icondelete"></span>                      
+                            </a-tooltip>                          
                         </td>
                     </tr>
                 </tbody>
@@ -73,7 +120,15 @@ export default {
     },
     data() {
         return {
-            fileList: []
+            chosedLi: this.$store.state.chosedLi,
+            fileList: [],
+            filePageNo: 1,
+            searchGroupResult: [],  // 搜索其他小组的结果数组
+            searchResultCheck: [],  // 将check的值放入的数组
+            shareVisible: false,    // 控制分享其他小组的显示隐藏
+            searchGroup: '',        // 搜索小组的输入值
+            fileChecked: false,
+            chosedShareItem: {}  // 所选择的分享的列表对象
         }
     },
     watch: {
@@ -91,30 +146,131 @@ export default {
          *  翻页事件处理
          */
         async handlePageChange(pageNum) {
-            this.$store.commit('changeShowLoad', true);
-            const res = await this.$getData('/member/groupFileList.action', {
-                groupId: this.chosedLi.groupId,
-                pageNo: pageNum               
-            });
-            this.$store.commit('changeShowLoad', false);
-            const { data: { data } } = res;
-            this.fileList = data;
+            this.filePageNo = pageNum
+            thsi.getFileList();
         },
         handleDownloadFile(item){
             console.log(item);
         },
-        handleDeleteFile(){
+        /**
+         *  查找相关小组的事件处理
+         */
+        async handleShareGroupSearch(){
+            if ( this.searchGroup !== '' ) {
+                this.$store.commit('changeShowLoad', true);
+                const res = await this.$getData('/leftHotGroups.do', {
+                    eid: this.$myEid,
+                    name: this.searchGroup,
+                    pageNo: 1,
+                    isGroup: true
+                });
+                this.$store.commit('changeShowLoad', false);
+                const { data: { rows } } = res;
+                this.searchGroupResult = rows;
+                console.log(res);
+            } else {
+                this.$message.info('小组名称不能为空');
+            }
+        },
+        /**
+         *  清空查找相关小组
+         */
+        emitSearchGroupEmpty(){
+            this.searchGroup = '';
+        },
+        /**
+         *  查找的小组checkbox勾选效果
+         */
+        handleGroupResultCheck(e, item){
+            if ( e.target.checked ) {
+                this.searchResultCheck.push(item);
+            } else {
+                const index = this.searchResultCheck.findIndex( v => v.groupNo === item.groupNo );
+                this.searchResultCheck.splice(index, 1);
+            }
+        },
+        /**
+         *  全选的checkbox事件处理
+         */
+        handleAllCheck(e){
+            this.fileChecked = e.target.checked
+            if ( e.target.checked ) {
+                this.searchGroupResult.map ( v => {
+                    this.searchResultCheck.push(v)
+                })
+            } else {
+                this.searchResultCheck = []
+            }
+        },
+        /*
+         *  分享到其他小组的分享按钮点击事件处理
+        */
+       async handleSearchGroupShareBtn(){
+           let fileGroupId = '';
+           this.searchResultCheck.forEach( (v,index) => {
+               if ( index !== this.searchResultCheck.length-1 ) {
+                   fileGroupId += v.groupId + ','
+               } else {
+                   fileGroupId += v.groupId
+               }
+           });
+           const res = await this.$getData('/member/shareFileToGroup.action', {
+                shareFileId: this.chosedShareItem.fileId,
+                moocFileId: this.chosedShareItem.moocFileId,
+                shareGroupId: fileGroupId
+           });
+           console.log(res);
+           const { data: { obj, success } } = res;
+           if ( success && obj.bakField2 === "true" ) {
+               this.$message.success(obj.bakField);
+           } else {
+               this.$message.error(obj.bakField);
+           }
+       },
+        /**
+         *  显示分享到其他小组的弹窗
+         */
+        handleShareModalShow(item){
+            this.shareVisible = true;
+            this.chosedShareItem = item;
+        },
+        /**
+         *  获取文件列表
+         */
+        async getFileList(){
+            this.$store.commit('changeShowLoad', true);
+            const res1 = await this.$getData('/member/groupFileList.action', {
+                groupId: this.chosedLi.groupId,
+                pageNo: this.filePageNo
+            });
+            this.$store.commit('changeShowLoad', false);
+            this.fileList = res1.data.rows;            
+        },
+        /**
+         *  删除文件操作
+         */
+        handleDeleteFile(item){
             let _this = this;
             this.$confirm({
                 title: '确定删除该文件？',
                 okText: '确认',
                 cancelText: '取消',
-                onOk(){
+                async onOk(){
                     _this.$store.commit('changeShowLoad', true);
-                    setTimeout(() => {
-                        _this.$store.commit('changeShowLoad', false);
-                        _this.$message.success('删除文件成功');
-                    }, 1000)
+                    const res = await _this.$getData('/member/deleteGroupFile.action', {
+                        groupId: _this.chosedLi.groupId,
+                        fileId: item.fileId,
+                        moocFileId: item.moocFileId,
+                        fileType: item.fileType
+                    });
+                    _this.$store.commit('changeShowLoad', false);
+                    console.log(res);
+                    if ( res.data.success && res.data.msg === 'deleteSuccess' ) {
+                        _this.$message.success('删除群文件成功');
+                        _this.filePageNo = 1;
+                        _this.getFileList();
+                        // console.log(this.fileList);                        
+                    }
                 }
             })
         }

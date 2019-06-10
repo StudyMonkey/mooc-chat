@@ -121,13 +121,14 @@ export default {
                     pageNo: 1
                 });                
             } else if ( key === 'notice' ) {
-                this.noticeList = await this.commonGetMethod('noticeList', {});
+                this.noticeList = await this.commonGetMethod('/chat/getNoticeList.action', {
+                    groupId: this.chosedLi.groupId,
+                });
             } else if ( key === 'file' ) {
                 this.fileList = await this.commonGetMethod('/member/groupFileList.action', {
                     groupId: this.chosedLi.groupId,
                     pageNo: 1
                 });
-                console.log(this.fileList);
             }
         },
         // 接受chatList子组件所选择的聊天列表
@@ -190,7 +191,14 @@ export default {
         handleChangeSearchVal(str){
             console.log(str);           
         }
-    },   
+    },  
+    created(){
+        console.log(this.$route.params);
+        if ( this.$route.params.groupId !== '' ) {
+            console.log(this.$route.params.groupId);
+            // 匹配到左侧列表的数据显示激活状态，获取相应的数据
+        }
+    } 
 }
 </script>
 
