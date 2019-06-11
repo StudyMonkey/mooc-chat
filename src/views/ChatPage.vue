@@ -64,6 +64,7 @@ import ChatNotice from '@/components/notice'
 import ChatFile from '@/components/file'
 import ChatSet from '@/components/set'
 import NotClick from '@/components/notClick'
+import { mapMutations } from 'vuex'
 export default {
     name: 'member',
     data() {
@@ -91,35 +92,35 @@ export default {
         NotClick
     },
     methods: {
+        ...mapMutations(['changeShowLoad']),
         async commonGetMethod(url, params){
-            this.$store.commit('changeShowLoad', true);
+            // this.$store.commit('changeShowLoad', true);
+            this.changeShowLoad(true);
             const res = await this.$getData(url, params);
             console.log(res);
             const { data } = res;
-            this.$store.commit('changeShowLoad', false);
+            // this.$store.commit('changeShowLoad', false);
+            this.changeShowLoad(false);
             this.total = data.total;
             return data.rows;
         },
         async handleTabsChange (key) {
-            if ( key === 'chatMain' ) {               
+            if ( key === 'chatMain' ) {  
                 this.chatList = await this.commonGetMethod('/chat/detail.do', {
                     groupId: this.chosedLi.groupId,
                     chatEid: this.chosedLi.chatEid
                 });
-                console.log(this.chatList);
             } else if ( key === 'chatTopic' ){
                 this.topicList = await this.commonGetMethod('/chat/getTopics.action', {
                     groupId: this.chosedLi.groupId,
                     pageNo: 1
                 });
-                console.log(this.topicList);
             } else if ( key === 'member' ) {
-                console.log(this.chosedLi.groupId);
                 this.memberList = await this.commonGetMethod('/member/memberList.action', {
                     memberSearchWord: '',
                     groupId: this.chosedLi.groupId,
                     pageNo: 1
-                });                
+                }); 
             } else if ( key === 'notice' ) {
                 this.noticeList = await this.commonGetMethod('/chat/getNoticeList.action', {
                     groupId: this.chosedLi.groupId,
@@ -159,13 +160,12 @@ export default {
                     }                
                 });
                 console.log(friendEidArr);
-                this.$store.commit('changeShowLoad', true); 
+                this.changeShowLoad(true);
                 const res = await this.$getData('/multipersonchat.do', {
                     eid: this.$myEid,
                     friendEids: friendEidArr
                 });
-                this.$store.commit('changeShowLoad', false); 
-                console.log(res); 
+                this.changeShowLoad(false);
                 if ( res.data.success ) {
                     this.$message.success(res.data.msg);
                     // if ( this.$route.path === '/chat' ) {

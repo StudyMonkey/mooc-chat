@@ -66,6 +66,7 @@ import NotClick from '@/components/notClick'
 import CheckMember from '@/components/checkMember'
 import axios from 'axios'
 import { matchChangeColor, clearMatchColor } from '../utils/utils'
+import { mapMutations } from 'vuex'
 export default {
     name: 'member',
     data() {
@@ -94,13 +95,16 @@ export default {
         this.commonGetAddressList(false);
     },
     methods: {
+        ...mapMutations(['changeShowLoad']),
         async commonGetAddressList(obj){
             obj === false ? this.pageNo : this.pageNo++
-            this.$store.commit('changeShowLoad', true);
+            // this.$store.commit('changeShowLoad', true);
+            this.changeShowLoad(true);
             const res = await this.$getData('/myFriends.do', {
                 eid: this.$myEid, 
                 pageNo: this.pageNo
             });
+            this.changeShowLoad(false);
             const { data: { rows } } = res;
             console.log(rows);
             if ( rows.length < 10 ) {
@@ -112,7 +116,7 @@ export default {
                 this.addressUserList = this.addressUserList.concat(rows);
             }          
             this.saveAddressUserList = this.addressUserList;
-            this.$store.commit('changeShowLoad', false);            
+            // this.$store.commit('changeShowLoad', false);            
         },
 
         /**
@@ -172,18 +176,13 @@ export default {
             console.log(searchVal);
             if ( searchVal !== '' ) {
                 clearMatchColor(this.addressUserList, 'remark'); 
-
-                // this.addressUserList = this.addressUserList.filter( v => v.remark.indexOf(searchVal) > -1);
-                // this.addressUserList = matchChangeColor(this.addressUserList, searchVal, 'remark'); 
-
-                console.log(this.addressUserList);
-                this.$store.commit('changeShowLoad', true);
+                this.changeShowLoad(true);
                 const res = await this.$getData('/myFriends.do', {
                     eid: this.$myEid,
                     name: searchVal,
                     pageNo: 1
                 });
-                this.$store.commit('changeShowLoad', false);
+                this.changeShowLoad(false);
                 const { data: { rows } } = res;
                 if ( rows.length > 0 ) {                   
                     this.addressUserList = matchChangeColor(rows, searchVal, 'remark');
@@ -217,13 +216,12 @@ export default {
                         friendEidArr+=v.friendEid
                     }                
                 });
-                console.log(friendEidArr);
-                this.$store.commit('changeShowLoad', true); 
+                this.changeShowLoad(true);
                 const res = await this.$getData('/multipersonchat.do', {
                     eid: this.$myEid,
                     friendEids: friendEidArr
                 });
-                this.$store.commit('changeShowLoad', false); 
+                this.changeShowLoad(false);
                 console.log(res);
                 if ( res.data.success ) {
                     this.$message.success(res.data.msg);
