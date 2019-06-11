@@ -37,11 +37,22 @@
             </a-select>            
         </div>   
         <div class="btnWrap">
-            <a-button size="small" @click="handleTopChatClick">聊天置顶</a-button>
-            <a-button size="small" @click="handleClearChat">清除聊天</a-button>
-            <a-button :disabled="hasClearRight" size="small" @click="handleClearTopic">清除话题</a-button>
+            <a-button size="small" 
+                @click="handleTopChatClick"
+            >聊天置顶</a-button>
+            <a-button 
+                v-if="$myEid === 'ksz'"
+                size="small" 
+                @click="handleClearChat"
+            >清除聊天</a-button>
+            <a-button 
+                v-if="$myEid === 'ksz'"
+                :disabled="hasClearRight" 
+                size="small" 
+                @click="handleClearTopic"
+            >清除话题</a-button>
             <a-button size="small" @click="handleQuitGroupClick">退出小组</a-button>
-            <a-button size="small" @click="handleDismissGroupClick">解散小组</a-button>
+            <a-button size="small" @click="handleDismissGroupClick" v-if="!chosedLi.official">解散小组</a-button>
         </div>       
         <a-button class="saveBtn greenBtn" @click="handleSaveBtnClick">保存</a-button>
     </div>
@@ -60,7 +71,9 @@ export default {
             addMember: '0', // 添加成员，默认第一项
             addGroup: '0', // 加群方式，默认第一项
             transferLeader: '0', // 群主转移，默认第一项
-            hasClearRight: true
+            hasClearRight: true,
+            chosedLi: this.$store.state.chosedLi,
+            memberType: this.$store.state.memberType,  // 从vuex里面取出来的用户权限
         }
     },
     components: {

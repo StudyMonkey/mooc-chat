@@ -76,14 +76,33 @@
                     </table>
                 </div>                 
             </a-tab-pane>
-            <a-tab-pane tab="系统消息" disabled key="systerm">Content of Tab Pane 3</a-tab-pane>
+            <a-tab-pane tab="系统消息" key="systerm">
+                <ul>
+                    <li v-for="(item,index) in systermMesList" :key="index">
+                        <p>
+                            <span>{{item.noticeTitle}}</span>
+                            <span>{{item.noticeTime}}</span>
+                        </p>
+                        <p>{{item.noticeContent}}</p>
+                    </li>
+                </ul>
+                <x-pagination 
+                    v-show =" systermTotal > 10 " 
+                    :total="systermTotal" 
+                    @pageChange="handlePageChange" 
+                />
+            </a-tab-pane>
         </a-tabs>       
     </div>
 </template>
 
 <script>
+import XPagination from '@/components/pagination'
 export default {
     name: 'message',
+    components: {
+        XPagination
+    },
     methods: {
         async commonGetMessageList(tab){
             let url = tab === 'group' ? '/messagegroup.do' : '/messageuser.do';
@@ -103,10 +122,36 @@ export default {
         /**  相同的请求群组申请列表的方法
          *   调用了vuex里面的changeShowLoad方法，改变遮蔽层显示隐藏
          */
-
         async handleTabsChange(key) {
             console.log(key);
-            this.commonGetMessageList(key);
+            if ( key === 'group' ) {
+                this.commonGetMessageList(key);
+            } else if ( key === 'person'  ) {
+                this.commonGetMessageList(key);
+            } else if ( key === 'systerm' ) {
+                this.sysPageNo = 1;
+                this.commonGetSystermList(this.sysPageNo);
+            } 
+        },
+        /**
+         *  共同的获取系统消息列表的方法
+         */
+        async commonGetSystermList(pageNo){
+            const res = await this.$getData('/sys/systemNoticeList.action', {
+                pageNo,
+                eid: this.$myEid
+            });
+            console.log(res);
+            const { data: { rows,total } } = res;
+            this.systermMesList = rows;
+            this.systermTotal = total;            
+        },
+        /**
+         *  系统消息的分页事件处理
+         */
+        handlePageChange(pageNo){
+            this.sysPageNo = pageNo;
+            this.commonGetSystermList(this.sysPageNo);
         },
         /**
          *  加入小组的同意拒绝按钮事件处理
@@ -191,7 +236,10 @@ export default {
     data() {
         return {
             groupMesList: [],
-            personMesList: []
+            personMesList: [],
+            systermMesList: [],  // 系统消息的列表
+            sysPageNo: 1,  //  系统消息的分页
+            systermTotal: 1  //  系统消息的总数
         }
     },
     created () {

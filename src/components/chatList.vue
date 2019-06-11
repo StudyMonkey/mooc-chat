@@ -40,6 +40,7 @@ import XAvatar from '@/components/avatar'
 import SearchWrap from '@/components/searchWrap'
 import LoadMore from '@/components/loadMore'
 import { matchChangeColor, clearMatchColor } from '@/utils/utils'
+import { mapMutations } from 'vuex'
 export default {
     name: 'chatList',
     data() {
@@ -77,6 +78,7 @@ export default {
         }
     },
     methods: {
+        ...mapMutations(['changeShowLoad', 'handleChosedLi', 'changeMemberType']),
         /**
          * li的点击处理事件
          * 将点击的数据对象传递到父组件
@@ -84,14 +86,15 @@ export default {
          */
         async handleLiClick(item){          
             this.isActive = item.groupId;
-            this.$store.commit('changeShowLoad', true);
+            this.changeShowLoad(true);
             const res = await this.$getData('/chat/detail.do', {
                 groupId: item.groupId,
                 chatEid: item.chatEid
             });
-            this.$store.commit('changeShowLoad', false);
+            this.changeShowLoad(false);
             const { data: { obj } } = res;
-            this.$store.commit('handleChosedLi', item);  // 将所选中的左侧列表存到vuex里面，还有其他的组件需要用到
+            this.handleChosedLi(item);   // 将所选中的左侧列表存到vuex里面，还有其他的组件需要用到
+            this.changeMemberType(obj.groupMemberType);
             this.$emit('clickChosedLi', obj, item);
             this.$store.commit('addChatConList', obj.chatList);
         },

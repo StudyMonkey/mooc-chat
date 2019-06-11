@@ -5,24 +5,28 @@
                 <li v-for="(item,index) in noticeList" :key="index">
                     <div class="noticeInfoWrap">
                         <span class="iconfont icongonggao"></span>
-                        <p  @click="handleDivClick(index)" class="noticeTitle" v-text="item.noticeTitle"></p>
+                        <p title="点击可查看公告详情"  @click="handleDivClick(index)" class="noticeTitle" v-text="item.noticeTitle"></p>
                         <p class="dateTime" v-text="item.time"></p>
                     </div>
                     <div v-show="isActive === index">
                         <div class="noticeContentWrap" v-text="item.noticeContent"></div>
-                        <a-button size="small" class="fr" @click="handleNoticeDelete(item)">删除</a-button>
+                        <a-button  
+                            v-if="memberType === '3'" 
+                            size="small" class="fr" 
+                            @click="handleNoticeDelete(item)"
+                        >删除</a-button>
                     </div>               
                 </li>
             </ul>
         </div>
-        <div v-else>暂无任何小组公告信息</div>
-        <div class="createNoticeWrap">
+        <div class="noHaveNotice" v-else>暂无任何小组公告信息</div>
+        <div class="createNoticeWrap" v-if="memberType === '3'">
             <div><span>公告标题：</span><a-input v-model="noticeTitle" placeholder="请输入您想创建的公告标题......" /></div>
             <div>
                 <span>公告内容：</span>
                 <a-textarea v-model="noticeContent" placeholder="请输入您想创建的公告内容......" :rows="4" />
             </div>
-            <div>
+            <div class="btnLabelWrap">
                 <a-checkbox class="fl" @change="handleSendPartCheck">
                     <span class="fl">是否群发给所有的下级单位：</span>    
                 </a-checkbox>
@@ -49,7 +53,8 @@ export default {
             noticeTitle: '', // 创建的话题标题
             noticeContent: '', // 创建的话题内容 
             chosedLi: this.$store.state.chosedLi,
-            sendPart: false  // 群发给下级单位
+            sendPart: false,  // 群发给下级单位
+            memberType: this.$store.state.memberType  //  成员在该小组的权限
         }
     },
     watch: {
@@ -134,6 +139,7 @@ export default {
                     if ( res.data.success ) {
                         _this.$message.success('删除公告成功');
                         _this.getNoticeList();
+                        _this.isActive = ''
                     }
                 }
             })         
@@ -190,6 +196,11 @@ export default {
             }
         }
     }
+    .noHaveNotice{
+        font-size: 20px;
+        text-align: center;
+        padding: 20px;        
+    }
     .createNoticeWrap{
         padding: 15px 20px;
         background-color: #f5f5f5;
@@ -212,13 +223,21 @@ export default {
                 resize: none
             }
         }
-        button{
-            margin-top: -5px;
-            float: right;
-            height: 27px;
-            background-color: #70b24c;
-            color: #fff;            
+        .btnLabelWrap{
+            /deep/.ant-checkbox-wrapper{
+                .ant-checkbox{
+                    margin-top: 10px;
+                }
+            }
+            button{
+                margin: 5px 0 0 333px;
+                float: right;
+                height: 27px;
+                background-color: #70b24c;
+                color: #fff;            
+            }
         }
+
     }
 }
 </style>

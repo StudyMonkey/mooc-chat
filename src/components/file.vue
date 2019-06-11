@@ -31,7 +31,7 @@
                                 ></a-checkbox>
                             </td>
                             <td v-text="item.name"></td>
-                            <td v-text="item.groupId" :title="item.groupId"></td>
+                            <td v-text="item.groupNo" :title="item.groupNo"></td>
                             <td v-text="item.description"></td>
                         </tr>
                     </tbody>               
@@ -85,7 +85,11 @@
                                 <template slot="title">
                                     删除                                      
                                 </template>  
-                                <span @click="handleDeleteFile(item)" class="iconfont icondelete"></span>                      
+                                <span 
+                                    @click="handleDeleteFile(item)" 
+                                    class="iconfont icondelete"
+                                    v-if="memberType === '3' || item.fileEid === $myEid"
+                                ></span>                      
                             </a-tooltip>                          
                         </td>
                     </tr>
@@ -123,6 +127,7 @@ export default {
             chosedLi: this.$store.state.chosedLi,
             fileList: [],
             filePageNo: 1,
+            memberType: this.$store.state.memberType,  // 从vuex取出来的用户权限
             searchGroupResult: [],  // 搜索其他小组的结果数组
             searchResultCheck: [],  // 将check的值放入的数组
             shareVisible: false,    // 控制分享其他小组的显示隐藏
@@ -293,7 +298,6 @@ export default {
                 }
                 &.operate{
                     color: #2e766e;
-                    justify-content: center;
                 }
             }
         }
@@ -321,19 +325,24 @@ export default {
             &.operate{
                 width: 76px;
                 text-align: center;                
-                display: flex;
+                position: relative;
                 color: #999999;
                 span{
+                    position: absolute;
                     cursor: pointer;
+                    top: 0;
                     &:hover{
                         color: #f1bd85;
                     }
-                }
-                span.iconxiazai{
-                    margin-right: auto
-                }
-                span.icondelete{
-                    margin-left: auto
+                    &.iconxiazai{
+                        left: 0;
+                    }
+                    &.iconfenxiang{
+                        left: 25px;
+                    }
+                    &.icondelete{
+                        left: 50px
+                    }
                 }
             }
         }

@@ -47,7 +47,7 @@
                                             授权为管理员
                                         </template>
                                         <span 
-                                            v-if="item.memberType !== 3" 
+                                            v-if="memberType === '3' && item.memberType !== 3 " 
                                             class="iconfont iconyuechi1"
                                             @click="handleUpdateAdmin(item)"
                                         ></span>
@@ -57,7 +57,7 @@
                                             删除成员                                       
                                         </template>  
                                         <span 
-                                            v-if="item.memberEid !== $myEid"
+                                            v-if="item.memberEid !== $myEid && memberType === '3'"
                                             @click="handleDeleteMember(item)" 
                                             class="iconfont iconshanchengyuan"
                                         ></span>                      
@@ -118,6 +118,7 @@
 
 <script>
 import XPagination from '@/components/pagination'
+import { mapState } from 'vuex'
 export default {
     name: 'memberList',
     props: {
@@ -143,6 +144,7 @@ export default {
         }
     },
     computed: {
+        // ...mapState(['memberType', 'chosedLi']),
         identityClass(num) {
             return function(num){
                 if ( num === 3 ) {
@@ -176,6 +178,7 @@ export default {
             hasClickAdd: true, // 点击添加成员按钮
             chosedLi: this.$store.state.chosedLi,  // 从vuex里面获取
             pageNo: 1,  // 翻页数，默认为1
+            memberType: this.$store.state.memberType,  // 用户在小组的权限
             memberArray: [],  // 所勾选的用户保存的数组
             memberTotal: '', // 传递过来的total总数目
         }
@@ -250,7 +253,9 @@ export default {
             console.log(item);
             const res = await this.$getData('/member/privateMessage.action', {
                 memberEid: item.memberEid,
-                memberNick: item.memberNick
+                memberNick: item.memberNick,
+                eid: this.$myEid,
+                ename: this.$myName
             });
             console.log(res);
             // 传递给chatPage一个事件，然后chatPage告诉chatList应该要请求一次列表，

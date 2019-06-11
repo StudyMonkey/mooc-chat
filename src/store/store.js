@@ -8,7 +8,8 @@ export default new Vuex.Store({
     showLoad: false,
     chosedLi: {},  // 左侧列表点击所选中的那一项
     userList: [], // 左侧菜单的用户列表
-    chatConList: [] // 用户的聊天内容列表
+    chatConList: [], // 用户的聊天内容列表
+    memberType: ''   // 用户权限
   },
   mutations: {
     /**  控制整个页面遮蔽层的显示隐藏状态
@@ -26,6 +27,9 @@ export default new Vuex.Store({
     },
     handleChosedLi( state, obj ) {
       state.chosedLi = obj
+    },
+    changeMemberType( state, type ){
+      state.memberType = type;
     }
   },
   actions: {
