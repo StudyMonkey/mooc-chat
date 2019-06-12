@@ -25,12 +25,12 @@
                             </tr>
                             <tr v-for="(item,index) in memberList" :key="index">
                                 <td class="username">
-                                    <span :class="identityClass(item.memberType)"></span>
+                                    <span :class="identityClass(item)"></span>
                                     <span v-text="item.memberEid"></span>
                                 </td>
                                 <td class="nickname" v-text="item.memberNick">
                                 </td>
-                                <td v-text="identityWord(item.memberType)"></td>
+                                <td v-text="identityWord(item)"></td>
                                 <td class="operate">
                                     <a-tooltip>
                                         <template slot="title">
@@ -118,7 +118,7 @@
 
 <script>
 import XPagination from '@/components/pagination'
-import { mapState } from 'vuex'
+import { mapState,mapMutations } from 'vuex'
 export default {
     name: 'memberList',
     props: {
@@ -145,22 +145,24 @@ export default {
     },
     computed: {
         // ...mapState(['memberType', 'chosedLi']),
-        identityClass(num) {
-            return function(num){
-                if ( num === 3 ) {
+        identityClass(item) {
+            return function(item){
+                if ( item.memberType === 3 && item.isAdmin === 1 ) {
                     return 'iconfont iconqunzhu'
-                } else if ( num === 2 ) {
+                } else if ( item.memberType === 3 && item.isAdmin === 2 ) {
                     return 'iconfont iconguanliyuan'
                 } else {
                     return 'pl22'
                 } 
             }
         },
-        identityWord(num) {
-            return function(num){
-                if ( num === 3 ) {
+        identityWord(item) {
+            return function(item){
+                if ( item.memberType === 3 && item.isAdmin === 1 ) {
+                    return '群主'
+                } else if ( item.memberType === 3 && item.isAdmin === 2 ) {
                     return '管理员'
-                } else if ( num === '2' ) {
+                } else if( item.memberType === 2 ) {
                     return '组长'
                 } else {
                     return '成员'
@@ -187,18 +189,25 @@ export default {
         XPagination,
     },
     methods: {
+        ...mapMutations(['changeShowLoad']),
+        /**
+         *  通用请求方法，传入url 和 参数，返回res
+         */
+        async commonGetData(url, params){
+            this.changeShowLoad(true);
+            const res = await this.$getData(url, {...params});
+            this.changeShowLoad(false);
+            return res;            
+        },
         // 删除小组成员事件处理
         handleDeleteMember(item){
             let _this = this;
             this.$confirm({
                 title: '确定删除该小组成员？',
                 async onOk() {
-                    _this.$store.commit('changeShowLoad', true);
-                    const res = await _this.$getData('/member/deleteMember.action', {
+                    const res = await _this.commonGetData('/member/deleteMember.action', {
                         id: item.id
                     })
-                    console.log(res);
-                    _this.$store.commit('changeShowLoad', false);
                     if ( res.data.success ) {
                         _this.$message.success('删除小组成员成功'); 
                         _this.commonGetMembetList();
@@ -212,14 +221,11 @@ export default {
          * 搜索和翻页的相同请求事件处理
          */
         async commonGetMembetList(){
-            this.$store.commit('changeShowLoad', true);
-            const res = await this.$getData('/member/memberList.action', {
+            const res = await this.commonGetData('/member/memberList.action', {
                 memberSearchWord: this.searchVal,
                 groupId: this.chosedLi.groupId,
                 pageNo: this.pageNo
             });
-            console.log(res);
-            this.$store.commit('changeShowLoad', false);
             const { data: { rows } } = res;
             this.memberTotal = res.data.total;
             this.memberList = rows; 
@@ -258,20 +264,22 @@ export default {
                 ename: this.$myName
             });
             console.log(res);
+            const { data: { obj } } = res;
             // 传递给chatPage一个事件，然后chatPage告诉chatList应该要请求一次列表，
             // 且在对应的groupId上有激活状态
+            this.$store.commit('changeGroupId', obj.groupId);
         },
         /**
          *  搜索所有用户的事件处理
          */
         async handleSearchAllMember(){
-            this.$store.commit('changeShowLoad', true);
+            this.changeShowLoad(true);
             const res = await this.$getData('/searchuser.do', {
                 pageNo: 1,
                 name: this.searchMember,
                 myEid: this.$myEid,
             });
-            this.$store.commit('changeShowLoad', false);
+            this.changeShowLoad(false);
             console.log(res);
             this.searchMemberList = res.data.rows;
         },
@@ -284,13 +292,13 @@ export default {
             this.$confirm({
                 title: '确定授权该成员为管理员身份么？',
                 async onOk(){
-                    _this.$store.commit('changeShowLoad', true);
+                    _this.changeShowLoad(true);
                     const res = await _this.$getData('/member/updateAdmin.action', {
                         groupId: _this.chosedLi.groupId,
                         id: item.id,
                         userEid: item.memberEid
                     });
-                    _this.$store.commit('changeShowLoad', false);
+                    _this.changeShowLoad(false);
                     console.log(res);
                     if ( res.data.success ) {
                         _this.$message.success('授权管理员成功');
@@ -331,14 +339,14 @@ export default {
                     membersName += v.userName;
                 }
             });
-            this.$store.commit('changeShowLoad', true);
+            this.changeShowLoad(true);
             const res = await this.$getData('/member/addGroupMemberNum.action', {
                 groupId: this.chosedLi.groupId,
                 joinNum: this.memberArray.length,
                 membersId,
                 membersName,
             });
-            this.$store.commit('changeShowLoad', false);
+            this.changeShowLoad(false);
             if ( res.data.success ) {
                 this.$message.success('添加成员成功');
                 this.$message.info(`${res.data.cacheId}已是小组成员，${res.data.sortName}添加成功`);

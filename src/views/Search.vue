@@ -263,9 +263,9 @@ export default {
          */
         async handleAddMemberReq(){
             this.$store.commit('changeShowLoad', true);
-            const res = await this.$getData('/applyfriend.do', {
+            const res = await this.$postData('/applyfriend.do', {
                 applyContent: this.addMemberReason,
-                applyEid: this.$myEid,
+                userEid: this.$myEid,
                 friendEid: this.chosedMember.userEid
             })
             this.$store.commit('changeShowLoad', false);
@@ -284,7 +284,7 @@ export default {
                 pageNo: pageNumber,
                 groupNo: this.groupNum,
                 name: this.groupName
-            })       
+            });       
         },
         /**
          * 搜索用户的结果翻页点击事件

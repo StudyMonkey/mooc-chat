@@ -1,6 +1,6 @@
 <template>
     <div class="messagePageWrap">
-        <a-tabs type="card" defaultActiveKey="group" @change="handleTabsChange">
+        <a-tabs size="small" type="card" defaultActiveKey="group" @change="handleTabsChange">
             <a-tab-pane tab="小组消息" key="group">
                 <div class="table_area">
                     <table class="limitadm_table1 messageGroupTable">
@@ -77,15 +77,22 @@
                 </div>                 
             </a-tab-pane>
             <a-tab-pane tab="系统消息" key="systerm">
-                <ul>
-                    <li v-for="(item,index) in systermMesList" :key="index">
-                        <p>
-                            <span>{{item.noticeTitle}}</span>
-                            <span>{{item.noticeTime}}</span>
-                        </p>
-                        <p>{{item.noticeContent}}</p>
-                    </li>
-                </ul>
+                <div class="table_area">
+                    <table class="limitadm_table1">
+                        <tbody>
+                            <tr class="h50 tr1">
+                                <td class="username">类型</td>
+                                <td class="name">时间</td>
+                                <td class="part">事件</td>
+                            </tr>  
+                            <tr v-for="(item,index) in systermMesList" :key="index">
+                                <td>{{item.noticeTitle}}</td>
+                                <td>{{item.noticeTime}}</td>
+                                <td>{{item.noticeContent}}</td>
+                            </tr>                          
+                        </tbody>
+                    </table>
+                </div>
                 <x-pagination 
                     v-show =" systermTotal > 10 " 
                     :total="systermTotal" 

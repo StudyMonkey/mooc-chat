@@ -1,4 +1,8 @@
 import axios from 'axios'
+import Vue from 'vue'
+import Vuex, { Store } from 'vuex'
+
+Vue.use(Vuex)
 
 // const uri = 'http://172.26.75.218/moocGroupApi/group'
 const uri = '/group'
@@ -32,6 +36,13 @@ export function postData(url, data){
             return reject(err)
         })
     })
+}
+
+export async function allGet(url, params){
+    Store.commit('changeShowLoad', true);
+    const res = await getData(url, {...params});
+    Store.commit('changeShowLoad', false);
+    return res;
 }
 
 /***

@@ -17,7 +17,7 @@
                 </div>
                 <p class="chatGroupNum">小组编号：<span>{{chosedChat.groupNo}}</span></p>
                 <div class="card-container">
-                    <a-tabs type="card" @change="handleTabsChange" defaultActiveKey="chatMain">
+                    <a-tabs type="card" @change="handleTabsChange" v-model="tabStr"  defaultActiveKey="chatMain">
                         <a-tab-pane tab="聊天" key="chatMain">
                             <chat-main />
                         </a-tab-pane>
@@ -78,6 +78,24 @@ export default {
             noticeList: [], // 传递给公告的数组
             fileList: [], // 传递给文件的数组
             quickCreateGroup: true, // 点击快速创建小组切换状态
+            tabStr: 'chatMain',  // tab标签页切换的存值
+        }
+    },
+    computed: {
+        groupIdChange(){
+            return this.$store.state.groupId
+        }
+    },
+    watch: {
+        groupIdChange: {
+            handler(n, o) {
+                if ( n !== o ) {
+                    console.log(this.$store.state.groupId);
+                    this.tabStr = 'chatMain';
+                    // this.getUserList(false, true);
+                }
+            },
+            deep: true
         }
     },
     components: {
@@ -192,13 +210,6 @@ export default {
             console.log(str);           
         }
     },  
-    created(){
-        console.log(this.$route.params);
-        if ( this.$route.params.groupId !== '' ) {
-            console.log(this.$route.params.groupId);
-            // 匹配到左侧列表的数据显示激活状态，获取相应的数据
-        }
-    } 
 }
 </script>
 

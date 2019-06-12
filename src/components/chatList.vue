@@ -60,6 +60,11 @@ export default {
         SearchWrap,
         LoadMore
     },
+    computed: {
+        groupIdChange(){
+            return this.$store.state.groupId
+        }
+    },
     watch: {
         $route: {
             handler (n, o){
@@ -75,10 +80,28 @@ export default {
                 }
             },
             deep: true
+        },
+        groupIdChange: {
+            handler(n, o) {
+                if ( n !== o ) {
+                    console.log(this.$store.state.groupId);
+                    this.getUserList(false, true);
+                }
+            },
+            deep: true
         }
     },
     methods: {
-        ...mapMutations(['changeShowLoad', 'handleChosedLi', 'changeMemberType']),
+        ...mapMutations(['changeShowLoad', 'handleChosedLi', 'changeMemberType', 'changeAdmin', 'changeGroupId']),
+        /**
+         *  通用请求方法，传入接口url和请求，返回res
+         */
+        async commonGetData(url, params){
+            this.changeShowLoad(true);
+            const res = await this.$getData(url, {...params});
+            this.changeShowLoad(false);
+            return res;
+        },
         /**
          * li的点击处理事件
          * 将点击的数据对象传递到父组件
@@ -86,29 +109,27 @@ export default {
          */
         async handleLiClick(item){          
             this.isActive = item.groupId;
-            this.changeShowLoad(true);
-            const res = await this.$getData('/chat/detail.do', {
+            const res = await this.commonGetData('/chat/detail.do', {
                 groupId: item.groupId,
-                chatEid: item.chatEid
+                chatEid: item.chatEid,
+                eid: this.$myEid,
             });
-            this.changeShowLoad(false);
             const { data: { obj } } = res;
             this.handleChosedLi(item);   // 将所选中的左侧列表存到vuex里面，还有其他的组件需要用到
+            this.changeGroupId(item.groupId);
             this.changeMemberType(obj.groupMemberType);
+            this.changeAdmin(obj.isAdmin);
             this.$emit('clickChosedLi', obj, item);
             this.$store.commit('addChatConList', obj.chatList);
         },
         /** 获取用户列表数据方法
          *  init为布尔值，初始化请求为false，加载更多按钮点击为true
          */       
-        async getUserList(init){
-            this.$store.commit('changeShowLoad', true);
+        async getUserList(init, isGroupId = false){
             init ? this.pageNo++ : this.pageNo;
             // 由通讯录好友点到我加入的小组时，isGroup为false请求到了聊天列表的数据
             this.isGroup = this.$route.path === '/group' ? true : false;
-            const res = await this.$getData('/leftHotGroups.do', { eid: this.$myEid, pageNo: this.pageNo, isGroup: this.isGroup })
-            this.$store.commit('changeShowLoad', false);
-            console.log(res);
+            const res = await this.commonGetData('/leftHotGroups.do', { eid: this.$myEid, pageNo: this.pageNo, isGroup: this.isGroup })
             let { data: { rows } } = res;
             if ( rows.length < res.data.count ) {
                 this.showLoadMore = false
@@ -117,6 +138,11 @@ export default {
             }
             init ? this.messageList = this.messageList.concat(rows) : this.messageList = rows;
             this.saveMessageList = this.messageList;
+            if ( isGroupId ) {
+                const item = this.messageList.filter( v => v.groupId === this.$store.state.groupId );
+                console.log(item[0]);
+                this.handleLiClick(item[0]);
+            }
             console.log(this.saveMessageList);
             // 存储到vuex
             this.$store.commit('addUserList', this.messageList);
@@ -147,15 +173,13 @@ export default {
                 this.searchNoResult = false;
 
                 let isGroup = this.$route.path === '/chat' ? false : true;
-                this.$store.commit('changeShowLoad', true);
-                const res = await this.$getData('/leftHotGroups.do', {
+                const res = await this.commonGetData('/leftHotGroups.do', {
                     eid: this.$myEid,
                     name: searchVal,
                     pageNo: 1,
                     isGroup
                 });
                 const { data: { rows } } = res;
-                this.$store.commit('changeShowLoad', false);
                 if ( rows.length > 0 ) {
                     this.messageList = matchChangeColor(rows, searchVal, 'name');
                 } else {
@@ -168,8 +192,13 @@ export default {
             }
         },
     }, 
-    created () {
-        this.getUserList(false);
+    created () {      
+        console.log(this.$route);
+        if ( JSON.stringify(this.$route.params) !== "{}" && this.$route.params.groupId !== null ) {
+            this.getUserList(false, true);
+        } else {
+            this.getUserList(false);
+        }
     },   
 }
 </script>

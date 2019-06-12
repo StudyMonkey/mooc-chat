@@ -133,6 +133,13 @@ export default {
             this.oneUser = item;
         },
         /**
+         *  置顶好友的接口处理方法
+         */
+        async handleStickFriend(url, params){
+            const res = await this.$postData(url, {...params});
+            return res;
+        },
+        /**
          *  公用提示显示消息方法
          */
         commonMessage(title, mes){            
@@ -141,22 +148,33 @@ export default {
                 title,
                 okText: '确认',
                 cancelText: '取消',
-                onOk(){
-                    axios.post('/group/stick.do', {
-                            userEid: _this.$myEid, 
-                            friendEid: _this.oneUser.friendEid, 
-                            top: _this.oneUser.top
-                        }
-                    ).then( res => {
-                        if ( res.status === 200 ) {
-                            _this.oneUser.top = !_this.oneUser.top;
-                            _this.pageNo = 1;
-                            _this.commonGetAddressList(false);
-                            _this.$message.success(mes);                            
-                        }
-                    }).catch( err => {
-                        _this.$message.success(err); 
-                    })              
+                async onOk(){
+                    const res = await _this.handleStickFriend('/stick.do', {
+                        userEid: _this.$myEid, 
+                        friendEid: _this.oneUser.friendEid, 
+                        top: _this.oneUser.top                        
+                    })
+                    if ( res.status === 200 ) {
+                        _this.oneUser.top = !_this.oneUser.top;
+                        _this.pageNo = 1;
+                        _this.commonGetAddressList(false);
+                        _this.$message.success(mes);                            
+                    }                    
+                    // axios.post('/group/stick.do', {
+                    //         userEid: _this.$myEid, 
+                    //         friendEid: _this.oneUser.friendEid, 
+                    //         top: _this.oneUser.top
+                    //     }
+                    // ).then( res => {
+                    //     if ( res.status === 200 ) {
+                    //         _this.oneUser.top = !_this.oneUser.top;
+                    //         _this.pageNo = 1;
+                    //         _this.commonGetAddressList(false);
+                    //         _this.$message.success(mes);                            
+                    //     }
+                    // }).catch( err => {
+                    //     _this.$message.success(err); 
+                    // })              
                 }
             })            
         },
@@ -238,11 +256,14 @@ export default {
          * 让聊天界面的this.isActive等于这个id设置选中状态
          */
         async handleSendMessage(){
+            this.$store.commit('changeShowLoad', true);
             const res = await this.$postData('/personalchat.do', {
                 userEid: this.$myEid,
                 friendEid: this.oneUser.friendEid
             });
-            console.log(res);
+            this.$store.commit('changeShowLoad', false);
+            console.log(res.data.obj);
+            this.$store.commit('changeGroupId', res.data.obj);
             this.$router.push({
                 name: 'chatPage',
                 params: {
