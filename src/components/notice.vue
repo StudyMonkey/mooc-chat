@@ -69,12 +69,10 @@ export default {
          *  获取公告列表
          */
         async getNoticeList(){
-            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData('/chat/getNoticeList.action', {
                 groupId: this.chosedLi.groupId
             });
             const { data: { rows } } = res;
-            this.$store.commit('changeShowLoad', false);
             this.noticeList = rows;
         },
         /*  展开收起按钮操作事件处理
@@ -131,11 +129,9 @@ export default {
                 okText: '确认',
                 cancelText: '取消',
                 async onOk(){
-                    _this.$store.commit('changeShowLoad', true);
                     const res = await _this.$getData('/chat/delNoticeById.action', {
                         noticeId: item.noticeId
                     });
-                    _this.$store.commit('changeShowLoad', false);
                     if ( res.data.success ) {
                         _this.$message.success('删除公告成功');
                         _this.getNoticeList();

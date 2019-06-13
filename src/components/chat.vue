@@ -246,14 +246,12 @@ export default {
          *  处理点击加载历史记录 
          */
         async handleLoadMoreChat() {
-            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData('/chat/history.action', {
                 groupId: this.chosedLi.groupId,
                 pageNo: this.historyPage
             });
             const { data: { rows } } = res;
             this.chatList = rows.concat(this.chatList);
-            this.$store.commit('changeShowLoad', false);
             this.$store.commit('addChatConList', this.chatList);
             this.historyPage++;
         },
@@ -320,11 +318,9 @@ export default {
         // 发起私聊请求
         async handleChatSend(){
             this.$message.info('发起私聊请求');
-            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData('chatCon', {});
             const { data: { data } } = res; 
             this.chatList = data;
-            this.$store.commit('changeShowLoad', false);
             this.$store.commit('addChatConList', this.chatList);                       
         },
         // 用了两次的确认框弹出方法
@@ -439,8 +435,6 @@ export default {
 <style lang="less" scoped>
 .mr10{ margin-right: 10px; }
 .ml10{ margin-left: 10px; }
-// .bgSelf{ background-color: #fbf6ed }
-// .bgOther{ background-color: #def7f0 }
 .textAlignR{ text-align: right }
 textarea[class='ant-input']{ resize: none }
 .linkAddressWrap,.footerPrompt{

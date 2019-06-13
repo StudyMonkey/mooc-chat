@@ -162,17 +162,14 @@ export default {
          */
         async handleShareGroupSearch(){
             if ( this.searchGroup !== '' ) {
-                this.$store.commit('changeShowLoad', true);
                 const res = await this.$getData('/leftHotGroups.do', {
                     eid: this.$myEid,
                     name: this.searchGroup,
                     pageNo: 1,
                     isGroup: true
                 });
-                this.$store.commit('changeShowLoad', false);
                 const { data: { rows } } = res;
                 this.searchGroupResult = rows;
-                console.log(res);
             } else {
                 this.$message.info('小组名称不能为空');
             }
@@ -243,12 +240,10 @@ export default {
          *  获取文件列表
          */
         async getFileList(){
-            this.$store.commit('changeShowLoad', true);
             const res1 = await this.$getData('/member/groupFileList.action', {
                 groupId: this.chosedLi.groupId,
                 pageNo: this.filePageNo
             });
-            this.$store.commit('changeShowLoad', false);
             this.fileList = res1.data.rows;            
         },
         /**
@@ -261,16 +256,14 @@ export default {
                 okText: '确认',
                 cancelText: '取消',
                 async onOk(){
-                    _this.$store.commit('changeShowLoad', true);
                     const res = await _this.$getData('/member/deleteGroupFile.action', {
                         groupId: _this.chosedLi.groupId,
                         fileId: item.fileId,
                         moocFileId: item.moocFileId,
                         fileType: item.fileType
                     });
-                    _this.$store.commit('changeShowLoad', false);
-                    console.log(res);
-                    if ( res.data.success && res.data.msg === 'deleteSuccess' ) {
+                    const { data: { success, msg } } = res;
+                    if ( success && msg === 'deleteSuccess' ) {
                         _this.$message.success('删除群文件成功');
                         _this.filePageNo = 1;
                         _this.getFileList();

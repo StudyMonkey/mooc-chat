@@ -3,11 +3,12 @@ import { message } from 'ant-design-vue'
 
 axios.interceptors.response.use(
     response => {
+        // console.log(response);
         if (response.status === 200) {
-            console.log( response );
-            if ( !response.data.data ) {
-                message.error( response.data.errorInfo )
-            } 
+            // console.log( response );
+            // if ( !response.data.data ) {
+            //     message.error( response.data.errorInfo )
+            // } 
             // console.log('请求成功');
         }
         return response

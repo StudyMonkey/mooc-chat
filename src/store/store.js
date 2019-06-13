@@ -12,6 +12,7 @@ export default new Vuex.Store({
     memberType: '',   // 用户权限
     isAdmin: '',       // 是否为群主或管理员
     groupId: '',      //  列表选中的那个id
+    getUserList: false   // 刷新左侧用户列表
   },
   mutations: {
     /**  控制整个页面遮蔽层的显示隐藏状态
@@ -38,6 +39,9 @@ export default new Vuex.Store({
     },
     changeGroupId( state, id ) {
       state.groupId = id;
+    },
+    changeGetUserList( state, bool ) {
+      state.getUserList = bool;
     }
   },
   actions: {

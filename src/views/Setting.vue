@@ -71,7 +71,6 @@ export default {
         const res = await this.$postData('/getsystem.do', {
             eid: this.$myEid
         });
-        console.log(res);
         const { data: { obj } } = res;
         if ( obj.userAuth === null ) {
             this.selectFriend = 1;

@@ -174,10 +174,8 @@ export default {
          *   传递参数url和查询条件
          */
         async commonGetData(url, params){
-            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData(url, params);
             url === '/searchuser.do' ? this.memberTotal = res.data.count : this.groupTotal = res.data.count;
-            this.$store.commit('changeShowLoad', false);
             const { data: { rows } } = res;
             return rows;    
         },
@@ -234,19 +232,18 @@ export default {
         *  点击发送申请加入小组的请求
         */
         async handleSendJoinReq(){
-            this.groupVisible = false;  
-            this.$store.commit('changeShowLoad', true);         
+            this.groupVisible = false;          
             const res = await this.$postData('/applygroup.do', {
                 applyContent: this.joinGroupReason,  // 输入的申请理由
                 groupNo: this.chosedGroup.groupNumber,  // 选择的小组编号
                 userEid: this.$myEid,
             });
-            this.$store.commit('changeShowLoad', false);
-            if ( res.data.success && res.data.code === 200 ) {
-                this.$message.success(res.data.msg);
+            const { data: { success, code, msg } } = res;
+            if ( success && code === 200 ) {
+                this.$message.success(msg);
                 this.joinGroupReason = '';
-            } else if( res.data.success && res.data.code === 300 ) {
-                this.$message.warning(res.data.msg);
+            } else if( success && code === 300 ) {
+                this.$message.warning(msg);
             } else {
                 this.$message.warning('申请加入小组失败');
             }        
@@ -262,14 +259,11 @@ export default {
          * 点击发送添加好友请求
          */
         async handleAddMemberReq(){
-            this.$store.commit('changeShowLoad', true);
             const res = await this.$postData('/applyfriend.do', {
                 applyContent: this.addMemberReason,
                 userEid: this.$myEid,
                 friendEid: this.chosedMember.userEid
-            })
-            this.$store.commit('changeShowLoad', false);
-            console.log(res);            
+            })          
             this.memberVisible = false;
             this.addMemberReason = '';
             if ( res.data.success === true ) {

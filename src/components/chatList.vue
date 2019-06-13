@@ -63,6 +63,9 @@ export default {
     computed: {
         groupIdChange(){
             return this.$store.state.groupId
+        },
+        userListChange(){
+            return this.$store.state.getUserList
         }
     },
     watch: {
@@ -89,19 +92,19 @@ export default {
                 }
             },
             deep: true
+        },
+        userListChange: {
+            handler(n, o) {
+                if ( n !== o ) {
+                    console.log(this.$store.state.getUserList);
+                    this.getUserList(false);
+                }
+            },
+            deep: true
         }
     },
     methods: {
-        ...mapMutations(['changeShowLoad', 'handleChosedLi', 'changeMemberType', 'changeAdmin', 'changeGroupId']),
-        /**
-         *  通用请求方法，传入接口url和请求，返回res
-         */
-        async commonGetData(url, params){
-            this.changeShowLoad(true);
-            const res = await this.$getData(url, {...params});
-            this.changeShowLoad(false);
-            return res;
-        },
+        ...mapMutations([ 'handleChosedLi', 'changeMemberType', 'changeAdmin', 'changeGroupId', 'changeGetUserList']),
         /**
          * li的点击处理事件
          * 将点击的数据对象传递到父组件
@@ -109,7 +112,7 @@ export default {
          */
         async handleLiClick(item){          
             this.isActive = item.groupId;
-            const res = await this.commonGetData('/chat/detail.do', {
+            const res = await this.$getData('/chat/detail.do', {
                 groupId: item.groupId,
                 chatEid: item.chatEid,
                 eid: this.$myEid,
@@ -129,7 +132,7 @@ export default {
             init ? this.pageNo++ : this.pageNo;
             // 由通讯录好友点到我加入的小组时，isGroup为false请求到了聊天列表的数据
             this.isGroup = this.$route.path === '/group' ? true : false;
-            const res = await this.commonGetData('/leftHotGroups.do', { eid: this.$myEid, pageNo: this.pageNo, isGroup: this.isGroup })
+            const res = await this.$getData('/leftHotGroups.do', { eid: this.$myEid, pageNo: this.pageNo, isGroup: this.isGroup })
             let { data: { rows } } = res;
             if ( rows.length < res.data.count ) {
                 this.showLoadMore = false
@@ -145,6 +148,7 @@ export default {
             }
             console.log(this.saveMessageList);
             // 存储到vuex
+            this.changeGetUserList(false);
             this.$store.commit('addUserList', this.messageList);
         },
         // 加载更多按钮的点击事件处理
@@ -173,7 +177,7 @@ export default {
                 this.searchNoResult = false;
 
                 let isGroup = this.$route.path === '/chat' ? false : true;
-                const res = await this.commonGetData('/leftHotGroups.do', {
+                const res = await this.$getData('/leftHotGroups.do', {
                     eid: this.$myEid,
                     name: searchVal,
                     pageNo: 1,

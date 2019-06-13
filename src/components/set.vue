@@ -1,5 +1,15 @@
 <template>
     <div class="setTopWrap">
+        <a-modal
+            title="请填写退出小组的理由"
+            v-model="quitGroupModal"
+            centered
+            @ok="handleQuitGroupSure"
+            okText="确认"
+            cancelText="取消"
+        >
+            <a-textarea v-model="exitReason" placeholder="在此输入退出小组理由..." />
+        </a-modal>        
         <div class="groupNameWrap">
             <span>小组名称：</span>
             <a-input class="groupName" v-model="groupName" placeholder="请输入小组名称......" />
@@ -41,7 +51,7 @@
             <span>群主转移：</span>
             <a-tooltip>
                 <template slot="title">
-                    {{ isAdmin !== 1 ? '群主身份才能操作群主转移' : '' }}
+                    {{ isAdmin !== 1 ? '群主身份才能操作群主转移' : null }}
                 </template>
                 <a-select 
                     style="width: 209px;height:25px;" 
@@ -75,7 +85,7 @@
             <a-button size="small" @click="handleQuitGroupClick">退出小组</a-button>
             <a-tooltip>
                 <template slot="title">
-                    {{ isAdmin !== 1 ? '群主身份才能操作解散小组' : '' }}
+                    {{ isAdmin !== 1 ? '群主身份才能操作解散小组' : null }}
                 </template>
                 <a-button 
                     size="small" 
@@ -109,6 +119,9 @@ export default {
             memberType: this.$store.state.memberType,  // 从vuex里面取出来的用户权限
             isAdmin: this.$store.state.isAdmin,  // 从vuex里面取出来的用户群主和管理员身份
             isTop: '',   // 是否置顶
+            groupNo: '',
+            exitReason: '',   // 退出小组的理由
+            quitGroupModal: false,   //  控制退出小组的理由Modal框显示隐藏
         }
     },
     components: {
@@ -116,7 +129,6 @@ export default {
         UploadImg
     },
     methods: {
-        ...mapMutations(['changeShowLoad']),
         // 通用的确认事件处理
         comfirmMethod(title, mes){
             let _this = this;
@@ -169,13 +181,53 @@ export default {
             })
             
         },
+        // 退出小组点击确认
+        async handleQuitGroupSure(){
+            const res = await this.$getData('/sys/groupExit.action', {
+                groupId: this.chosedLi.groupId,
+                groupNo: this.groupNo,
+                exiterNick: '',
+                exitReason: this.exitReason,
+                eid: this.$myEid,
+                offcial: ''
+            })
+        },
         // 退出小组点击事件处理
         handleQuitGroupClick(){
-            this.comfirmMethod('确定退出该小组？', '退出小组成功');            
+            let _this = this;
+            this.$confirm({
+                title: '确认要退出该小组么？',
+                async onOk() {
+                    _this.quitGroupModal = true
+                    // _this.handleQuitGroupSure();                               
+                },
+                okText: '确认',
+                cancelText: '取消',
+            })           
+        },
+        async handleDismissGroupSure(){
+            const res = await this.$getData('/sys/deleteGroup.action', {
+                eid: this.$myEid,
+                groupId: this.chosedLi.groupId
+            })
+            if ( res.data.success ) {
+                this.$message.success('解散小组成功');
+            }
+            console.log(res);
         },
         // 解散小组点击事件处理
         handleDismissGroupClick(){
-            this.comfirmMethod('确定解散该小组？', '解散小组成功');
+            let _this = this;
+            this.$confirm({
+                title: '解散群后，相关群信息，群成员信息都会删除，无法找回，请确认操作是否继续!',
+                async onOk() {
+                    _this.handleDismissGroupSure();
+                    _this.$store.commit('changeGetUserList', true);
+                    // _this.handleQuitGroupSure();                               
+                },
+                okText: '确认',
+                cancelText: '取消',
+            });             
         },
         // 保存按钮的点击事件处理
         async handleSaveBtnClick() {
@@ -190,18 +242,15 @@ export default {
                     groupDesc: this.groupDescription,
                     addFlag: this.addMember,
                 });
-                console.log(res);
                 this.$message.success('修改设置成功');
             }
         }
     },
     async created(){
-        this.changeShowLoad(true);
         const res = await this.$getData('/sys/settings.action', {
             eid: this.$myEid,
             groupId: this.chosedLi.groupId
         });
-        this.changeShowLoad(false);
         // addFlag  添加成员  1   2
         // affirmFlag 加群方式  1  2
         console.log(res);
@@ -213,6 +262,7 @@ export default {
         this.addGroup = obj.affirmFlag;
         this.memberOptionList = adminList;
         this.isTop = obj.bakField2;
+        this.groupNo = obj.groupNo;
     },
 }
 </script>

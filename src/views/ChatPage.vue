@@ -110,15 +110,11 @@ export default {
         NotClick
     },
     methods: {
-        ...mapMutations(['changeShowLoad']),
+        ...mapMutations(['changeGetUserList']),
         async commonGetMethod(url, params){
-            // this.$store.commit('changeShowLoad', true);
-            this.changeShowLoad(true);
             const res = await this.$getData(url, params);
             console.log(res);
             const { data } = res;
-            // this.$store.commit('changeShowLoad', false);
-            this.changeShowLoad(false);
             this.total = data.total;
             return data.rows;
         },
@@ -178,26 +174,15 @@ export default {
                     }                
                 });
                 console.log(friendEidArr);
-                this.changeShowLoad(true);
                 const res = await this.$getData('/multipersonchat.do', {
                     eid: this.$myEid,
                     friendEids: friendEidArr
                 });
-                this.changeShowLoad(false);
                 if ( res.data.success ) {
                     this.$message.success(res.data.msg);
-                    // if ( this.$route.path === '/chat' ) {
-                    //     this.$store.commit('changeShowLoad', true);
-                    //     const res = await this.$getData('/leftHotGroups.do', 
-                    //         { 
-                    //             eid: this.$myEid, 
-                    //             pageNo: this.pageNo, 
-                    //             isGroup: this.isGroup 
-                    //         }
-                    //     )
-                    //     this.$store.commit('changeShowLoad', false);
-                    // }
-                    this.$router.push({path: '/chat'});
+                    //this.$router.push({path: '/chat'});
+                    // 修改vuex里面的状态，chatList监听到状态改变就会获取一次列表
+                    this.changeGetUserList(true);
                 }               
                 
             }          

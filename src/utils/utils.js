@@ -1,48 +1,50 @@
 import axios from 'axios'
-import Vue from 'vue'
-import Vuex, { Store } from 'vuex'
-
-Vue.use(Vuex)
+import store from '../store/store'
 
 // const uri = 'http://172.26.75.218/moocGroupApi/group'
 const uri = '/group'
 
+/**
+ * get方式请求
+ * @param {接口地址} url 
+ * @param {*接口参数} data 
+ * 成功则返回请求的数据
+ */
 export function getData(url, data){
     return new Promise( (resolve, reject) => {
+        store.commit('changeShowLoad', true);
         axios.get(uri + url, {
             params: {
                 ...data
             }
         }).then( res => {
+            store.commit('changeShowLoad', false);
             return resolve(res)
         }).catch( err => {
+            store.commit('changeShowLoad', false);
             return reject(err)
         })
     })
 }
 
 /**
- * 
+ * post方式请求
  * @param {请求地址} url 
  * @param {传递参数} data 
  */
 export function postData(url, data){
     return new Promise( (resolve, reject) => {
+        store.commit('changeShowLoad', true);
         axios.post(uri+url, {
             ...data
         }).then( res => {
+            store.commit('changeShowLoad', false);
             return resolve(res)
         }).catch( err => {
+            store.commit('changeShowLoad', false);
             return reject(err)
         })
     })
-}
-
-export async function allGet(url, params){
-    Store.commit('changeShowLoad', true);
-    const res = await getData(url, {...params});
-    Store.commit('changeShowLoad', false);
-    return res;
 }
 
 /***

@@ -113,12 +113,9 @@ export default {
     methods: {
         async commonGetMessageList(tab){
             let url = tab === 'group' ? '/messagegroup.do' : '/messageuser.do';
-            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData(url, {
                 eid: this.$myEid
             }); 
-            console.log(res); 
-            this.$store.commit('changeShowLoad', false); 
             const { data: { rows } } = res; 
             if ( tab === 'group' ) {
                 this.groupMesList = rows;
@@ -148,7 +145,6 @@ export default {
                 pageNo,
                 eid: this.$myEid
             });
-            console.log(res);
             const { data: { rows,total } } = res;
             this.systermMesList = rows;
             this.systermTotal = total;            

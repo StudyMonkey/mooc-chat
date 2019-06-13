@@ -95,22 +95,17 @@ export default {
         },
         async handleTopicCreate(){
             if ( this.createTopicName ) {
-                this.$store.commit('changeShowLoad', true);
                 const res = await this.$getData('/chat/createTopic.action', {
                     topicName: this.createTopicName,
                     groupId: this.chosedLi.groupId
                 });
-                console.log(res);
-                this.$store.commit('changeShowLoad', false);
-                const { data } = res;
-                if ( data.success === true && data.msg === "createdSuccess" ) {
+                const { data: { success, msg } } = res;
+                if ( success === true && msg === "createdSuccess" ) {
                     this.$message.success('创建话题成功');
-                    this.$store.commit('changeShowLoad', true);
                     const res = await this.$getData('/chat/getTopics.action', {
                         pageNo: this.pageNo,
                         groupId: this.chosedLi.groupId,
                     });
-                    this.$store.commit('changeShowLoad', false);
                     this.topicList = res.data.rows;
                     console.log(this.topicList);                     
                 }
@@ -124,14 +119,12 @@ export default {
          */
         async handlePageChange(pageNumber) {
             this.pageNo = pageNumber;
-            this.$store.commit('changeShowLoad', true);
             const res = await this.$getData('/chat/getTopics.action', {
                 pageNo: this.pageNo,
                 groupId: this.chosedLi.groupId,
             });
             const { data: { rows } } = res;
-            this.topicList = rows; 
-            this.$store.commit('changeShowLoad', false);      
+            this.topicList = rows;      
         },        
     },
     created(){

@@ -95,18 +95,13 @@ export default {
         this.commonGetAddressList(false);
     },
     methods: {
-        ...mapMutations(['changeShowLoad']),
         async commonGetAddressList(obj){
             obj === false ? this.pageNo : this.pageNo++
-            // this.$store.commit('changeShowLoad', true);
-            this.changeShowLoad(true);
             const res = await this.$getData('/myFriends.do', {
                 eid: this.$myEid, 
                 pageNo: this.pageNo
             });
-            this.changeShowLoad(false);
             const { data: { rows } } = res;
-            console.log(rows);
             if ( rows.length < 10 ) {
                 this.showLoadMore = false
             }
@@ -115,8 +110,7 @@ export default {
             } else {
                 this.addressUserList = this.addressUserList.concat(rows);
             }          
-            this.saveAddressUserList = this.addressUserList;
-            // this.$store.commit('changeShowLoad', false);            
+            this.saveAddressUserList = this.addressUserList;           
         },
 
         /**
@@ -159,22 +153,7 @@ export default {
                         _this.pageNo = 1;
                         _this.commonGetAddressList(false);
                         _this.$message.success(mes);                            
-                    }                    
-                    // axios.post('/group/stick.do', {
-                    //         userEid: _this.$myEid, 
-                    //         friendEid: _this.oneUser.friendEid, 
-                    //         top: _this.oneUser.top
-                    //     }
-                    // ).then( res => {
-                    //     if ( res.status === 200 ) {
-                    //         _this.oneUser.top = !_this.oneUser.top;
-                    //         _this.pageNo = 1;
-                    //         _this.commonGetAddressList(false);
-                    //         _this.$message.success(mes);                            
-                    //     }
-                    // }).catch( err => {
-                    //     _this.$message.success(err); 
-                    // })              
+                    }                                 
                 }
             })            
         },
@@ -194,13 +173,11 @@ export default {
             console.log(searchVal);
             if ( searchVal !== '' ) {
                 clearMatchColor(this.addressUserList, 'remark'); 
-                this.changeShowLoad(true);
                 const res = await this.$getData('/myFriends.do', {
                     eid: this.$myEid,
                     name: searchVal,
                     pageNo: 1
                 });
-                this.changeShowLoad(false);
                 const { data: { rows } } = res;
                 if ( rows.length > 0 ) {                   
                     this.addressUserList = matchChangeColor(rows, searchVal, 'remark');
@@ -234,13 +211,10 @@ export default {
                         friendEidArr+=v.friendEid
                     }                
                 });
-                this.changeShowLoad(true);
                 const res = await this.$getData('/multipersonchat.do', {
                     eid: this.$myEid,
                     friendEids: friendEidArr
                 });
-                this.changeShowLoad(false);
-                console.log(res);
                 if ( res.data.success ) {
                     this.$message.success(res.data.msg);
                     // 接收勾选的好友的数组，发送接口创建小组，隐藏并跳转到聊天界面               
@@ -256,13 +230,10 @@ export default {
          * 让聊天界面的this.isActive等于这个id设置选中状态
          */
         async handleSendMessage(){
-            this.$store.commit('changeShowLoad', true);
             const res = await this.$postData('/personalchat.do', {
                 userEid: this.$myEid,
                 friendEid: this.oneUser.friendEid
             });
-            this.$store.commit('changeShowLoad', false);
-            console.log(res.data.obj);
             this.$store.commit('changeGroupId', res.data.obj);
             this.$router.push({
                 name: 'chatPage',
