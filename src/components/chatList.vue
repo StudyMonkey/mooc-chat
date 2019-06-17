@@ -53,6 +53,7 @@ export default {
             searchNoResult: false,  // 未搜索到用户时显示
             inputSearchVal: '', // 接收searchWrap组件的搜索值
             isGroup: false, // 区分聊天列表和我加入的小组
+            eid: ''
         }
     },
     components: {
@@ -71,7 +72,6 @@ export default {
     watch: {
         $route: {
             handler (n, o){
-                console.log(n)
                 if ( n.path === '/group' ) {
                     this.isGroup = true;
                     this.pageNo = 1;
@@ -87,7 +87,6 @@ export default {
         groupIdChange: {
             handler(n, o) {
                 if ( n !== o ) {
-                    console.log(this.$store.state.groupId);
                     this.getUserList(false, true);
                 }
             },
@@ -96,7 +95,6 @@ export default {
         userListChange: {
             handler(n, o) {
                 if ( n !== o ) {
-                    console.log(this.$store.state.getUserList);
                     this.getUserList(false);
                 }
             },
@@ -104,7 +102,7 @@ export default {
         }
     },
     methods: {
-        ...mapMutations([ 'handleChosedLi', 'changeMemberType', 'changeAdmin', 'changeGroupId', 'changeGetUserList']),
+        ...mapMutations([ 'handleChosedLi', 'changeMemberType', 'changeAdmin', 'changeGroupId', 'changeGetUserList', 'changeUser']),
         /**
          * li的点击处理事件
          * 将点击的数据对象传递到父组件
@@ -115,7 +113,8 @@ export default {
             const res = await this.$getData('/chat/detail.do', {
                 groupId: item.groupId,
                 chatEid: item.chatEid,
-                eid: this.$myEid,
+                // eid: this.$myEid,
+                eid: this.eid
             });
             const { data: { obj } } = res;
             this.handleChosedLi(item);   // 将所选中的左侧列表存到vuex里面，还有其他的组件需要用到
@@ -132,8 +131,15 @@ export default {
             init ? this.pageNo++ : this.pageNo;
             // 由通讯录好友点到我加入的小组时，isGroup为false请求到了聊天列表的数据
             this.isGroup = this.$route.path === '/group' ? true : false;
-            const res = await this.$getData('/leftHotGroups.do', { eid: this.$myEid, pageNo: this.pageNo, isGroup: this.isGroup })
-            let { data: { rows } } = res;
+            const res = await this.$getData('/leftHotGroups.do', { 
+                // eid: this.$myEid, 
+                eid: this.eid,
+                pageNo: this.pageNo, 
+                isGroup: this.isGroup 
+            });
+            console.log(res);
+            let { data: { rows,user } } = res;
+            this.changeUser(user);
             if ( rows.length < res.data.count ) {
                 this.showLoadMore = false
             } else {
@@ -146,7 +152,6 @@ export default {
                 console.log(item[0]);
                 this.handleLiClick(item[0]);
             }
-            console.log(this.saveMessageList);
             // 存储到vuex
             this.changeGetUserList(false);
             this.$store.commit('addUserList', this.messageList);
@@ -167,7 +172,6 @@ export default {
          *  接口也没查询到任何数据的话，最后显示未搜索到的结果
          */
         async handleChangeSearchVal(searchVal){
-            console.log(searchVal);
             this.inputSearchVal = searchVal;
             if ( searchVal !== '' ) {
                 /**
@@ -198,6 +202,8 @@ export default {
     }, 
     created () {      
         console.log(this.$route);
+        const { eid } = this.$route.query;
+        this.eid = eid;
         if ( JSON.stringify(this.$route.params) !== "{}" && this.$route.params.groupId !== null ) {
             this.getUserList(false, true);
         } else {

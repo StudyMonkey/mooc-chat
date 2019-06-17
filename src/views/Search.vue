@@ -263,7 +263,7 @@ export default {
                 applyContent: this.addMemberReason,
                 userEid: this.$myEid,
                 friendEid: this.chosedMember.userEid
-            })          
+            });          
             this.memberVisible = false;
             this.addMemberReason = '';
             if ( res.data.success === true ) {

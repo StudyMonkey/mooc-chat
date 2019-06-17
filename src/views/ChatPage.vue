@@ -84,7 +84,10 @@ export default {
     computed: {
         groupIdChange(){
             return this.$store.state.groupId
-        }
+        },
+        userListChange(){
+            return this.$store.state.getUserList
+        }        
     },
     watch: {
         groupIdChange: {
@@ -96,7 +99,18 @@ export default {
                 }
             },
             deep: true
-        }
+        },
+        userListChange: {
+            handler(n, o) {
+                if ( n !== o ) {
+                    console.log(this.$store.state.getUserList);
+                    if ( this.$store.state.getUserList === 2 ) {
+                        this.chosedChat = '' //  将左侧列表所选择的置为空
+                    }
+                }
+            },
+            deep: true
+        }        
     },
     components: {
         ChatList,
@@ -182,7 +196,7 @@ export default {
                     this.$message.success(res.data.msg);
                     //this.$router.push({path: '/chat'});
                     // 修改vuex里面的状态，chatList监听到状态改变就会获取一次列表
-                    this.changeGetUserList(true);
+                    this.changeGetUserList(1);
                 }               
                 
             }          

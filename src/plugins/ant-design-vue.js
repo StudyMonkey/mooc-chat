@@ -1,14 +1,5 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import Vue from 'vue';
 import { Button,List,Avatar,Icon,Input,Badge,Tabs,Pagination,Popover,Tooltip,message,Modal,Select,Upload, Checkbox,Radio } from 'ant-design-vue';
-import App from './App.vue'
-import router from './router'
-import store from './store/store'
-import '@/assets/font/iconfont.css'
-import { getData, postData, timeFormat, getCookie } from './utils/utils'
-import { emoji } from './utils/emoji.js'
-import "../http-interceptor"
-// import ws from '@/utils/ws.js'
 
 Vue.component(Button.name, Button);
 Vue.component(List.name, List);
@@ -32,22 +23,5 @@ Vue.component(Modal.name, Modal); // 上传文件
 Vue.component(Radio.Group.name, Radio.Group); // 单选按钮组
 Vue.component(Radio.name, Radio);
 
-
-Vue.prototype.$getData = getData;
-Vue.prototype.$postData = postData;
-Vue.prototype.$timeFormat = timeFormat;
 Vue.prototype.$message = message;
-
 Vue.prototype.$confirm = Modal.confirm;
-Vue.prototype.emoji = emoji
-Vue.config.productionTip = false
-Vue.prototype.$myEid = getCookie('loginEid') || 'ybb2011';  //  1xy01  ybb2011 klinchao 
-Vue.prototype.$myName = getCookie('loginName') || '谢慧';
-// Vue.prototype.ws = ws;
-Vue.use(Vuex);
-
-new Vue({
-  router,
-  store,
-  render: h => h(App)
-}).$mount('#app')

@@ -54,12 +54,13 @@ export default {
         },
         async saveMemoName(){
             this.person.remark = this.memoName
-            const res = await this.$getData('/modifyRemark.do', { 
+            const res = await this.$postData('/modifyRemark.do', { 
                 userEid: this.$myEid,
                 friendEid: this.person.friendEid,
                 remark: this.person.remark
             })
-            if ( res.status === 200 ) {
+            console.log(res);
+            if ( res.data.success ) {
                 this.memoNameShow = true;
                 this.$emit('saveMemoName');
             }

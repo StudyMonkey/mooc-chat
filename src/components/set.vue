@@ -222,7 +222,7 @@ export default {
                 title: '解散群后，相关群信息，群成员信息都会删除，无法找回，请确认操作是否继续!',
                 async onOk() {
                     _this.handleDismissGroupSure();
-                    _this.$store.commit('changeGetUserList', true);
+                    _this.$store.commit('changeGetUserList', 2);
                     // _this.handleQuitGroupSure();                               
                 },
                 okText: '确认',

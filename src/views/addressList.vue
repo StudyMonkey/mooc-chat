@@ -112,7 +112,6 @@ export default {
             }          
             this.saveAddressUserList = this.addressUserList;           
         },
-
         /**
          *  加载更多子组件传递过来的布尔值
          * 传递给 commonGetAddressList 调用方法

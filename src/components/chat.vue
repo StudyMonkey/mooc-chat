@@ -52,7 +52,7 @@
             :footer="null"
         >
             <div class="addFriendWrap">
-                <a-textarea v-model="addFriend" :rows="4" placeholder="请输入添加理由" />
+                <a-textarea v-model="addFriendReason" :rows="4" placeholder="请输入添加理由" />
                 <a-button style="margin: 10px 0 0 421px;" class="greenBtn" size="small" @click="handleAddFriendSure">确定</a-button>
             </div> 
         </a-modal>       
@@ -71,25 +71,49 @@
                             <div class="personInfoWrap">
                                 <x-avatar :imgUrl="item.fromPic" />
                                 <div>
-                                    <memo-name from='1' @saveMemoName="handleSaveMemoName" />
+                                    <div class="memoNameWrap" v-if="item.isFriend">
+                                        <div v-if="memoNameShow">
+                                            <i>{{ item.backupText ? item.backupText : '昵称' }}</i>
+                                            <span @click="handlePenClick" class="iconfont iconpen"></span>
+                                        </div>
+                                        <div class="memoNameBtnWrap" v-else>
+                                            <a-input v-model="memoName" placeholder="请输入备注名" class="memoName" />
+                                            <a-button size="small" @click="saveMemoName(item)">保存</a-button>
+                                        </div>        
+                                    </div>                                     
+                                    <!-- <memo-name from='1' @saveMemoName="handleSaveMemoName" /> -->
                                     <p>用户名：<span v-text="item.fromName"></span></p>
                                 </div>
                             </div>
                             <div class="partInfoWrap">
-                                <p>单位：<span v-text="item.partInfo"></span></p>
+                                <p>单位：<span v-text="item.fromEidDept"></span></p>
                                 <p class="partIconWrap">
-                                    <span title="点击发送私聊消息" @click="handleChatSend" class="iconfont iconsiliao" />
                                     <span 
-                                        :title="[ item.friend ? '点击删除好友' : '点击添加好友' ]"
-                                        :class="[item.friend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
+                                        v-if="item.fromEid !== $myEid"
+                                        title="点击发送私聊消息" 
+                                        @click="handleChatSend(item)" 
+                                        class="iconfont iconsiliao" 
+                                    />
+                                    <span 
+                                        v-if="item.fromEid !== eid"
+                                        :title="[ item.isFriend ? '点击删除好友' : '点击添加好友' ]"
+                                        :class="[item.isFriend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
                                         @click="showAddFriend(item, 'title')" 
                                     />                                  
                                 </p>
                             </div>
                             <div class="addFriendWrap" v-if="showAddFriendWrap">
                                 <p>添加好友<span class="iconfont icondelete" @click="hideAddFriend"></span></p>
-                                <a-textarea v-model="item.name" :rows="4" placeholder="请输入添加理由" />
-                                <a-button class="greenBtn" size="small" @click="handleAddFriendSure">确定</a-button>
+                                <a-textarea 
+                                    v-model="addFriendReason" 
+                                    :rows="4" 
+                                    placeholder="请输入添加理由" 
+                                />
+                                <a-button 
+                                    class="greenBtn" 
+                                    size="small" 
+                                    @click="handleAddFriendSure"
+                                >确定</a-button>
                             </div>
                         </template>
                         <div>
@@ -107,17 +131,27 @@
                                     <div class="personInfoWrap">
                                         <x-avatar :imgUrl="item.content.fromPic" />
                                         <div>
-                                            <memo-name from='1' @saveMemoName="handleSaveMemoName"></memo-name>
+                                            <div class="memoNameWrap" v-if="item.content.isFriend">
+                                                <div v-if="memoNameShow">
+                                                    <i>{{ item.content.backupText ? item.content.backupText : '昵称' }}</i>
+                                                    <span @click="handlePenClick" class="iconfont iconpen"></span>
+                                                </div>
+                                                <div class="memoNameBtnWrap" v-else>
+                                                    <a-input v-model="memoName" placeholder="请输入备注名" class="memoName" />
+                                                    <a-button size="small" @click="saveMemoName(item.content)">保存</a-button>
+                                                </div>        
+                                            </div>                                            
+                                            <!-- <memo-name from='1' @saveMemoName="handleSaveMemoName"></memo-name> -->
                                             <p>用户名：<span>{{item.content.fromName}}</span></p>
                                         </div>
                                     </div>
                                     <div class="partInfoWrap">
-                                        <p class="partWordWrap">单位：<span>{{item.content.part}}</span></p>
+                                        <p class="partWordWrap">单位：<span>{{item.content.fromEidDept}}</span></p>
                                         <p class="partIconWrap">
-                                            <span v-show="item.content.friend" title="点击发送私聊消息" @click="handleChatSend" class="iconfont iconsiliao" />
+                                            <span v-show="item.content.fromEid === $myEid" title="点击发送私聊消息" @click="handleChatSend(item)" class="iconfont iconsiliao" />
                                             <span 
-                                                :title="[ item.content.friend ? '点击删除好友' : '点击添加好友' ]"
-                                                :class="[item.content.friend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
+                                                :title="[ item.content.isFriend ? '点击删除好友' : '点击添加好友' ]"
+                                                :class="[item.content.isFriend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
                                                 @click="showAddFriend(item, 'card')" 
                                             />                                  
                                         </p>
@@ -177,7 +211,11 @@ export default {
     name: 'chat',
     data() {
         return {
+            memoNameShow: true,  //  备注名和input框的输入切换显示
+            memoName: '',       //  更改备注名的输入框            
             // value: '',
+            chosedMember: '',  // 点击添加好友选中的某人
+            websocket: null,  // 初始websocket对象
             showEmoji: false,
             chatCon: '', // 用户输入的聊天内容
             chatType: '0', // 聊天形式，0 为 普通文本， 1 为 图片类型， 2 为 文本带链接， 3 为 名片类型
@@ -188,14 +226,14 @@ export default {
             isUploadImg: false, // 是否上传图片，接收upload-img组件传递过来的值改变，点击确定之后又改为false
             showCardAddFriend: '', // 名片添加好友显示
             addCardFriendModal: false,  // 名片添加还有的modal框显示隐藏控制
-            addFriend: '我是', // 添加好友理由
+            addFriendReason: '', // 添加好友理由
             cardVisible: false, // 发送名片框的显示隐藏控制
             imgVisible: false, // 发送图片框的显示隐藏控制
             linkVisible: false, // 发送链接框的显示隐藏控制
             imgLinkAddress: '', // 图片的链接地址
             textLinkAddress: '', // 文本的链接地址
             textLinkTitle: '',  // 文本链接标题
-            historyPage: 1,  // 加载历史记录的分页数
+            historyPage: 2,  // 加载历史记录的分页数
             // wsReadyState: this.ws.readyState,  // websocket连接状态， 0 未建立连接， 1 已建立连接，可通信。 2 连接正在关闭，3 连接已关闭
             iconList: [
                 { type: 'iconaite', title: '艾特' },
@@ -204,7 +242,10 @@ export default {
                 { type: 'iconlianjie', title: '发送链接'},
                 { type: 'iconwenjian', title: '发送文件'},
                 { type: 'iconmingpian', title: '发送名片'},
-            ]            
+            ], 
+            user: this.$store.state.user,  // 用户信息
+            eid: '',
+            name: ''           
         }
     },
     props: {
@@ -238,6 +279,29 @@ export default {
         UploadImg
     },
     methods: {
+        /**
+         * 点击修改备注名事件
+         */
+        handlePenClick(){
+            this.memoNameShow = false;
+        }, 
+        /**
+         *  修改备注名的保存按钮点击事件
+         */
+        async saveMemoName(item){
+            console.log(item);
+            // this.person.remark = this.memoName
+            const res = await this.$postData('/modifyRemark.do', { 
+                userEid: this.eid,
+                friendEid: item.fromEid,
+                remark: this.memoName
+            })
+            console.log(res);
+            if ( res.data.success ) {
+                this.memoNameShow = true;
+                // this.$emit('saveMemoName');
+            }
+        },               
         selectEmoji (code) {
             this.showEmoji = false
             this.chatCon += code;
@@ -263,11 +327,14 @@ export default {
             console.log(name)
         },
         // 点击发送消息逻辑
-        handleSendBtnClick(item){
+        handleSendBtnClick(item){           
             // if ( this.wsReadyState === 1 ) {
                 this.chatType = 0;
-                var newObj = {};
-                newObj.name = '本人'
+                let newObj = {};
+                newObj.fromEid = this.eid,
+                newObj.fromEidDept = this.user.displayunitname;
+                newObj.fromPic = 'https://source.unsplash.com/collection/190727/1600x900';
+                newObj.fromName = this.name,
                 newObj.time = new Date();
                 newObj.chatType = '1'; // 其他类型的chatType 都为 1
 
@@ -291,37 +358,45 @@ export default {
                     newObj.chatType = '1';
                     this.chatCon = `<a href="${this.textLinkAddress}" target="_blank">${this.textLinkTitle}</a>`
                 }                
-                newObj.content = this.chatCon;
-                console.log(newObj.content);
-                newObj.isMe = true;
-                newObj.avatar = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
-                this.chatList.push(newObj);
+                newObj.text = this.chatCon;
+                
+                newObj.groupId = this.chosedLi.groupId;
+                newObj.groupName = this.chosedLi.name;
+                newObj.to = 'xy15';
+                newObj.atEids = '';
+                // newObj.isMe = true;
+                newObj.groupUrl = this.chosedLi.avatar;
+                console.log(newObj);
+                
                 // websocket发送消息
-                // this.ws.send(this.chatCon);
-                // this.ws.onmessage = evt => {
-                //     // console.log(evt);
-                //     // console.log(evt.data);
-                //     var sysObj = {};
-                //     sysObj.name = '系统'
-                //     sysObj.time = new Date();
-                //     sysObj.content = evt.data;
-                //     sysObj.isMe = false;
-                //     sysObj.avatar = 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png'
-                //     this.chatList.push(sysObj);                    
-                // }     
-
+                this.websocketsend(newObj);    
+                this.chatList.push(newObj);
                 this.chatCon = '';
-            // } else {
-            //     this.$message.error('websocket连接不正常，请检查后重试');
-            // }
         },
         // 发起私聊请求
-        async handleChatSend(){
-            this.$message.info('发起私聊请求');
-            const res = await this.$getData('chatCon', {});
-            const { data: { data } } = res; 
-            this.chatList = data;
-            this.$store.commit('addChatConList', this.chatList);                       
+        async handleChatSend(item){
+            const res = await this.$getData('/member/privateMessage.action', {
+                memberEid: item.fromEid,
+                memberNick: item.fromName,
+                eid: this.$myEid,
+                ename: this.$myName
+            });
+            console.log(res);
+            const { data: { obj } } = res;
+            // 传递给chatPage一个事件，然后chatPage告诉chatList应该要请求一次列表，
+            // 且在对应的groupId上有激活状态
+            this.$store.commit('changeGroupId', obj.groupId);                      
+        },
+        // 删除好友的事件处理
+        async handleDeleteFriend(){
+            const res = await this.$getData('/member/deleteFriends.action', {
+                myEid: this.eid,
+                friendEid: this.chosedMember.fromEid
+            });
+            console.log(res);
+            if ( res.data.success === true ) {
+                this.$message.success('删除好友成功')
+            }
         },
         // 用了两次的确认框弹出方法
         commonComfirm(){
@@ -331,20 +406,22 @@ export default {
                 okText: '确认',
                 cancelText: '取消',
                 onOk(){
-                    _this.$message.success('删除好友成功')
+                    _this.handleDeleteFriend();
                 }
             })
         },
         // 显示添加好友框
-        showAddFriend(obj, type){          
+        showAddFriend(obj, type){  
+            this.chosedMember = obj; 
+            console.log(this.chosedMember);       
             if( type === 'title' ) {
-                if ( obj.friend ) {
+                if ( obj.isFriend ) {
                     this.commonComfirm();
                 } else {
                     this.showAddFriendWrap = true;       
                 }                
             } else {
-                if ( obj.content.friend ) {
+                if ( obj.content.isFriend ) {
                     this.commonComfirm();
                 } else {
                     this.addCardFriendModal = true;
@@ -357,10 +434,18 @@ export default {
             this.showAddFriendWrap = false;
         },
         // 添加好友确定按钮
-        handleAddFriendSure(){
-            this.hideAddFriend();
-            this.addCardFriendModal = false;
-            this.$message.success('添加好友请求发送成功');
+        async handleAddFriendSure(){
+            const res = await this.$postData('/applyfriend.do', {
+                applyContent: this.addFriendReason,
+                userEid: this.eid,
+                friendEid: this.chosedMember.fromEid  //  chosedMember没有
+            }); 
+            if ( res.data.success === true ) {
+                this.hideAddFriend();
+                this.addCardFriendModal = false;
+                this.$message.success('添加好友请求发送成功');
+                this.addFriendReason = '';
+            }               
         },
         // 图标的点击事件处理
         handleIconClick(item){
@@ -405,7 +490,6 @@ export default {
         * 接收upload-img组件传递过来的是否上传图片
         * 传递过来一个上传成功之后的true值
         */ 
-
         handleUploadImg(obj){
             console.log(obj);
             this.isUploadImg = obj 
@@ -424,10 +508,70 @@ export default {
             this.handleSendBtnClick();
             this.textLinkAddress = '' 
             this.textLinkTitle = '';            
-        }        
+        },
+        // 初始化创建 websocket
+        initWebsocket(){
+            const wsUrl = `ws://172.26.75.217:8080/moocGroupApi/ws?uid=${this.eid}`; 
+            this.websocket = new WebSocket(wsUrl);
+            this.websocket.onopen = this.websocketonopen;
+            this.websocket.onmessage = this.websocketonmessage;
+            this.websocket.onerror = this.websocketonerror;
+            this.websocket.onclose = this.websocketclose;           
+        },
+        websocketonopen(){
+            this.heartCheck.reset().start();
+            console.log('Websocket 连接成功');
+            
+        },
+        websocketonerror(){
+            this.initWebsocket()
+        },
+        websocketonmessage(e){
+            const reData = JSON.parse(e.data);
+            this.chatList.push(reData);
+            console.log('收到消息', reData);
+            this.heartCheck.reset().start();
+        },
+        websocketsend(Data){
+            console.log(this.websocket);
+            this.websocket.send(JSON.stringify(Data));
+        },
+        websocketclose(e){
+            console.log('断开连接', e);
+        }       
+
     },
-    created() {
-        // console.log(this.ws.readyState);
+    created() {  
+        console.log(this.$route.query);
+        const { eid, name } = this.$route.query;
+        this.eid = eid;
+        this.name = name;
+        let _this = this;
+        var heartCheck = {
+            timeout: 5000,        //9分钟发一次心跳
+            timeoutObj: null,
+            serverTimeoutObj: null,
+            reset: function(){
+                clearTimeout(this.timeoutObj);
+                clearTimeout(this.serverTimeoutObj);
+                return this;
+            },
+            start: function(){
+                var self = this;
+                this.timeoutObj = setTimeout(function(){
+                    //这里发送一个心跳，后端收到后，返回一个心跳消息，
+                    //onmessage拿到返回的心跳就说明连接正常
+                    // _this.websocketsend({fromEid: "ybb2011", groupName: '55555', text: '111111', to: 'klinChao'});
+                    console.log("ping!")
+                    // self.serverTimeoutObj = setTimeout(function(){//如果超过一定时间还没重置，说明后端主动断开了
+                    //     _this.websocket.onclose();     //如果onclose会执行reconnect，我们执行ws.close()就行了.如果直接执行reconnect 会触发onclose导致重连两次
+                    // }, self.timeout)
+                }, this.timeout)
+            }
+        }     
+        _this.heartCheck = heartCheck;
+        heartCheck = null;    
+        this.initWebsocket();    
     },
 }
 </script>
@@ -493,6 +637,21 @@ textarea[class='ant-input']{ resize: none }
             div{
                 line-height: 20px;
             }
+            .memoNameWrap{
+                line-height: 18px;
+                span.iconfont{
+                    cursor: pointer;
+                    color: #f0b577;
+                    margin-left: 4px;
+                }
+                .memoNameBtnWrap{
+                    display: flex;
+                    input{
+                        height: 26px;
+                        margin-right: 5px;
+                    }
+                }
+            }            
         }
         .partInfoWrap{
             font-size: 14px;
