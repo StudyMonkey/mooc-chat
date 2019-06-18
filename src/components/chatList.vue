@@ -39,7 +39,7 @@
 import XAvatar from '@/components/avatar'
 import SearchWrap from '@/components/searchWrap'
 import LoadMore from '@/components/loadMore'
-import { matchChangeColor, clearMatchColor } from '@/utils/utils'
+import { matchChangeColor, clearMatchColor, getCookie } from '@/utils/utils'
 import { mapMutations } from 'vuex'
 export default {
     name: 'chatList',
@@ -53,7 +53,7 @@ export default {
             searchNoResult: false,  // 未搜索到用户时显示
             inputSearchVal: '', // 接收searchWrap组件的搜索值
             isGroup: false, // 区分聊天列表和我加入的小组
-            eid: ''
+            eid: getCookie('loginEid')
         }
     },
     components: {

@@ -1,16 +1,6 @@
 <template>
   <div id="app">
-    <div class="topWrap">
-      <Loading v-if="showLoad" />
-      <LeftMenu />
-      <div>
-        <!-- <transition name="fade"> -->
-          <!-- <keep-alive exclude="setting"> -->
-            <router-view />
-          <!-- </keep-alive>       -->
-        <!-- </transition> -->
-      </div>
-    </div>  
+    <router-view />
   </div>
 </template>
 

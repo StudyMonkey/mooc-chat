@@ -97,8 +97,11 @@ export default {
             if ( this.createTopicName ) {
                 const res = await this.$getData('/chat/createTopic.action', {
                     topicName: this.createTopicName,
-                    groupId: this.chosedLi.groupId
+                    groupId: this.chosedLi.groupId,
+                    eid: this.$myEid,
+                    ename: this.$myName
                 });
+                console.log(res);
                 const { data: { success, msg } } = res;
                 if ( success === true && msg === "createdSuccess" ) {
                     this.$message.success('创建话题成功');
