@@ -1,6 +1,14 @@
 import axios from 'axios'
+import store from '../store/store'
 
 const uri = 'https://www.easy-mock.com/mock/5cb7d8990b31727f3d58120a/mooc-chat/'
+
+export async function allGet(url, data){
+    store.commit('changeShowLoad', true);
+    const res = await getData(url, {...data});
+    store.commit('changeShowLoad', false);
+    return res;
+}
 
 export function getData(url, data){
     return new Promise( (resolve, reject) => {
