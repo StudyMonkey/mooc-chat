@@ -1,7 +1,11 @@
 <template>
   <div class="loginWrap">
-      <a-input placeholder="输入用户eid" v-model="loginEid" />
-      <a-input placeholder="输入用户名" v-model="loginName" />
+      <a-input placeholder="输入用户eid" v-model="loginEid">
+          <a-icon slot="prefix" type="user"></a-icon>
+      </a-input>
+      <a-input placeholder="输入用户名" v-model="loginName">
+          <a-icon slot="prefix" type="lock"></a-icon>
+      </a-input>
       <a-button @click="handleLoginClick">登录</a-button>
   </div>
 </template>
@@ -34,5 +38,11 @@ export default {
 </script>
 
 <style lang='less'>
-
+.loginWrap{
+    width: 600px;
+    margin: 100px auto;
+    .ant-input-affix-wrapper{
+        margin-bottom: 20px;
+    }
+}
 </style>

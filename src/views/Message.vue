@@ -77,7 +77,7 @@
                 </div>                 
             </a-tab-pane>
             <a-tab-pane tab="系统消息" key="systerm">
-                <div class="table_area">
+                <div class="table_area systermTableArea">
                     <table class="limitadm_table1">
                         <tbody>
                             <tr class="h50 tr1">
@@ -257,6 +257,7 @@ export default {
     background-color: #ffffff;
     .ant-tabs{
         width: 920px;
+        height: 700px;
         .ant-tabs-nav-container{
             background-color: #f5f5f5;
             padding-left: 12px;
@@ -340,6 +341,9 @@ export default {
                 }
             }
         }
+    }
+    .systermTableArea{
+        padding-left: 10px;
     }
 }
 

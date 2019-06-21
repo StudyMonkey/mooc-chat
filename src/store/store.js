@@ -1,10 +1,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import { setLocal } from '@/utils/utils'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    ws: '',    //  websocket 状态
     user: {},   // 登录用户信息
     showLoad: false,
     chosedLi: {},  // 左侧列表点击所选中的那一项
@@ -47,9 +49,16 @@ export default new Vuex.Store({
     // 登录之后改变用户信息
     changeUser( state, obj ) {
       state.user = obj
+      setLocal('user', state.user);
+    },
+    // 修改 websocket 状态
+    changeWs( state, obj){
+      state.ws = obj
     }
   },
   actions: {
-
+    asyncChangeGetUserList( { commit } ){
+      commit('changeGetUserList');
+    }
   }
 })

@@ -126,7 +126,6 @@ export async function commonGetData(url, params){
  */
 export function getCookie(c_name){
     if (document.cookie.length>0){         
-        console.log(document.cookie);
         let c_start=document.cookie.indexOf(c_name + "=");
         if (c_start!=-1){ 
             c_start=c_start + c_name.length+1; 
@@ -161,6 +160,23 @@ export function delCookie(c_name) {
     if(cval!=null) 
         document.cookie= c_name + "=;expires="+exp.toGMTString(); 
 } 
+
+/**
+ * localStorage 存值
+ * @param {key} 
+ * @param {value}  
+ */
+export function setLocal(key,value){
+    localStorage.setItem(key ,value)
+}
+
+/**
+ * localStorage 取值
+ * @param {key}  
+ */
+export function getLocal( key ){
+    localStorage.getItem( key )
+}
 
 /**
  * 处理时间格式的函数

@@ -37,12 +37,14 @@ Vue.prototype.$getData = getData;
 Vue.prototype.$postData = postData;
 Vue.prototype.$timeFormat = timeFormat;
 Vue.prototype.$message = message;
+Vue.prototype.$getCookie = getCookie;
 
 Vue.prototype.$confirm = Modal.confirm;
 Vue.prototype.emoji = emoji
 Vue.config.productionTip = false
-Vue.prototype.$myEid = getCookie('loginEid') || 'ybb2011';  //  1xy01  ybb2011 klinchao 
-Vue.prototype.$myName = getCookie('loginName') || '谢慧';
+Vue.prototype.prefixUrl = 'http://172.26.75.217:8080';
+Vue.prototype.$myEid = getCookie('loginEid');  //  1xy01  ybb2011 klinchao 
+Vue.prototype.$myName = getCookie('loginName');
 // Vue.prototype.ws = ws;
 Vue.use(Vuex);
 

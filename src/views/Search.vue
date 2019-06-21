@@ -112,10 +112,10 @@
                                     <td class="part" v-text="item.userDepartment"></td>
                                     <td>
                                         <a-button 
-                                            :disabled="item.friend"
+                                            :disabled="item.friend || item.userEid === $myEid"
                                             size="small"
                                             @click="handleAddMemberClick(item)"
-                                        >{{item.friend ? '已是好友': '添加好友'}}</a-button>
+                                        >{{ item.friend ? '已是好友': '添加好友' && item.userEid === $myEid ? '本人' : '添加好友'}}</a-button>
                                     </td>
                                 </tr>
                             </tbody>

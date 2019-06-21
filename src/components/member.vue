@@ -8,9 +8,9 @@
                 <a-button class="searchBtn greenBtn" size="small" @click="handleSearchBtn">搜索</a-button>
                 <a-tooltip placement="bottomRight">
                     <template slot="title">
-                        <span>{{ btnDisabled ? '单位学习小组请在系统后台添加小组成员' : '点击添加成员' }}</span>
+                        <span>{{ chosedLi.official ? '单位学习小组请在系统后台添加小组成员' : '点击添加成员' }}</span>
                     </template>
-                    <a-button class="addMember" size="small" :disabled="btnDisabled" @click="handleAddMemberShow">添加成员</a-button>
+                    <a-button class="addMember" size="small" :disabled="chosedLi.official" @click="handleAddMemberShow">添加成员</a-button>
                 </a-tooltip>        
             </div>
             <div class="memberContentWrap">          
@@ -140,6 +140,11 @@ export default {
             if ( n !== o ) {
                 this.memberTotal = this.total;
             }
+        },
+        getChosedLi(n, o){
+            if ( n !== o ) {
+                this.chosedLi = this.$store.state.chosedLi;
+            }
         }
     },
     computed: {
@@ -166,6 +171,9 @@ export default {
                     return '成员'
                 }
             }
+        },
+        getChosedLi(){
+            return this.$store.state.chosedLi
         }
     },
     data() {
@@ -174,7 +182,6 @@ export default {
             searchMemberList: [], // 搜索的成员列表数据
             searchVal: '', // input框输入的搜索内容
             searchMember: '',
-            btnDisabled: false,
             hasClickAdd: true, // 点击添加成员按钮
             chosedLi: this.$store.state.chosedLi,  // 从vuex里面获取
             pageNo: 1,  // 翻页数，默认为1
@@ -327,9 +334,16 @@ export default {
                 membersId,
                 membersName,
             });
+            console.log(res);
+            const { data: { obj: { cacheId,sortName } } } = res;
             if ( res.data.success ) {
-                this.$message.success('添加成员成功');
-                this.$message.info(`${res.data.cacheId}已是小组成员，${res.data.sortName}添加成功`);
+                if ( cacheId === 'zero' && sortName !== 'zero' ) {
+                    this.$message.success(`${sortName}添加入群成功`);
+                } else if ( cacheId !== 'zero' && sortName === 'zero' ) {
+                    this.$message.error(`${cacheId}已是小组成员`);
+                } else {
+                    this.$message.info(`${res.data.obj.cacheId}已是小组成员，${res.data.obj.sortName}添加成功`);
+                }
                 this.memberArray = [];
                 this.searchMember = '';
                 this.handleSearchAllMember();
@@ -345,10 +359,14 @@ export default {
          *  仅显示隐藏部分div
          */        
         handleAddMemberBackBtn(){
+            this.pageNo = 1;
             this.hasClickAdd = true;
             this.commonGetMembetList();
         }
     },
+    created(){
+        console.log(this.chosedLi);
+    }
 
 }
 </script>

@@ -11,14 +11,33 @@
 </template>
 
 <script>
-
+import LeftMenu from '@/components/leftMenu'
+import Loading from '@/components/loading'
 import { setCookie } from '@/utils/utils'
 
 export default {
   name: 'main',
-  data(){
-      return{}
-  }
+  components: {
+    LeftMenu,
+    Loading
+  },
+  computed: {
+    getLoadStatus() {
+      return this.$store.state.showLoad
+    }
+  },
+  watch: {
+    getLoadStatus(n, o) {
+      if ( n !== o ) {
+        this.showLoad = n;
+      }      
+    }
+  },
+  data() {
+    return {
+      showLoad: false
+    }
+  },
 }
 </script>
 

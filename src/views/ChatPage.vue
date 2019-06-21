@@ -21,7 +21,7 @@
                         <a-tab-pane tab="聊天" key="chatMain">
                             <chat-main />
                         </a-tab-pane>
-                        <a-tab-pane tab="话题" key="chatTopic" forceRender>
+                        <a-tab-pane v-if="chosedLi.groupType !== 2" tab="话题" key="chatTopic" forceRender>
                             <chat-topic 
                                 :listTopic="topicList" 
                                 :total="total" 
@@ -33,14 +33,14 @@
                                 :total="total"                               
                             />
                         </a-tab-pane>
-                        <a-tab-pane tab="文件" key="file">
+                        <a-tab-pane  v-if="chosedLi.groupType !== 2" tab="文件" key="file">
                             <chat-file 
                                 :listFile="fileList" 
                                 :chosedLi="chosedLi"
                                 :total="total" 
                             />
                         </a-tab-pane>
-                        <a-tab-pane tab="公告" key="notice">
+                        <a-tab-pane  v-if="chosedLi.groupType !== 2" tab="公告" key="notice">
                             <chat-notice :listNotice="noticeList"/>
                         </a-tab-pane>
                         <a-tab-pane tab="设置" key="setting">

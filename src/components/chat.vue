@@ -15,9 +15,26 @@
             v-model="imgVisible"
             centered
             :footer="null">
-            <upload-img @uploadImg="handleUploadImg ">
-                <span>图片上传：</span>
-            </upload-img>
+            <div class="groupLogoWrap">
+                <span>添加图片：</span>
+                <a-upload
+                    name="picture"
+                    accept=".gif,.png,.jpg,.bmp"
+                    listType="picture-card"
+                    :fileList="fileList"
+                    :customRequest="handleCustomRequest"
+                    @preview="handlePreview"
+                    @change="handleChange"
+                >
+                    <div v-if="fileList.length < 1">
+                        <a-icon type="plus" />
+                        <div class="ant-upload-text">Upload</div>
+                    </div> 
+                </a-upload> 
+                    <a-modal :visible="previewVisible" :footer="null" @cancel="handleCancel">
+                    <img alt="example" style="width: 100%" :src="previewImage" />
+                </a-modal>  
+            </div>           
             <div class="linkAddressWrap">
                 <span>链接地址：</span>
                 <a-input  placeholder="请输入图片链接地址..." v-model="imgLinkAddress" />
@@ -95,7 +112,7 @@
                                         class="iconfont iconsiliao" 
                                     />
                                     <span 
-                                        v-if="item.fromEid !== eid"
+                                        v-if="item.fromEid !== $myEid"
                                         :title="[ item.isFriend ? '点击删除好友' : '点击添加好友' ]"
                                         :class="[item.isFriend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
                                         @click="showAddFriend(item, 'title')" 
@@ -122,8 +139,8 @@
                     </a-popover>
                     <div :class="[ item.fromEid === $myEid ? 'fr mr10 ' : 'fl ml10 textAlignL','chatInfoWrap' ]">
                         <!-- <p><span v-text="item.name"></span></p> -->
-                        <div :class="[ item.fromEid === $myEid ? '' : '', 'mesContent' ]">
-                            <template v-if="item.chatType === 1">
+                        <div :class="[ item.fromEid === $myEid ? '' : '', 'mesContent' ]">                          
+                            <template v-if="item.chatType === 0 || item.chatType === 1">
                                 <div v-html="emoji(item.text)"></div>
                             </template>
                             <template v-else-if="item.chatType === 2">
@@ -178,7 +195,23 @@
                 <template slot="title">
                     点击加载历史记录
                 </template>
-                <span @click="handleLoadMoreChat" class="iconfont fr iconliaotianjilu"></span>
+                <a-button 
+                    size="small"
+                    :disabled="saveChatListLen < 20"
+                    class="fr"
+                    icon="plus"
+                    shape="circle"
+                    style="margin: 6px 0 0 425px"
+                    @click="handleLoadMoreChat"
+                >
+                    <!-- <icon-font type="icon-liaotianjilu" /> -->
+                    <!-- <a-icon type="plus"/> -->
+                </a-button>
+                <!-- <span  
+                    :disabled="chatList.length < 20"              
+                     @click="handleLoadMoreChat"
+                    class="iconfont fr iconliaotianjilu"
+                ></span> -->
             </a-tooltip>           
         </ul>
         <a-modal
@@ -207,6 +240,13 @@ import CheckMember from '@/components/checkMember'
 import vueEmoji from '@/components/emoji'
 import MemoName from '@/components/memoName'
 import UploadImg from '@/components/uploadImg'
+import { getCookie } from '../utils/utils'
+// import { Icon } from 'ant-design-vue'
+
+// const IconFont = Icon.createFromIconfontCN({
+//     scriptUrl: '../assets/font/iconfont.js'
+// })
+
 export default {
     name: 'chat',
     data() {
@@ -215,7 +255,7 @@ export default {
             memoName: '',       //  更改备注名的输入框            
             // value: '',
             chosedMember: '',  // 点击添加好友选中的某人
-            websocket: null,  // 初始websocket对象
+            websocket: this.$store.state.ws,  // 初始websocket对象
             showEmoji: false,
             chatCon: '', // 用户输入的聊天内容
             chatType: '0', // 聊天形式，0 为 普通文本， 1 为 图片类型， 2 为 文本带链接， 3 为 名片类型
@@ -243,9 +283,12 @@ export default {
                 { type: 'iconwenjian', title: '发送文件'},
                 { type: 'iconmingpian', title: '发送名片'},
             ], 
-            user: this.$store.state.user,  // 用户信息
-            eid: '',
-            name: ''           
+            user: this.$store.state.user,  // 用户信息 
+            base64Url: '', // 图片转换成的base 64url信息 
+            saveChatListLen: 0,
+            previewVisible: false,
+            previewImage: '',
+            fileList: [],                    
         }
     },
     props: {
@@ -256,7 +299,7 @@ export default {
     computed: {
         getChatConList() {
             return this.$store.state.chatConList
-        }
+        },
     },
     watch: {
         getChatConList(curval, oldval){
@@ -269,16 +312,53 @@ export default {
                 var container = this.$el.querySelector('#chatScrollArea')
                 container.scrollTop = container.scrollHeight
             })           
-        }
+        },
     },
     components: {
         XAvatar,
         CheckMember,
         vueEmoji,
         MemoName,
-        UploadImg
+        UploadImg,
     },
     methods: {
+        //  上传图片事件处理
+        handleCancel () {
+            this.previewVisible = false
+        },
+        handlePreview (file) {
+            this.previewImage = file.url || file.thumbUrl
+            this.previewVisible = true
+        },
+        handleChange ({ fileList }) {
+            this.fileList = fileList; 
+            console.log(this.fileList);    
+        }, 
+        handleCustomRequest(options){
+            let _this = this;
+            let file = options.file;
+            var reader = new FileReader();
+            const isLt2M = file.size / 1024 / 1024 < 2;
+            if ( !isLt2M ) {
+                this.$message.error('上传产品图片大小不能超过 2MB！');
+            }
+            // 创建一个img对象
+            var img = new Image();
+            let filename = options.filename;
+            if ( file ) {
+                reader.readAsDataURL(file);
+            }
+            if ( isLt2M ) {
+                reader.onload = ( e ) => {
+                    let base64Str = reader.result.split(',')[1];
+                    // console.log(e.target.result);
+                    this.base64Url = e.target.result;
+                }
+            }
+            console.log(options);
+            return true;
+        },
+        //  上传图片事件结束       
         /**
          * 点击修改备注名事件
          */
@@ -292,7 +372,7 @@ export default {
             console.log(item);
             // this.person.remark = this.memoName
             const res = await this.$postData('/modifyRemark.do', { 
-                userEid: this.eid,
+                userEid: this.$myEid,
                 friendEid: item.fromEid,
                 remark: this.memoName
             })
@@ -315,6 +395,7 @@ export default {
                 pageNo: this.historyPage
             });
             const { data: { rows } } = res;
+            this.saveChatListLen = rows.length
             this.chatList = rows.concat(this.chatList);
             this.$store.commit('addChatConList', this.chatList);
             this.historyPage++;
@@ -326,52 +407,65 @@ export default {
         handleSaveMemoName(name){
             console.log(name)
         },
+        async sendPicture(){
+            console.log(12345);
+            const res = await this.$postData('/upload/sendPicture.action', {
+                eid: this.$myEid,
+                linkImgAddress: this.imgLinkAddress, 
+                groupId: this.chosedLi.groupId, 
+                pictureCode: this.base64Url
+            });
+            console.log(res);
+        },
         // 点击发送消息逻辑
         handleSendBtnClick(item){           
-            // if ( this.wsReadyState === 1 ) {
+            // if ( this.chatCon !== '' ) {
                 this.chatType = 0;
                 let newObj = {};
-                newObj.fromEid = this.eid,
+                newObj.fromEid = this.$store.state.user.eid,
                 newObj.fromEidDept = this.user.displayunitname;
                 newObj.fromPic = 'https://source.unsplash.com/collection/190727/1600x900';
-                newObj.fromName = this.name,
+                newObj.fromName = this.$store.state.user.username,
                 newObj.time = new Date();
-                newObj.chatType = '1'; // 其他类型的chatType 都为 1
+                newObj.chatType = 1; // 其他类型的chatType 都为 1
 
                 if ( this.checkMemberList.length > 0 ) {
-                    newObj.chatType = '2';
+                    newObj.chatType = 2;
                     this.chatCon = {...item};
                 }
-                if ( this.isUploadImg && this.imgLinkAddress ) {
-                    console.log( this.isUploadImg );
-                    newObj.chatType = '1';
-                    this.chatCon = `<a class="imgLinkWrap" href="${this.imgLinkAddress}" target="_blank"><img src="https://source.unsplash.com/collection/190727/1600x900" /><span class="iconfont iconlianjie"></span></a>`
-                    this.isUploadImg = false;
+                if ( this.base64Url !== '' && this.imgLinkAddress ) {
+                    // console.log( this.isUploadImg );
+                    newObj.chatType = 0;
+                    this.chatCon = `<a class="imgLinkWrap" href="${this.imgLinkAddress}" target="_blank"><img src="${this.base64Url}" /><span class="iconfont iconlianjie"></span></a>`;                   
+                    this.sendPicture();
                     this.imgLinkAddress = '';
-                }else if ( this.isUploadImg ) {
-                    console.log( this.isUploadImg );
-                    newObj.chatType = '1';
-                    this.chatCon = `<img src="https://source.unsplash.com/collection/190727/1600x900" />`
-                    this.isUploadImg = false
+                }else if ( this.base64Url !== '' ) {
+                    newObj.chatType = 0;
+                    this.chatCon = `<img src="${this.base64Url}" />`
+                    this.sendPicture();
+                    // this.isUploadImg = false
+                    this.base64Url = '';
                 }
                 if ( this.textLinkAddress && this.textLinkTitle ) {
-                    newObj.chatType = '1';
+                    newObj.chatType = 1;
                     this.chatCon = `<a href="${this.textLinkAddress}" target="_blank">${this.textLinkTitle}</a>`
                 }                
                 newObj.text = this.chatCon;
-                
+                console.log('发消息', this.chosedLi.groupId);
                 newObj.groupId = this.chosedLi.groupId;
                 newObj.groupName = this.chosedLi.name;
                 newObj.to = 'xy15';
                 newObj.atEids = '';
-                // newObj.isMe = true;
                 newObj.groupUrl = this.chosedLi.avatar;
                 console.log(newObj);
                 
-                // websocket发送消息
-                this.websocketsend(newObj);    
+                // websocket 发送消息
+                this.websocket.send(JSON.stringify(newObj));    
                 this.chatList.push(newObj);
                 this.chatCon = '';
+            // } else {
+            //     this.$message.info('消息内容不能为空');
+            // }
         },
         // 发起私聊请求
         async handleChatSend(item){
@@ -390,7 +484,7 @@ export default {
         // 删除好友的事件处理
         async handleDeleteFriend(){
             const res = await this.$getData('/member/deleteFriends.action', {
-                myEid: this.eid,
+                myEid: this.$myEid,
                 friendEid: this.chosedMember.fromEid
             });
             console.log(res);
@@ -437,7 +531,7 @@ export default {
         async handleAddFriendSure(){
             const res = await this.$postData('/applyfriend.do', {
                 applyContent: this.addFriendReason,
-                userEid: this.eid,
+                userEid: this.$myEid,
                 friendEid: this.chosedMember.fromEid  //  chosedMember没有
             }); 
             if ( res.data.success === true ) {
@@ -475,7 +569,7 @@ export default {
             console.log(arr);
             if ( arr.length > 0 ){
                 this.$router.push({
-                    path: '/chat'
+                    path: '/main/chat'
                 })
                 this.checkMemberList = arr;
                 arr.map( item => {
@@ -490,16 +584,16 @@ export default {
         * 接收upload-img组件传递过来的是否上传图片
         * 传递过来一个上传成功之后的true值
         */ 
-        handleUploadImg(obj){
-            console.log(obj);
-            this.isUploadImg = obj 
-        },
+        // handleUploadImg(obj){
+        //     console.log(obj);
+        //     this.isUploadImg = obj 
+        // },
         // 添加图片链接的确定按钮的点击事件
         handleImgLinkSureBtn(){
             this.imgVisible = false;
-            if ( this.isUploadImg ) {
+            // if ( this.isUploadImg ) {
                 this.handleSendBtnClick();
-            }
+            // }
         },
         // 添加文本链接的确定按钮的点击事件
         handleTextLinkSureBtn(){
@@ -508,75 +602,23 @@ export default {
             this.handleSendBtnClick();
             this.textLinkAddress = '' 
             this.textLinkTitle = '';            
-        },
-        // 初始化创建 websocket
-        initWebsocket(){
-            const wsUrl = `ws://172.26.75.217:8080/moocGroupApi/ws?uid=${this.eid}`; 
-            this.websocket = new WebSocket(wsUrl);
-            this.websocket.onopen = this.websocketonopen;
-            this.websocket.onmessage = this.websocketonmessage;
-            this.websocket.onerror = this.websocketonerror;
-            this.websocket.onclose = this.websocketclose;           
-        },
-        websocketonopen(){
-            this.heartCheck.reset().start();
-            console.log('Websocket 连接成功');
-            
-        },
-        websocketonerror(){
-            this.initWebsocket()
-        },
-        websocketonmessage(e){
-            const reData = JSON.parse(e.data);
-            this.chatList.push(reData);
-            console.log('收到消息', reData);
-            this.heartCheck.reset().start();
-        },
-        websocketsend(Data){
-            console.log(this.websocket);
-            this.websocket.send(JSON.stringify(Data));
-        },
-        websocketclose(e){
-            console.log('断开连接', e);
-        }       
+        },      
 
     },
     created() {  
-        console.log(this.$route.query);
-        const { eid, name } = this.$route.query;
-        this.eid = eid;
-        this.name = name;
-        let _this = this;
-        var heartCheck = {
-            timeout: 5000,        //9分钟发一次心跳
-            timeoutObj: null,
-            serverTimeoutObj: null,
-            reset: function(){
-                clearTimeout(this.timeoutObj);
-                clearTimeout(this.serverTimeoutObj);
-                return this;
-            },
-            start: function(){
-                var self = this;
-                this.timeoutObj = setTimeout(function(){
-                    //这里发送一个心跳，后端收到后，返回一个心跳消息，
-                    //onmessage拿到返回的心跳就说明连接正常
-                    // _this.websocketsend({fromEid: "ybb2011", groupName: '55555', text: '111111', to: 'klinChao'});
-                    console.log("ping!")
-                    // self.serverTimeoutObj = setTimeout(function(){//如果超过一定时间还没重置，说明后端主动断开了
-                    //     _this.websocket.onclose();     //如果onclose会执行reconnect，我们执行ws.close()就行了.如果直接执行reconnect 会触发onclose导致重连两次
-                    // }, self.timeout)
-                }, this.timeout)
-            }
-        }     
-        _this.heartCheck = heartCheck;
-        heartCheck = null;    
-        this.initWebsocket();    
+        // this.name = name;
+        this.saveChatListLen = this.$store.state.chatConList.length;
+        console.log(this.saveChatListLen);
+   
     },
 }
 </script>
 
 <style lang="less" scoped>
+.groupLogoWrap{
+    display: flex;
+    align-items: center;
+} 
 .mr10{ margin-right: 10px; }
 .ml10{ margin-left: 10px; }
 .textAlignR{ text-align: right }

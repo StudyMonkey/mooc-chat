@@ -14,7 +14,10 @@
             <span>小组名称：</span>
             <a-input class="groupName" v-model="groupName" placeholder="请输入小组名称......" />
         </div>
-        <upload-img>
+        <upload-img 
+            :groupImg="groupShowImg" 
+            @changeUploadImg="handleChangeImage"
+        >
             <span>小组头像：</span>
         </upload-img>
         <div class="groupDescriptionWrap">
@@ -122,6 +125,13 @@ export default {
             groupNo: '',
             exitReason: '',   // 退出小组的理由
             quitGroupModal: false,   //  控制退出小组的理由Modal框显示隐藏
+            groupIcon: '',  // 小组图片
+            groupShowImg: [{  // 从返回里面取得回显的图片
+                uid: '-1',
+                name: '',
+                status: 'done',
+                url: ''
+            }]
         }
     },
     components: {
@@ -129,6 +139,7 @@ export default {
         UploadImg
     },
     methods: {
+        ...mapMutations(['changeGetUserList']),
         // 通用的确认事件处理
         comfirmMethod(title, mes){
             let _this = this;
@@ -174,23 +185,37 @@ export default {
             this.$confirm({
                 title,
                 async onOk() {
-                    _this.handleTopChat()                               
+                    _this.handleTopChat();
+                    _this.changeGetUserList(2);
+                    // _this.$store.commit('changeGetUserList', 2);                               
                 },
                 okText: '确认',
                 cancelText: '取消',
             })
             
         },
+        // 上传图片传递的事件处理
+        handleChangeImage(imgObj){
+            console.log(imgObj);
+            this.groupIcon = imgObj[0].response.obj
+        },
         // 退出小组点击确认
         async handleQuitGroupSure(){
             const res = await this.$getData('/sys/groupExit.action', {
                 groupId: this.chosedLi.groupId,
                 groupNo: this.groupNo,
-                exiterNick: '',
+                exiterNick: this.$store.state.user.username,
                 exitReason: this.exitReason,
                 eid: this.$myEid,
-                offcial: ''
-            })
+                offcial: this.chosedLi.official
+            });
+            const { data: { success,msg } } = res;
+            if ( success && msg === 'exitGroup' ) {
+                this.quitGroupModal = false;
+                this.$message.success(`您已成功退出[${this.groupNo}]小组`);
+                // 还要刷新一下左侧列表
+                this.changeGetUserList(2);
+            }
         },
         // 退出小组点击事件处理
         handleQuitGroupClick(){
@@ -222,7 +247,7 @@ export default {
                 title: '解散群后，相关群信息，群成员信息都会删除，无法找回，请确认操作是否继续!',
                 async onOk() {
                     _this.handleDismissGroupSure();
-                    _this.$store.commit('changeGetUserList', 2);
+                    _this.changeGetUserList(2);
                     // _this.handleQuitGroupSure();                               
                 },
                 okText: '确认',
@@ -240,13 +265,15 @@ export default {
                     groupName: this.groupName,
                     affirmFlag: this.addGroup,
                     groupDesc: this.groupDescription,
-                    addFlag: this.addMember,
+                    addFlag: this.addMember, 
+                    groupIcon: this.groupIcon                   
                 });
                 this.$message.success('修改设置成功');
             }
         }
     },
     async created(){
+        console.log('用户身份', this.$store.state.isAdmin);
         const res = await this.$getData('/sys/settings.action', {
             eid: this.$myEid,
             groupId: this.chosedLi.groupId
@@ -263,6 +290,8 @@ export default {
         this.memberOptionList = adminList;
         this.isTop = obj.bakField2;
         this.groupNo = obj.groupNo;
+        this.groupShowImg[0].url = 'http://172.26.75.217:8080'+obj.groupIcon;
+        this.groupShowImg[0].name = '小组头像' + obj.groupIcon.split('.')[1];
     },
 }
 </script>
