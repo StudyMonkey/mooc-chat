@@ -103,7 +103,7 @@
                                 <div v-html="emoji(item.content)"></div>
                             </template>
                             <template v-else-if="item.chatType === '2'">
-                                <div class="sendChatWrap">
+                                <div class="sendChatWrap" @click.self="handlePersonCardClick">
                                     <div class="personInfoWrap">
                                         <x-avatar :imgUrl="item.content.avatar" />
                                         <div>
@@ -111,7 +111,10 @@
                                             <p>用户名：<span>{{item.content.username}}</span></p>
                                         </div>
                                     </div>
-                                    <div class="partInfoWrap">
+                                    <div v-show="personCardShow">
+                                        个人名片
+                                    </div>
+                                    <div class="partInfoWrap" v-show="!personCardShow">
                                         <p class="partWordWrap">单位：<span>{{item.content.part}}</span></p>
                                         <p class="partIconWrap">
                                             <span v-show="item.content.friend" title="点击发送私聊消息" @click="handleChatSend" class="iconfont iconsiliao" />
@@ -202,7 +205,8 @@ export default {
                 { type: 'iconlianjie', title: '发送链接'},
                 { type: 'iconwenjian', title: '发送文件'},
                 { type: 'iconmingpian', title: '发送名片'},
-            ]            
+            ],
+            personCardShow: true            
         }
     },
     computed: {
@@ -231,6 +235,11 @@ export default {
         UploadImg
     },
     methods: {
+        // 名片点击事件处理
+        handlePersonCardClick(){
+            // 点击查询当前用户与名片上的人关系，是好友则显示删除好友，不是好友则显示添加好友
+            this.personCardShow = !this.personCardShow;
+        },
         selectEmoji (code) {
             this.showEmoji = false
             this.chatCon += code;
@@ -588,7 +597,7 @@ textarea[class='ant-input']{ resize: none }
                         } 
                         /deep/.sendChatWrap{
                             width: 310px;
-                            height: 150px;
+                            // height: 150px;
                             background-color: #ffffff;
                             .personInfoWrap{
                                 display: flex;
