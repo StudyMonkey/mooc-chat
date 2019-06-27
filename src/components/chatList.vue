@@ -6,19 +6,22 @@
                 <li 
                     v-for="item in messageList" 
                     :key="item.groupId"
-                    :class="isActive === item.groupId ? 'bg_active' : ''"
+                    :class="[isActive === item.groupId ? 'bg_active' : '', item.isTop ? 'bgea' : '']"
                     @click="handleLiClick(item)"
                 >
                     <!-- 1 小组  2 私人 -->
                     <a-badge :count="item.unReadNumber" :dot="item.groupType === 1 && item.unReadNumber > 0"> 
-                        <x-avatar :imgUrl="prefixUrl+item.avatar" />
+                        <x-avatar :imgUrl="item.avatar" />
                     </a-badge>
                     <div class="infoWrap">
                         <div class="titleWrap">
                             <p class="title overHidden" :title="item.name" v-html="item.name"></p>
-                            <span class="iconfont iconV" v-if="item.official === 1" />
+                            <span class="iconfont iconV" v-if="item.official" />
                         </div>
-                        <p class="time" v-show="inputSearchVal === ''">{{$timeFormat(item.lastMsgTime)}}</p>
+                        <p class="time" v-show="inputSearchVal === ''">
+                            {{ item.lastMsgTime ? $timeFormat(item.lastMsgTime) : '' }}
+                            <span class="aiteSpan" v-show="item.aiteShow">有人@我</span>
+                        </p>
                         <!-- <p v-show="inputSearchVal !== ''">备注名</p> -->
                     </div>
                 </li>                   
@@ -39,7 +42,7 @@
 import XAvatar from '@/components/avatar'
 import SearchWrap from '@/components/searchWrap'
 import LoadMore from '@/components/loadMore'
-import { matchChangeColor, clearMatchColor } from '@/utils/utils'
+import { matchChangeColor, clearMatchColor, setLocal } from '@/utils/utils'
 import { mapMutations } from 'vuex'
 export default {
     name: 'chatList',
@@ -55,6 +58,7 @@ export default {
             isGroup: false, // 区分聊天列表和我加入的小组
             chosedLi: {},   //  所点击选择的对象
             chatList: [],   // 请求到聊天记录的数组
+            aiteShow: false,   //  被艾特时显示
         }
     },
     components: {
@@ -87,8 +91,23 @@ export default {
         },
         groupIdChange: {
             handler(n, o) {
-                if ( n !== o ) {
-                    this.getUserList(false, true);
+                if ( n !== o && o !== '' ) {
+                    if ( this.$store.state.autoClick !== 1 ) {
+                        const index = this.messageList.findIndex( v => v.groupId === n );
+                        console.log(this.messageList[index]);
+                        if ( this.messageList[index] ) {
+                            // 如果匹配到人，则触发点击事件执行下面的逻辑
+                            this.handleLiClick(this.messageList[index]); 
+                        } else {
+                            // 如果未匹配到人，则说明左侧列表还没有过对话，则需要刷新列表
+                            this.getUserList(false, true);
+                            this.$store.commit('changeAutoClick', 1);
+                        }
+                    } else { 
+                        console.log('this.$store.state.autoClick === 1');
+                    }                                      
+                    // 监听到 groupId 改变，则去刷新数组 
+                    // this.getUserList(false, true);
                 }
             },
             deep: true
@@ -109,7 +128,9 @@ export default {
          * 将点击的数据对象传递到父组件
          * 通过vuex改变Loading的状态
          */
-        async handleLiClick(item){   
+        async handleLiClick(item){ 
+            item.unReadNumber = 0; 
+            item.aiteShow = false;
             this.chosedLi = item;       
             this.isActive = item.groupId;
             const res = await this.$getData('/chat/detail.do', {
@@ -118,12 +139,17 @@ export default {
                 eid: this.$myEid,
             });
             const { data: { obj } } = res;
+            obj.chatList.map ( v => {
+                if ( v.chatType === 11 ) {
+                    v.text = JSON.parse(v.text)
+                }
+            })
             this.chatList = obj.chatList;
             console.log('点击改变的groupId', item.groupId);
             this.handleChosedLi(item);   // 将所选中的左侧列表存到vuex里面，还有其他的组件需要用到
             this.changeGroupId(item.groupId);
             this.changeMemberType(obj.groupMemberType);
-            this.changeAdmin(obj.isAdmin);
+            this.changeAdmin(obj.isAdmin); // 将用户身份存到vuex
             this.$emit('clickChosedLi', obj, item);
             this.$store.commit('addChatConList', this.chatList);
         },
@@ -131,9 +157,10 @@ export default {
          *  init为布尔值，初始化请求为false，加载更多按钮点击为true
          */       
         async getUserList( init, isGroupId = false ){
-            (init && this.pageNo === 1) ? this.pageNo++ : this.pageNo;
+            init ? this.pageNo++ : this.pageNo;
             // 由通讯录好友点到我加入的小组时，isGroup为false请求到了聊天列表的数据
-            this.isGroup = this.$route.path === '/group' ? true : false;
+            this.isGroup = this.$route.path === '/main/group' ? true : false;
+            console.log('getUserList里面', this.isGroup);
             const res = await this.$getData('/leftHotGroups.do', { 
                 eid: this.$myEid, 
                 pageNo: this.pageNo, 
@@ -149,7 +176,9 @@ export default {
             }
             init ? this.messageList = this.messageList.concat(rows) : this.messageList = rows;
             this.saveMessageList = this.messageList;
-            if ( isGroupId ) {  // 监测到 groupId 改变，过滤出来匹配到的列表，触发列表的点击事情
+            if ( isGroupId ) {  
+                // 监测到 groupId 改变，过滤出来匹配到的列表，触发列表的点击事情
+                // 通讯录点私聊传递过来一个 groupId,匹配到相应的触发点击事件
                 const item = this.messageList.filter( v => v.groupId === this.$store.state.groupId );
                 console.log(item[0]);
                 this.handleLiClick(item[0]);
@@ -228,13 +257,63 @@ export default {
         websocketonmessage(e){
             const reData = JSON.parse(e.data);
             console.log('收到消息', reData);
+            let atEidsArr = reData.atEids.split(',');
+            
+            // if ( atEidsArr.findIndex( v => v === this.$myEid ) > -1 || atEidsArr.findIndex( v => v === 'all' ) > -1 ) {
+                // this.aiteShow = true
+            // }
             console.log(this.chosedLi.groupId);
             console.log(this.messageList);
             const index = this.messageList.findIndex( v => v.groupId === reData.groupId );
             console.log('匹配到的index', index);
-            if( index > -1 ) {
-                const str = this.messageList.splice(index, 1);
-                this.messageList.unshift(str[0]);
+            if( index > -1 ) {  
+                if ( atEidsArr.findIndex( v => v === this.$myEid ) > -1 || atEidsArr.findIndex( v => v === 'all' ) > -1 ) {
+                    const newObj = { ...this.messageList[index], aiteShow: true };
+                    this.messageList.splice(index, 1, newObj); 
+                }    
+                const str = this.messageList.splice(index, 1); 
+                let newArr = [];             
+                let officialArr = this.messageList.filter( v => v.official );
+                let topArr = this.messageList.filter( v => v.isTop );
+                let otherArr = this.messageList.filter ( v => v.official === false && v.isTop === false );
+                if ( str[0].official ) { // 如果是官方群收到新消息，则直接更换到第一位
+                    this.messageList.unshift(str[0]);
+                } else if ( str[0].isTop ){ 
+                    // 如果本身是置顶群收到消息，则判断是否存在官方群，若存在将官方群放到第一位，
+                    // 若不存在则将收到消息的置顶群放到第一位，其他的群放在后面
+                    if ( officialArr.length > 0 ) {
+                        // 如果既是官方群也是置顶群，则从置顶群的列表里面删掉官方群
+                        let officialIndex = topArr.findIndex( v => v.groupId === officialArr[0].groupId );
+                        if ( officialIndex > -1 ) {
+                            topArr.splice(officialIndex, 1)
+                        }
+                        newArr = [ ...officialArr,...str,...topArr,...otherArr ];
+                        this.messageList = newArr;
+                        console.log('是置顶群且存在官方群的处理结果', this.messageList);
+                    } else {
+                        newArr = [...str, ...topArr, ...otherArr];
+                        this.messageList = newArr;
+                        console.log('是置顶群且不存在官方群的处理结果', this.messageList);
+                    }
+                } else {
+                    // 收到消息的群既不是官方群也不是置顶群
+                    // 判断原本的消息列表中是否存在官方群，存在则将官方群放在第一个，不存在则将置顶群放在前面
+                    if ( officialArr.length > 0 ) {
+                        // 如果既是官方群也是置顶群，则从置顶群的列表里面删掉官方群
+                        let officialIndex = topArr.findIndex( v => v.groupId === officialArr[0].groupId );
+                        if ( officialIndex > -1 ) {
+                            topArr.splice(officialIndex, 1)
+                        }
+                        newArr = [ ...officialArr,...topArr,...str,...otherArr ];
+                        this.messageList = newArr;
+                        console.log('不是置顶群且存在官方群的处理结果', this.messageList);
+                    } else {
+                        newArr = [...topArr,...str, ...otherArr];
+                        this.messageList = newArr;
+                        console.log('不是置顶群且不存在官方群的处理结果', this.messageList);
+                    }                    
+                }
+                // this.messageList.unshift(str[0]);
             } else {
                 this.$store.commit('changeGetUserList', 2);
             }
@@ -306,6 +385,7 @@ export default {
 </script>
 
 <style lang="less">
+.bgea{ background-color: #eaeaea }
 .height600{ height: 600px }
 .height628{ height: 628px }
 .userListWrap{
@@ -345,8 +425,15 @@ export default {
                         .time{
                             font-size: 13px;
                             color: #666666;
+                            position: relative;
                         }                   
-                    }                    
+                    }  
+                    .aiteSpan{
+                        position: absolute;
+                        color: red;
+                        font-weight: bold;
+                        right: 0;
+                    }                  
                 }
             }
         }

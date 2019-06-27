@@ -10,7 +10,12 @@
                     <template slot="title">
                         <span>{{ chosedLi.official ? '单位学习小组请在系统后台添加小组成员' : '点击添加成员' }}</span>
                     </template>
-                    <a-button class="addMember" size="small" :disabled="chosedLi.official" @click="handleAddMemberShow">添加成员</a-button>
+                    <a-button 
+                        :class="[chosedLi.official ? 'grayBtn' : 'addMember']" 
+                        size="small" 
+                        :disabled="chosedLi.official" 
+                        @click="handleAddMemberShow"
+                    >添加成员</a-button>
                 </a-tooltip>        
             </div>
             <div class="memberContentWrap">          
@@ -144,8 +149,9 @@ export default {
         getChosedLi(n, o){
             if ( n !== o ) {
                 this.chosedLi = this.$store.state.chosedLi;
+                this.memberType = this.$store.state.memberType;
             }
-        }
+        },
     },
     computed: {
         identityClass(item) {
@@ -263,6 +269,7 @@ export default {
             // 传递给chatPage一个事件，然后chatPage告诉chatList应该要请求一次列表，
             // 且在对应的groupId上有激活状态
             this.$store.commit('changeGroupId', obj.groupId);
+            this.$store.commit('changeAutoClick', 2);
         },
         /**
          *  搜索所有用户的事件处理
@@ -391,6 +398,9 @@ export default {
         &.addMember{
             background-color: #35a8eb;
             color: #ffffff;
+        }
+        &.grayBtn{
+            background-color: #999999
         }
     }
 }

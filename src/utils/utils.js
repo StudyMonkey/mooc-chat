@@ -167,7 +167,7 @@ export function delCookie(c_name) {
  * @param {value}  
  */
 export function setLocal(key,value){
-    localStorage.setItem(key ,value)
+    localStorage.setItem(key ,JSON.stringify(value))
 }
 
 /**
@@ -175,7 +175,7 @@ export function setLocal(key,value){
  * @param {key}  
  */
 export function getLocal( key ){
-    localStorage.getItem( key )
+    return JSON.parse(localStorage.getItem( key ))
 }
 
 /**

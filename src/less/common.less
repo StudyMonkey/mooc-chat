@@ -104,8 +104,8 @@ div{
   border-color: #ff8000;
 }
 
-.ant-tooltip{
-  /deep/.ant-tooltip-inner{
+.ant-tooltip {
+  .ant-tooltip-inner{
     background-color: #fff;
     color: #333;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -124,7 +124,7 @@ div{
       border-bottom-color: #ffffff;
     }
   }
-  &.ant-tooltip-placement-topRight{
+  &.ant-tooltip-placement-topRight,&.ant-tooltip-placement-topLeft{
     .ant-tooltip-arrow{
       border-top-color: #ffffff;
     }
@@ -133,9 +133,16 @@ div{
     .ant-tooltip-arrow{
       border-bottom-color:#ffffff;
     } 
-  } 
-  
-  
+  }    
+}
+.ant-dropdown-placement-topLeft{
+  width: 160px;
+  max-height: 330px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  .name{
+    margin-left: 10px;
+  }
 }
 
 .limitadm_table1{

@@ -83,7 +83,7 @@
                             <tr class="h50 tr1">
                                 <td class="username">类型</td>
                                 <td class="name">时间</td>
-                                <td class="part">事件</td>
+                                <td style="width:500px;" class="part">事件</td>
                             </tr>  
                             <tr v-for="(item,index) in systermMesList" :key="index">
                                 <td>{{item.noticeTitle}}</td>

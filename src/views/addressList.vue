@@ -48,8 +48,9 @@
                     </div>   
                     <div class="addressBtnWrap">
                         <a-button size="small" @click="handleIsTop" v-text="oneUser.top ? '取消置顶' : '置顶' "></a-button>
-                        <a-button class="greenBtn" size="small" @click="handleSendMessage">发消息</a-button>    
-                    </div>                                                           
+                        <a-button class="greenBtn" size="small" @click="handleSendMessage">发消息</a-button>                         
+                    </div> 
+                    <a-button style="margin-top:20px;" type="danger" size="small" @click="handleDeleteFriend">删除好友</a-button>                                                           
                 </div>
             </div>
         </div>
@@ -102,6 +103,7 @@ export default {
                 pageNo: this.pageNo
             });
             const { data: { rows } } = res;
+            console.log('通讯录好友列表', rows);
             if ( rows.length < 10 ) {
                 this.showLoadMore = false
             }
@@ -125,6 +127,35 @@ export default {
             this.hasChosed = false;
             this.oneUser = item;
         },
+        /**
+         * 删除好友操作处理
+         */
+        handleDeleteFriend(){
+            let _this = this;
+            this.$confirm({
+                title: `确定将用户${this.oneUser.userName}从您的好友列表中移除？`,
+                onText: '确认',
+                cancelText: '取消',
+                async onOk() {
+                    _this.handleDeleteFriendOk()
+                }
+            })
+        },
+        /**
+         * 删除好友的确定处理
+         * 根据传递过来的 type 类型，判断是头像上的删除好友还是名片里的删除好友
+         * title 是头像的删除，card是名片的删除
+         */
+        async handleDeleteFriendOk(){ 
+            const res = await this.$getData('/member/deleteFriends.action', {
+                myEid: this.$myEid,
+                friendEid: this.oneUser.friendEid
+            });
+            if ( res.data.success === true ) {
+                this.$message.success('删除好友成功');
+                this.commonGetAddressList(false);
+            }
+        },        
         /**
          *  置顶好友的接口处理方法
          */

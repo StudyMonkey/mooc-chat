@@ -56,7 +56,7 @@ export default {
     methods: {
         async handleSubmit(){
             console.log(this.selectFriend, this.selectGroup, this.selectRecommand);
-            const res = await this.$getData('/systemmanage.do', {
+            const res = await this.$postData('/systemmanage.do', {
                 userEid: this.$myEid,
                 userAuth: this.selectFriend,
                 recommend: this.selectRecommand

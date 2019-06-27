@@ -127,7 +127,6 @@ export default {
         ...mapMutations(['changeGetUserList']),
         async commonGetMethod(url, params){
             const res = await this.$getData(url, params);
-            console.log(res);
             const { data } = res;
             this.total = data.total;
             return data.rows;
@@ -162,7 +161,6 @@ export default {
         },
         // 接受chatList子组件所选择的聊天列表
         handleClickChosedLi( obj, item ){
-            console.log(obj);
             this.chosedChat = obj; // 点击选中之后调用接口获取到的对象信息
             this.chosedLi = item;
         },

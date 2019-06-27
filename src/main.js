@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { Button,List,Avatar,Icon,Input,Badge,Tabs,Pagination,Popover,Tooltip,message,Modal,Select,Upload, Checkbox,Radio } from 'ant-design-vue';
+import { Button,List,Avatar,Icon,Input,Badge,Tabs,Pagination,Popover,Tooltip,message,Modal,Select,Upload, Checkbox,Radio,Dropdown,Menu } from 'ant-design-vue';
 import App from './App.vue'
 import router from './router'
 import store from './store/store'
@@ -8,8 +8,10 @@ import '@/assets/font/iconfont.css'
 import { getData, postData, timeFormat, getCookie } from './utils/utils'
 import { emoji } from './utils/emoji.js'
 import "../http-interceptor"
-// import ws from '@/utils/ws.js'
 
+Vue.component(Dropdown.name, Dropdown);
+Vue.component(Menu.name, Menu);
+Vue.component(Menu.Item.name, Menu.Item);
 Vue.component(Button.name, Button);
 Vue.component(List.name, List);
 Vue.component(List.Item.name, List.Item);
@@ -42,7 +44,6 @@ Vue.prototype.$getCookie = getCookie;
 Vue.prototype.$confirm = Modal.confirm;
 Vue.prototype.emoji = emoji
 Vue.config.productionTip = false
-Vue.prototype.prefixUrl = 'http://172.26.75.217:8080';
 Vue.prototype.$myEid = getCookie('loginEid');  //  1xy01  ybb2011 klinchao 
 Vue.prototype.$myName = getCookie('loginName');
 // Vue.prototype.ws = ws;

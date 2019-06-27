@@ -102,7 +102,6 @@ export default {
             this.userType = str
         },
         handleChangeImage(imgObj){
-            console.log(imgObj);
             this.groupImage = imgObj[0].response.obj
         },
         async handleCreateBtnClick(){
@@ -113,7 +112,6 @@ export default {
                 affirmFlag: this.needVerify,
                 groupDesc: this.groupDescription,
             });
-            console.log(res);
             if ( res.data.success ) {
                 this.$message.success('创建交流小组成功');
                 this.$router.push('/main/chat');

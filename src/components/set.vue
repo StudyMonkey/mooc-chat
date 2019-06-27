@@ -138,6 +138,24 @@ export default {
         XAvatar,
         UploadImg
     },
+    computed: {
+        getChosedLi(){
+            return this.$store.state.chosedLi
+        }
+    },
+    watch: {
+        getChosedLi: {
+            handler(n, o){
+                if ( n !== o ) {
+                    console.log(this);
+                    this.chosedLi = this.$store.state.chosedLi;
+                    this.isAdmin = this.$store.state.isAdmin;
+                    this.getSettings();
+                }
+            },
+            deep: true
+        }
+    },
     methods: {
         ...mapMutations(['changeGetUserList']),
         // 通用的确认事件处理
@@ -245,7 +263,7 @@ export default {
             let _this = this;
             this.$confirm({
                 title: '解散群后，相关群信息，群成员信息都会删除，无法找回，请确认操作是否继续!',
-                async onOk() {
+                onOk() {
                     _this.handleDismissGroupSure();
                     _this.changeGetUserList(2);
                     // _this.handleQuitGroupSure();                               
@@ -270,28 +288,31 @@ export default {
                 });
                 this.$message.success('修改设置成功');
             }
-        }
+        },
+        async getSettings(){
+            console.log('用户身份', this.$store.state.isAdmin);
+            const res = await this.$getData('/sys/settings.action', {
+                eid: this.$myEid,
+                groupId: this.chosedLi.groupId
+            });
+            // addFlag  添加成员  1   2
+            // affirmFlag 加群方式  1  2
+            console.log(res);
+            const { data: { obj,adminList } } = res;
+            this.groupName = obj.groupName;
+            this.groupDescription = obj.groupDesc;
+            this.groupNickName = obj.bakField;
+            this.addMember = obj.addFlag;
+            this.addGroup = obj.affirmFlag;
+            this.memberOptionList = adminList;
+            this.isTop = obj.bakField2;
+            this.groupNo = obj.groupNo;
+            this.groupShowImg[0].url = this.prefixUrl+obj.groupIcon;
+            this.groupShowImg[0].name = '小组头像' + obj.groupIcon.split('.')[1];
+        },        
     },
-    async created(){
-        console.log('用户身份', this.$store.state.isAdmin);
-        const res = await this.$getData('/sys/settings.action', {
-            eid: this.$myEid,
-            groupId: this.chosedLi.groupId
-        });
-        // addFlag  添加成员  1   2
-        // affirmFlag 加群方式  1  2
-        console.log(res);
-        const { data: { obj,adminList } } = res;
-        this.groupName = obj.groupName;
-        this.groupDescription = obj.groupDesc;
-        this.groupNickName = obj.bakField;
-        this.addMember = obj.addFlag;
-        this.addGroup = obj.affirmFlag;
-        this.memberOptionList = adminList;
-        this.isTop = obj.bakField2;
-        this.groupNo = obj.groupNo;
-        this.groupShowImg[0].url = 'http://172.26.75.217:8080'+obj.groupIcon;
-        this.groupShowImg[0].name = '小组头像' + obj.groupIcon.split('.')[1];
+    created(){       
+        this.getSettings();
     },
 }
 </script>

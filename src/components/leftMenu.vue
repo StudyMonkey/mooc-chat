@@ -3,7 +3,7 @@
         <a-avatar 
             shape="square" 
             size="default"
-            src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png"
+            :src="$store.state.user.userimg"
         />
         <ul>
           <li 
@@ -37,7 +37,6 @@
             </router-link>            
           </li>
           <li class="menuIconWrap">
-
               <a-tooltip placement="right">
                 <template slot="title">
                   设置
@@ -69,6 +68,9 @@ export default {
           ]
       }
   },
+  created(){
+    console.log(this.$store.state.user);
+  }
 }
 </script>
 

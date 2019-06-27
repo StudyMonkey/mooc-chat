@@ -7,7 +7,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     ws: '',    //  websocket 状态
-    user: {},   // 登录用户信息
+    user: {} ,   // 登录用户信息 getLocal('user')
     showLoad: false,
     chosedLi: {},  // 左侧列表点击所选中的那一项
     userList: [], // 左侧菜单的用户列表
@@ -15,7 +15,8 @@ export default new Vuex.Store({
     memberType: '',   // 用户权限
     isAdmin: '',       // 是否为群主或管理员
     groupId: '',      //  列表选中的那个id
-    getUserList: 0   // 刷新左侧用户列表  0 初始值，  1 // 刷新左侧列表  2 // 刷新列表并置空选择项
+    getUserList: 0,   // 刷新左侧用户列表  0 初始值，  1 // 刷新左侧列表  2 // 刷新列表并置空选择项
+    autoClick: 1,     // chatList 的点击分几种情况， 1 是手动点击， 2是触发代码的自动点击
   },
   mutations: {
     /**  控制整个页面遮蔽层的显示隐藏状态
@@ -54,6 +55,9 @@ export default new Vuex.Store({
     // 修改 websocket 状态
     changeWs( state, obj){
       state.ws = obj
+    },
+    changeAutoClick( state, num ) {
+      state.autoClick = num
     }
   },
   actions: {

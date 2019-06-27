@@ -6,7 +6,7 @@
             centered
             :closable="false"
             :footer="null">
-            <check-member @checkMemberSureBtn="handleCheckMemberSureBtn" @quickCreateGroup="handleQuickCreateGroup">
+            <check-member useType="2" @checkMemberSureBtn="handleCheckMemberSureBtn" @quickCreateGroup="handleQuickCreateGroup">
                 <span>勾选好友，发送名片</span>
             </check-member>
         </a-modal>
@@ -95,7 +95,7 @@
                                         </div>
                                         <div class="memoNameBtnWrap" v-else>
                                             <a-input v-model="memoName" placeholder="请输入备注名" class="memoName" />
-                                            <a-button size="small" @click="saveMemoName(item)">保存</a-button>
+                                            <a-button size="small" @click="saveMemoName(item, 'title')">保存</a-button>
                                         </div>        
                                     </div>                                     
                                     <!-- <memo-name from='1' @saveMemoName="handleSaveMemoName" /> -->
@@ -140,39 +140,59 @@
                     <div :class="[ item.fromEid === $myEid ? 'fr mr10 ' : 'fl ml10 textAlignL','chatInfoWrap' ]">
                         <!-- <p><span v-text="item.name"></span></p> -->
                         <div :class="[ item.fromEid === $myEid ? '' : '', 'mesContent' ]">                          
-                            <template v-if="item.chatType === 0 || item.chatType === 1">
+                            <template v-if="item.chatType === 0">
+                                <div v-html="item.text"></div>
+                            </template>
+                            <template v-else-if="item.chatType === 1">
                                 <div v-html="emoji(item.text)"></div>
                             </template>
-                            <template v-else-if="item.chatType === 2">
+                            <template v-else-if="item.chatType === 11">
                                 <div class="sendChatWrap">
                                     <div class="personInfoWrap">
-                                        <x-avatar :imgUrl="item.content.fromPic" />
+                                        <x-avatar :imgUrl="item.text.imgUrl" />
                                         <div>
-                                            <div class="memoNameWrap" v-if="item.content.isFriend">
+                                            <!-- <div class="memoNameWrap" v-if="item.text.isFriend">
                                                 <div v-if="memoNameShow">
-                                                    <i>{{ item.content.backupText ? item.content.backupText : '昵称' }}</i>
-                                                    <span @click="handlePenClick" class="iconfont iconpen"></span>
+                                                    <i>{{ item.text.remark ? item.text.remark : '昵称' }}</i>
+                                                    <span 
+                                                        @click="handlePenClick" 
+                                                        class="iconfont iconpen"
+                                                        style="color: #f0b577"
+                                                    ></span>
                                                 </div>
                                                 <div class="memoNameBtnWrap" v-else>
                                                     <a-input v-model="memoName" placeholder="请输入备注名" class="memoName" />
-                                                    <a-button size="small" @click="saveMemoName(item.content)">保存</a-button>
+                                                    <a-button size="small" @click="saveMemoName(item, 'card')">保存</a-button>
                                                 </div>        
-                                            </div>                                            
-                                            <!-- <memo-name from='1' @saveMemoName="handleSaveMemoName"></memo-name> -->
-                                            <p>用户名：<span>{{item.content.fromName}}</span></p>
+                                            </div>                                             -->
+                                            <p>用户名：<span>{{item.text.userName}}</span></p>
                                         </div>
                                     </div>
-                                    <div class="partInfoWrap">
-                                        <p class="partWordWrap">单位：<span>{{item.content.fromEidDept}}</span></p>
-                                        <p class="partIconWrap">
-                                            <span v-show="item.content.fromEid === $myEid" title="点击发送私聊消息" @click="handleChatSend(item)" class="iconfont iconsiliao" />
-                                            <span 
-                                                :title="[ item.content.isFriend ? '点击删除好友' : '点击添加好友' ]"
-                                                :class="[item.content.isFriend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
-                                                @click="showAddFriend(item, 'card')" 
-                                            />                                  
-                                        </p>
-                                    </div>                           
+                                    <div class="bottomInfoWrap" @click.capture="handleSearchFriend(item)">
+                                        <a-tooltip>
+                                            <template slot="title">
+                                                点击可查看单位和好友关系
+                                            </template>
+                                            <div 
+                                                v-show="!item.text.showCard" 
+                                                style="cursor: pointer" 
+                                                title=""
+                                            > 
+                                                个人名片
+                                            </div>
+                                        </a-tooltip>                                       
+                                        <div class="partInfoWrap" v-show="item.text.showCard">
+                                            <p class="partWordWrap">单位：<span>{{item.text.unit}}</span></p>
+                                            <p class="partIconWrap">
+                                                <!-- <span v-show="item.text.fromEid === $myEid" title="点击发送私聊消息" @click="handleChatSend(item)" class="iconfont iconsiliao" /> -->
+                                                <span 
+                                                    :title="[ item.text.isFriend ? '点击删除好友' : '点击添加好友' ]"
+                                                    :class="[item.text.isFriend ? 'iconshanhaoyou' : 'iconjiahaoyou', 'iconfont']" 
+                                                    @click.stop.prevent="showAddFriend(item, 'card')" 
+                                                />                                  
+                                            </p>
+                                        </div> 
+                                    </div>                        
                                 </div>
                             </template>
                         </div>
@@ -181,6 +201,25 @@
             </ul>
         </div>
         <ul class="iconListWrap">
+            <a-dropdown placement="topLeft" v-show="$store.state.chosedLi.groupType !== 2">
+                <a-tooltip placement="top">
+                    <template slot="title">
+                        艾特
+                    </template>
+                    <span class="iconaite iconfont"></span>
+                </a-tooltip>
+                <a-menu slot="overlay" @click="onClick">
+                    <a-menu-item key="all" title="此选项可艾特群内所有人">所有人</a-menu-item>
+                    <a-menu-item 
+                        v-for="item in groupMemberList" 
+                        :key="item.id"
+                    >
+                        <x-avatar :imgUrl="item.bakField"></x-avatar>
+                        <span class="name" v-text="item.memberNick"></span> 
+                    </a-menu-item>                                                          
+                </a-menu>
+            </a-dropdown>
+
             <li v-for="(item,index) in iconList" :key="index">
                 <a-tooltip>
                     <template slot="title">
@@ -225,9 +264,15 @@
                 </vue-emoji>
             </div>
         </a-modal>
-        <a-textarea v-model="chatCon" placeholder="请输入......" :rows="4" @keyup.ctrl.enter.native="handleSendBtnClick" />
+        <a-textarea 
+            v-model="chatCon" 
+            placeholder="请输入......" 
+            :rows="4" 
+            @keyup.enter.native="handleSendBtnClick"
+            @keydown="handleKeyDownDel($event)" 
+        />
         <div class="sendWrap fr">
-            <p>按Enter发送、Ctrl+Enter换行</p>
+            <p>按Enter发送</p>
             <a-button class="greenBtn" @click="handleSendBtnClick" size="small">发送</a-button>
         </div>
         
@@ -259,11 +304,10 @@ export default {
             showEmoji: false,
             chatCon: '', // 用户输入的聊天内容
             chatType: '0', // 聊天形式，0 为 普通文本， 1 为 图片类型， 2 为 文本带链接， 3 为 名片类型
-            chatList: [],
+            chatList: this.$store.state.chatConList,
             chosedLi: this.$store.state.chosedLi, // 从vuex里面获取到的所点击的左侧某个列表
             checkMemberList: [], // 接收checkMember组件传递过来的好友列表
             showAddFriendWrap: false, // 聊天信息头像框的信息显示隐藏
-            isUploadImg: false, // 是否上传图片，接收upload-img组件传递过来的值改变，点击确定之后又改为false
             showCardAddFriend: '', // 名片添加好友显示
             addCardFriendModal: false,  // 名片添加还有的modal框显示隐藏控制
             addFriendReason: '', // 添加好友理由
@@ -276,7 +320,7 @@ export default {
             historyPage: 2,  // 加载历史记录的分页数
             // wsReadyState: this.ws.readyState,  // websocket连接状态， 0 未建立连接， 1 已建立连接，可通信。 2 连接正在关闭，3 连接已关闭
             iconList: [
-                { type: 'iconaite', title: '艾特' },
+                // { type: 'iconaite', title: '艾特' },
                 { type: 'iconbiaoqing', title: '表情'},
                 { type: 'icontupian', title: '发送图片'},
                 { type: 'iconlianjie', title: '发送链接'},
@@ -288,18 +332,20 @@ export default {
             saveChatListLen: 0,
             previewVisible: false,
             previewImage: '',
-            fileList: [],                    
+            fileList: [],  //  聊天上传图片的数组
+            groupMemberList: [],  //  获取到小组里面的所有成员列表 
+            aiteEids: '',  // 所选择艾特的人的eid
+            aiteNick: [],  // 所选择艾特的人的用户名
+            eventType: 1,  //  事件类型，默认是1，按键盘上的删除改为2
         }
-    },
-    props: {
-        // chatList: {
-        //     type: Array
-        // }
     },
     computed: {
         getChatConList() {
             return this.$store.state.chatConList
         },
+        getChosedLi(){
+            return this.$store.state.chosedLi
+        }
     },
     watch: {
         getChatConList(curval, oldval){
@@ -313,6 +359,55 @@ export default {
                 container.scrollTop = container.scrollHeight
             })           
         },
+        getChosedLi: {
+            handler(n, o) {
+                if ( n !== o ) {
+                    this.chosedLi = this.$store.state.chosedLi;
+                    this.getGroupAllPeople();
+                }
+            },
+            deep: true
+        },
+        chatCon: {
+            handler(n, o) {
+                if ( n !== o && this.eventType === 2 ) {
+                    let newArr = [];
+                    let newEidArr = '';
+                    let nickArr = n.split('@');                                   
+                    nickArr.map ( v => {                   
+                        if ( this.aiteNick.indexOf(v) > -1 ) {
+                            newArr.push(v);                                                   
+                        }
+                    })
+                    newArr.map ( v => {
+                        this.groupMemberList.map ( j => {
+                            if ( j.memberNick === v ) {
+                                newEidArr = newEidArr.concat(j.memberEid+ ',');
+                            }                        
+                        })
+                        if ( v === '所有人' ) {
+                            newEidArr = newEidArr.concat('all,');
+                            return false
+                        }                        
+                    })
+                    this.aiteNick = newArr;
+                    this.aiteEids = newEidArr;
+                    this.eventType = 1;
+                }
+            }
+        },
+        aiteNick: {
+            handler(n, o) {
+                this.chatCon = '';
+                this.aiteNick.map ( v => {
+                    console.log(1111);
+                    this.chatCon += `@${v}`;
+                })
+            },
+            deep: true
+
+            
+        },
     },
     components: {
         XAvatar,
@@ -322,6 +417,48 @@ export default {
         UploadImg,
     },
     methods: {
+        // 键盘上的删除事件响应
+        handleKeyDownDel(e){
+            // console.log(e.keyCode);
+            if ( e.keyCode === 8 ) {
+                this.eventType = 2
+            }           
+        },
+        // 通过 groupId 获取小组里面的所有人
+        async getGroupAllPeople(){
+            const res = await this.$getData('/member/getMembersByGroupId.action', {
+                groupId: this.chosedLi.groupId,
+                myEid: this.$myEid
+            });
+            console.log(res);
+            this.groupMemberList = res.data.rows;
+        },
+        // 艾特的点击事件
+        onClick({ key }){
+            console.log(`click on item ${key}`);
+            if ( key !== 'all' ) {
+                let index = this.groupMemberList.findIndex( v => v.id === key );
+                let eid = this.groupMemberList[index].memberEid;
+                let nick = this.groupMemberList[index].memberNick;
+                // if ( this.aiteEids === 'all' ) {
+                //     this.aiteEids = '';
+                // }
+                if ( this.aiteEids !== '' ) {
+                    this.aiteEids = this.aiteEids.concat(','+eid);
+                } else {
+                    this.aiteEids = this.aiteEids.concat(eid);
+                } 
+                this.aiteNick.push(nick);                                       
+            } else {
+                if ( this.aiteEids !== '' ) {
+                    this.aiteEids = this.aiteEids.concat(',all');
+                } else {
+                    this.aiteEids = this.aiteEids.concat('all');
+                }                 
+                this.aiteNick.push('所有人');
+            } 
+            console.log(this.aiteNick);            
+        },
         //  上传图片事件处理
         handleCancel () {
             this.previewVisible = false
@@ -337,6 +474,7 @@ export default {
         handleCustomRequest(options){
             let _this = this;
             let file = options.file;
+            console.log(file);
             var reader = new FileReader();
             const isLt2M = file.size / 1024 / 1024 < 2;
             if ( !isLt2M ) {
@@ -353,9 +491,19 @@ export default {
                     let base64Str = reader.result.split(',')[1];
                     // console.log(e.target.result);
                     this.base64Url = e.target.result;
+                    this.fileList = [
+                        {
+                            ...this.fileList[0], 
+                            status: 'done', 
+                            thumbUrl: e.target.result,
+                            eid: -1
+                        }
+                    ]
+                    console.log(this.fileList);
                 }
             }
             console.log(options);
+            
             return true;
         },
         //  上传图片事件结束       
@@ -368,12 +516,13 @@ export default {
         /**
          *  修改备注名的保存按钮点击事件
          */
-        async saveMemoName(item){
+        async saveMemoName(item, type){
             console.log(item);
+            let friendEid = type === 'title' ? item.friendEid : item.text.friendEid        
             // this.person.remark = this.memoName
             const res = await this.$postData('/modifyRemark.do', { 
                 userEid: this.$myEid,
-                friendEid: item.fromEid,
+                friendEid,
                 remark: this.memoName
             })
             console.log(res);
@@ -417,52 +566,99 @@ export default {
             });
             console.log(res);
         },
+        // 名片的点击事件
+        async handleSearchFriend(item){
+            console.log(item.text.isFriend);
+            if ( item.text.isFriend !== undefined ) {
+                item.text.showCard = !item.text.showCard;
+                const index = this.chatList.findIndex( v => v.date === item.date );
+                this.chatList.splice(index, 1, item);
+            } else {
+                const res = await this.$getData('/member/recommendFriends.action', {
+                    myEid: this.$myEid,
+                    friendEid: item.text.friendEid
+                });
+                const { data: { success, obj } } = res;
+                if ( success ) {
+                    item.text.isFriend = obj;
+                    item.text.showCard = !item.text.showCard;
+                    const index = this.chatList.findIndex( v => v.date === item.date );
+                    this.chatList.splice(index, 1, item);
+                } else {
+                    this.$message.error('查询好友关系失败')
+                } 
+            }
+                    
+        },
         // 点击发送消息逻辑
-        handleSendBtnClick(item){           
+        async handleSendBtnClick(item){           
             // if ( this.chatCon !== '' ) {
                 this.chatType = 0;
                 let newObj = {};
-                newObj.fromEid = this.$store.state.user.eid,
+                let newObj_copy = {};
+                newObj.fromEid = this.user.eid,
                 newObj.fromEidDept = this.user.displayunitname;
-                newObj.fromPic = 'https://source.unsplash.com/collection/190727/1600x900';
-                newObj.fromName = this.$store.state.user.username,
+                newObj.fromPic = this.user.userimg;
+                newObj.fromName = this.user.username,
                 newObj.time = new Date();
+                newObj.groupId = this.chosedLi.groupId;
+                newObj.groupName = this.chosedLi.name;
+                newObj.groupUrl = this.chosedLi.avatar;                
                 newObj.chatType = 1; // 其他类型的chatType 都为 1
+                newObj.to = 'xy15';
+                newObj.atEids = this.aiteEids;                
 
                 if ( this.checkMemberList.length > 0 ) {
-                    newObj.chatType = 2;
+                    newObj.chatType = 11;
+                    console.log('接收到的名片对象', item);
                     this.chatCon = {...item};
                 }
+                /**
+                 * 聊天发送图片的逻辑
+                 * chatType 需设置为0
+                 * text 为空，内容由后台拼成，如果有链接地址还需要带上 a 标签
+                 * 前台也需要拼一个显示在前台的
+                 */
                 if ( this.base64Url !== '' && this.imgLinkAddress ) {
-                    // console.log( this.isUploadImg );
                     newObj.chatType = 0;
                     this.chatCon = `<a class="imgLinkWrap" href="${this.imgLinkAddress}" target="_blank"><img src="${this.base64Url}" /><span class="iconfont iconlianjie"></span></a>`;                   
-                    this.sendPicture();
-                    this.imgLinkAddress = '';
+                    await this.sendPicture();
                 }else if ( this.base64Url !== '' ) {
                     newObj.chatType = 0;
                     this.chatCon = `<img src="${this.base64Url}" />`
-                    this.sendPicture();
-                    // this.isUploadImg = false
-                    this.base64Url = '';
+                    await this.sendPicture();
                 }
+                /**
+                 * 发送文本链接的事件处理
+                 */
                 if ( this.textLinkAddress && this.textLinkTitle ) {
                     newObj.chatType = 1;
                     this.chatCon = `<a href="${this.textLinkAddress}" target="_blank">${this.textLinkTitle}</a>`
                 }                
                 newObj.text = this.chatCon;
-                console.log('发消息', this.chosedLi.groupId);
-                newObj.groupId = this.chosedLi.groupId;
-                newObj.groupName = this.chosedLi.name;
-                newObj.to = 'xy15';
-                newObj.atEids = '';
-                newObj.groupUrl = this.chosedLi.avatar;
-                console.log(newObj);
+
+                newObj_copy = JSON.parse(JSON.stringify(newObj));
+
+                this.chatList.push(newObj);
+                console.log('发送的对象', newObj);
                 
                 // websocket 发送消息
-                this.websocket.send(JSON.stringify(newObj));    
-                this.chatList.push(newObj);
+                
+                // 发送图片把 newObj.text 改为空，内容由后台拼成，其他不变
+                if ( this.base64Url !== '' ) {
+                    newObj_copy.text = ''
+                }
+                if ( newObj_copy.chatType === 11 ) {
+                    newObj_copy.text = JSON.stringify(newObj_copy.text);
+                }
+                this.websocket.send(JSON.stringify(newObj_copy)); 
+                // 清空那些 input 输入框的值      
+                this.imgLinkAddress = '';
+                this.base64Url == ''; 
+                this.fileList = [];              
                 this.chatCon = '';
+                this.aiteEids = '';   // 艾特所存储的eid
+                this.aiteNick = [];   // 艾特所存储的用户名
             // } else {
             //     this.$message.info('消息内容不能为空');
             // }
@@ -481,26 +677,35 @@ export default {
             // 且在对应的groupId上有激活状态
             this.$store.commit('changeGroupId', obj.groupId);                      
         },
-        // 删除好友的事件处理
-        async handleDeleteFriend(){
+        /**
+         * 删除好友的事件处理
+         * 根据传递过来的 type 类型，判断是头像上的删除好友还是名片里的删除好友
+         * title 是头像的删除，card是名片的删除
+         */
+        async handleDeleteFriend(type){ 
+            let friendEid = '';
+            if ( type === 'title' ) {
+                friendEid = this.chosedMember.fromEid
+            } else {
+                friendEid = this.chosedMember.text.friendEid
+            }
             const res = await this.$getData('/member/deleteFriends.action', {
                 myEid: this.$myEid,
-                friendEid: this.chosedMember.fromEid
+                friendEid
             });
-            console.log(res);
             if ( res.data.success === true ) {
                 this.$message.success('删除好友成功')
             }
         },
         // 用了两次的确认框弹出方法
-        commonComfirm(){
+        commonComfirm(type){
             let _this = this;
             this.$confirm({
                 title: '确认从好友列表中删除此人么？',
                 okText: '确认',
                 cancelText: '取消',
                 onOk(){
-                    _this.handleDeleteFriend();
+                    _this.handleDeleteFriend(type);
                 }
             })
         },
@@ -510,13 +715,13 @@ export default {
             console.log(this.chosedMember);       
             if( type === 'title' ) {
                 if ( obj.isFriend ) {
-                    this.commonComfirm();
+                    this.commonComfirm('title');
                 } else {
                     this.showAddFriendWrap = true;       
                 }                
             } else {
-                if ( obj.content.isFriend ) {
-                    this.commonComfirm();
+                if ( obj.text.isFriend ) {
+                    this.commonComfirm('card');
                 } else {
                     this.addCardFriendModal = true;
                     // this.showCardAddFriend = obj.content.id
@@ -580,20 +785,10 @@ export default {
             this.cardVisible = false;
             // this.chatType = '3';
         },
-        /*
-        * 接收upload-img组件传递过来的是否上传图片
-        * 传递过来一个上传成功之后的true值
-        */ 
-        // handleUploadImg(obj){
-        //     console.log(obj);
-        //     this.isUploadImg = obj 
-        // },
         // 添加图片链接的确定按钮的点击事件
         handleImgLinkSureBtn(){
             this.imgVisible = false;
-            // if ( this.isUploadImg ) {
-                this.handleSendBtnClick();
-            // }
+            this.handleSendBtnClick();
         },
         // 添加文本链接的确定按钮的点击事件
         handleTextLinkSureBtn(){
@@ -606,6 +801,12 @@ export default {
 
     },
     created() {  
+        this.getGroupAllPeople();
+        console.log('created里面的chatList', this.chatList);
+        this.$nextTick(() => { // 不加nextTick只到倒数第二条
+            var container = this.$el.querySelector('#chatScrollArea')
+            container.scrollTop = container.scrollHeight
+        })        
         // this.name = name;
         this.saveChatListLen = this.$store.state.chatConList.length;
         console.log(this.saveChatListLen);
@@ -794,7 +995,7 @@ textarea[class='ant-input']{ resize: none }
                         } 
                         /deep/.sendChatWrap{
                             width: 310px;
-                            height: 150px;
+                            // height: 150px;
                             background-color: #ffffff;
                             .personInfoWrap{
                                 display: flex;
@@ -804,6 +1005,10 @@ textarea[class='ant-input']{ resize: none }
                                 padding: 9px;
                                 .ant-avatar{
                                     margin-right: 10px;
+                                    img{
+                                        width: 40px;
+                                        height: 40px;
+                                    }
                                 }
                                 div{
                                     line-height: 20px;
@@ -873,6 +1078,11 @@ textarea[class='ant-input']{ resize: none }
     .iconListWrap{
         display: flex;
         background-color: #ffffff;
+        position: relative;
+        .iconaite{
+            line-height: 36px;
+            margin: 0 12px 8px;
+        }
         li{
             height: 20px;
             line-height: 20px;
@@ -888,9 +1098,10 @@ textarea[class='ant-input']{ resize: none }
             }
         }
         span.fr{
-            margin: 0 8px 0 auto;
-            font-size: 20px;
-            line-height: 36px;
+            width: 25px;
+            position: absolute;
+            top: 5px;
+            right: 5px;
             cursor: pointer;
         }       
     }
