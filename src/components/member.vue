@@ -102,7 +102,10 @@
                             </tr>                       
                             <tr v-for="(item,index) in searchMemberList" :key="index">
                                 <td class="checkboxTd">
-                                    <a-checkbox @change="handleAddMember($event, item)"></a-checkbox>
+                                    <a-checkbox 
+                                        :checked="item.checked"
+                                        @change="handleAddMember($event, item)"
+                                    ></a-checkbox>
                                 </td>
                                 <td class="username">
                                     <span v-text="item.userEid"></span>
@@ -113,8 +116,19 @@
                             </tr>                  
                         </tbody>
                     </table>
-                </div>               
-                <a-button size="small" class="greenBtn sureBtn" @click="handleAddMemberSureBtn" :disabled="memberArray.length < 1">确定</a-button> 
+                </div> 
+                <x-pagination 
+                    style="bottom:50px;"
+                    v-show="searchTotal > 10" 
+                    :total="searchTotal" 
+                    @pageChange="handleSearchMemberPageChange " 
+                />                              
+                <a-button 
+                    size="small" 
+                    class="greenBtn sureBtn" 
+                    @click="handleAddMemberSureBtn" 
+                    :disabled="memberArray.length < 1"
+                >确定</a-button> 
                 <!-- <div v-else>未搜索到成员信息</div>               -->
             </div>                  
         </div>        
@@ -122,6 +136,7 @@
 </template>
 
 <script>
+import noticeImg from '@/assets/images/nnn.jpg'
 import XPagination from '@/components/pagination'
 export default {
     name: 'memberList',
@@ -188,9 +203,13 @@ export default {
             searchMemberList: [], // 搜索的成员列表数据
             searchVal: '', // input框输入的搜索内容
             searchMember: '',
+            websocket: this.$store.state.ws,
             hasClickAdd: true, // 点击添加成员按钮
             chosedLi: this.$store.state.chosedLi,  // 从vuex里面获取
+            user: this.$store.state.user,
             pageNo: 1,  // 翻页数，默认为1
+            searchPageNo: 1,  // 搜索用户的翻页数，默认为1
+            searchTotal: 0,   // 搜索用户出来的总数
             memberType: this.$store.state.memberType,  // 用户在小组的权限
             memberArray: [],  // 所勾选的用户保存的数组
             memberTotal: '', // 传递过来的total总数目
@@ -204,13 +223,19 @@ export default {
         handleDeleteMember(item){
             let _this = this;
             this.$confirm({
-                title: '确定删除该小组成员？',
+                title: `确定删除${item.memberNick}？`,
                 async onOk() {
                     const res = await _this.$getData('/member/deleteMember.action', {
-                        id: item.id
+                        id: item.id,
+                        groupId: _this.chosedLi.groupId,
+                        memberType: item.memberType
                     })
                     if ( res.data.success ) {
                         _this.$message.success('删除小组成员成功'); 
+                        console.log(_this.memberTotal);
+                        if ( _this.memberTotal - 2 < 10 ) {
+                            _this.pageNo = 1;
+                        }
                         _this.commonGetMembetList();
                     }                                 
                 },
@@ -235,6 +260,11 @@ export default {
         handlePageChange(pageNumber) {
             this.pageNo = pageNumber;
             this.commonGetMembetList();
+        },
+        // 搜索用户的翻页点击事件
+        handleSearchMemberPageChange(pageNumber){
+            this.searchPageNo = pageNumber;
+            this.handleSearchHttp();
         },
         handleSearchBtn(){
             if ( this.searchVal !== '' ) {
@@ -272,15 +302,25 @@ export default {
             this.$store.commit('changeAutoClick', 2);
         },
         /**
-         *  搜索所有用户的事件处理
+         * 搜索用户的多次请求事件相同处理
          */
-        async handleSearchAllMember(){
+        async handleSearchHttp(){
             const res = await this.$getData('/searchuser.do', {
-                pageNo: 1,
+                pageNo: this.searchPageNo,
                 name: this.searchMember,
                 myEid: this.$myEid,
             });
-            this.searchMemberList = res.data.rows;
+            console.log(res.data);
+            const { data: { count, rows } } = res;
+            this.searchTotal = count;
+            this.searchMemberList = rows;
+        },
+        /**
+         *  搜索所有用户的事件处理
+         */
+        handleSearchAllMember(){
+            this.searchPageNo = 1;
+            this.handleSearchHttp();
         },
         /**
          * 授权管理员操作
@@ -289,7 +329,7 @@ export default {
             console.log(item);
             let _this = this;
             this.$confirm({
-                title: '确定授权该成员为管理员身份么？',
+                title: `确定授权[${item.memberNick}]为管理员身份么？`,
                 async onOk(){
                     const res = await _this.$getData('/member/updateAdmin.action', {
                         groupId: _this.chosedLi.groupId,
@@ -313,8 +353,10 @@ export default {
          */
         handleAddMember(e, item){
             if ( e.target.checked ) {
+                item.checked = true;
                 this.memberArray.push(item);
             } else {
+                item.checked = false;
                 const index = this.memberArray.findIndex( v => v.id === item.id);
                 this.memberArray.splice(index, 1);            
             }
@@ -351,9 +393,33 @@ export default {
                 } else {
                     this.$message.info(`${res.data.obj.cacheId}已是小组成员，${res.data.obj.sortName}添加成功`);
                 }
+                this.memberArray.map( v => {
+                    v.checked = false
+                })
                 this.memberArray = [];
-                this.searchMember = '';
-                this.handleSearchAllMember();
+                // this.searchMember = '';
+                console.log('成员列表的长度', this.memberList.length);
+                // if ( this.memberList.length < 3 ) {
+                //     this.$store.commit('changeGetUserList', 2);
+                // }              
+                // this.handleSearchAllMember();
+                // 添加成员成功之后，聊天框发送一条系统通知
+                let newObj = {};
+                console.log('发消息的人', this.user);
+                newObj.fromEid = this.user.eid,
+                newObj.fromEidDept = this.user.displayunitname;
+                newObj.fromPic = noticeImg;
+                newObj.fromName = this.user.username,
+                newObj.time = new Date();
+                newObj.groupId = this.chosedLi.groupId;
+                newObj.groupName = this.chosedLi.name;
+                newObj.groupUrl = this.chosedLi.avatar;                
+                newObj.chatType = 1; // 其他类型的chatType 都为 1
+                newObj.to = '0';
+                newObj.atEids = ''; 
+                newObj.text = `恭喜新成员${res.data.obj.sortName}加群成功`
+                
+                this.websocket.send(JSON.stringify(newObj));
             }
         },
         /*  添加成员的按钮点击事件处理
@@ -368,6 +434,8 @@ export default {
         handleAddMemberBackBtn(){
             this.pageNo = 1;
             this.hasClickAdd = true;
+            this.searchMember = '';  
+            this.searchMemberList = [];          
             this.commonGetMembetList();
         }
     },
@@ -453,6 +521,7 @@ export default {
                             left: 0
                         }
                         &.iconyuechi1{
+                            margin-top: 2px;
                             left: 30px;
                             font-size: 23px;
                         }  
@@ -521,7 +590,7 @@ export default {
         }
         button.sureBtn{
             position: absolute;
-            bottom: 19px;
+            bottom: 10px;
             left: 50%;
             margin-left: -26px;
         }

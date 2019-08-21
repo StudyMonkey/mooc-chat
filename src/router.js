@@ -16,7 +16,7 @@ const router = new Router({
   mode: 'history',
   routes: [
     {
-      path: '/login',
+      path: '/lmgroups/login',
       name: 'login',
       component: Login,
       meta: {
@@ -24,7 +24,7 @@ const router = new Router({
       },
     },
     {
-      path: '/main',
+      path: '/lmgroups/main',
       name: 'main',
       component: Main,
       meta: {
@@ -72,16 +72,14 @@ const router = new Router({
           component: Setting
         }, 
       ]
-    },
-  
-    // { path: '*', redirect: '/main/chat' } 
-
+    },  
+    { path: '*', redirect: '/lmgroups/main/chat' } 
   ]
 })
 
 router.beforeEach((to, from, next) => {
-  if ( getCookie('loginEid') == '' && to.path !== '/login'){
-    next('/login')
+  if ( getCookie('loginEid') == '' && to.path !== '/lmgroups/login'){
+    window.location.href = '/course/userLogin'
   } else {
     next()
   }

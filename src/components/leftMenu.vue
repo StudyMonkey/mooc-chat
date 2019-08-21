@@ -24,13 +24,13 @@
           </li>
           <li class="menuIconWrap">
             <router-link 
-              to='/main/message' 
+              to='/lmgroups/main/message' 
             >
               <a-tooltip placement="right">
                 <template slot="title">
                   消息
                 </template>  
-                <a-badge :count="1" dot>
+                <a-badge :count="allMesNum" dot>
                   <span :class="['iconxinfeng', 'iconfont']"></span>
                 </a-badge>  
               </a-tooltip>          
@@ -43,7 +43,7 @@
                 </template> 
                 <div>
                   <router-link 
-                    to='/main/setting' 
+                    to='/lmgroups/main/setting' 
                   >
                     <span :class="['iconshezhi', 'iconfont']"></span>
                   </router-link> 
@@ -60,16 +60,32 @@ export default {
   data() {
       return {
           menuList: [
-            { type: 'iconsiliao', title: '聊天', link: '/main/chat' },
-            { type: 'iconqunliao', title: '我加入的小组', link: '/main/group'},
-            { type: 'icontongxunlu', title: '通讯录', link: '/main/member'},
-            { type: 'iconsousuo', title: '查找用户和小组', link: '/main/search'},
-            { type: 'iconincrease', title: '创建小组', link: '/main/createGroup'},
-          ]
+            { type: 'iconsiliao', title: '聊天', link: '/lmgroups/main/chat' },
+            { type: 'iconqunliao', title: '我加入的小组', link: '/lmgroups/main/group'},
+            { type: 'icontongxunlu', title: '通讯录', link: '/lmgroups/main/member'},
+            { type: 'iconsousuo', title: '查找用户和小组', link: '/lmgroups/main/search'},
+            { type: 'iconincrease', title: '创建小组', link: '/lmgroups/main/createGroup'},
+          ],
+          allMesNum: ''
       }
   },
+  computed: {
+    getMesNum(){
+      return this.$store.state.mesNumObj
+    }
+  },
+  watch:{
+    getMesNum: {
+      handler( n, o ) {
+        if ( n !== o ) {
+          this.allMesNum = this.$store.state.mesNumObj.totalMsg;
+          console.log(this.allMesNum);
+        }
+      }
+    }
+  },
   created(){
-    console.log(this.$store.state.user);
+    // console.log(this.$store.state.user);
   }
 }
 </script>

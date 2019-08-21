@@ -29,7 +29,7 @@
             <div class="searchNoResult" v-show="searchNoResult">
                 <span class="searchBg iconfont iconsousuo-copy"></span>
                 <div>
-                    <p>未匹配到任何{{ $route.path === '/chat' ? '用户' : '小组' }}</p>
+                    <p>未匹配到任何{{ $route.path === '/lmgroups/main/chat' ? '用户' : '小组' }}</p>
                     <p class="overHidden">搜索内容:<span>{{inputSearchVal}}</span></p>
                 </div>
             </div>  
@@ -77,11 +77,11 @@ export default {
     watch: {
         $route: {
             handler (n, o){
-                if ( n.path === '/main/group' ) {
+                if ( n.path === '/lmgroups/main/group' ) {
                     this.isGroup = true;
                     this.pageNo = 1;
                     this.getUserList(false);
-                } else if ( n.path === '/main/chat' ) {
+                } else if ( n.path === '/lmgroups/main/chat' ) {
                     this.isGroup = false;
                     this.pageNo = 1;
                     this.getUserList(false);
@@ -112,7 +112,7 @@ export default {
             },
             deep: true
         },
-        userListChange: {
+        userListChange: {          
             handler(n, o) {
                 if ( n !== o ) {
                     this.getUserList(false);
@@ -122,7 +122,8 @@ export default {
         }
     },
     methods: {
-        ...mapMutations([ 'handleChosedLi', 'changeMemberType', 'changeAdmin', 'changeGroupId', 'changeGetUserList', 'changeUser']),
+        ...mapMutations([ 'handleChosedLi', 'changeMemberType', 'changeAdmin', 
+        'changeGroupId', 'changeGetUserList', 'changeUser', 'changeMesObjNum']),
         /**
          * li的点击处理事件
          * 将点击的数据对象传递到父组件
@@ -159,7 +160,7 @@ export default {
         async getUserList( init, isGroupId = false ){
             init ? this.pageNo++ : this.pageNo;
             // 由通讯录好友点到我加入的小组时，isGroup为false请求到了聊天列表的数据
-            this.isGroup = this.$route.path === '/main/group' ? true : false;
+            this.isGroup = this.$route.path === '/lmgroups/main/group' ? true : false;
             console.log('getUserList里面', this.isGroup);
             const res = await this.$getData('/leftHotGroups.do', { 
                 eid: this.$myEid, 
@@ -167,8 +168,9 @@ export default {
                 isGroup: this.isGroup 
             });
             console.log(res);
-            let { data: { rows,user } } = res;
+            let { data: { rows,user,vo } } = res;
             this.changeUser(user);
+            this.changeMesObjNum(vo);
             if ( rows.length < res.data.count ) {
                 this.showLoadMore = false
             } else {
@@ -211,7 +213,7 @@ export default {
                 clearMatchColor(this.messageList, 'name');
                 this.searchNoResult = false;
 
-                let isGroup = this.$route.path === '/main/chat' ? false : true;
+                let isGroup = this.$route.path === '/lmgroups/main/chat' ? false : true;
                 const res = await this.$getData('/leftHotGroups.do', {
                     eid: this.$myEid,
                     name: searchVal,
@@ -231,9 +233,26 @@ export default {
                 this.searchNoResult = false;
             }
         },
+        getBaseIPPort() {
+            //获取当前网址，如： http://localhost:8080/ems/Pages/Basic/Person.jsp
+            var curWwwPath = window.document.location.href;
+            //获取主机地址之后的目录，如： /ems/Pages/Basic/Person.jsp
+            var pathName = window.document.location.pathname;
+            var pos = curWwwPath.indexOf(pathName);
+            //获取主机地址，如： http://localhost:8080
+            var localhostPath = curWwwPath.substring(0, pos);
+            //获取带"/"的项目名，如：/ems
+            //var projectName = pathName.substring(0, pathName.substr(1).indexOf('/') + 1);
+            //获取项目的basePath   http://localhost:8080/ems/
+            //var basePath=localhostPath+projectName+"/";
+            console.log('localhostPath', localhostPath.split('http://')[1])
+            return localhostPath.split('http://')[1];
+        },        
         // 初始化创建 websocket
         initWebsocket(){
-            const wsUrl = `ws://172.26.75.217:8080/moocGroupApi/ws?uid=${this.$myEid}`; 
+            // ${this.getBaseIPPort()}
+            const wsUrl = `ws://${this.getBaseIPPort()}/moocGroupApi/ws?uid=${this.$myEid}`; 
+            console.log('wsUrl', wsUrl)
             // this.websocket = new WebSocket(wsUrl);
             if('WebSocket' in window){
                 this.websocket = new WebSocket(wsUrl);
@@ -248,24 +267,18 @@ export default {
         },
         websocketonopen(){
             this.heartCheck.reset().start();
-            console.log('Websocket 连接成功');
-            
+            console.log('Websocket 连接成功');       
         },
         websocketonerror(){
             this.initWebsocket()
         },
         websocketonmessage(e){
             const reData = JSON.parse(e.data);
-            console.log('收到消息', reData);
-            let atEidsArr = reData.atEids.split(',');
-            
+            let atEidsArr = reData.atEids.split(',');       
             // if ( atEidsArr.findIndex( v => v === this.$myEid ) > -1 || atEidsArr.findIndex( v => v === 'all' ) > -1 ) {
                 // this.aiteShow = true
             // }
-            console.log(this.chosedLi.groupId);
-            console.log(this.messageList);
             const index = this.messageList.findIndex( v => v.groupId === reData.groupId );
-            console.log('匹配到的index', index);
             if( index > -1 ) {  
                 if ( atEidsArr.findIndex( v => v === this.$myEid ) > -1 || atEidsArr.findIndex( v => v === 'all' ) > -1 ) {
                     const newObj = { ...this.messageList[index], aiteShow: true };
@@ -341,7 +354,6 @@ export default {
             this.heartCheck.reset().start();
         },
         websocketsend(Data){
-            console.log(this.websocket);
             this.websocket.send(JSON.stringify(Data));
         },
         websocketclose(e){

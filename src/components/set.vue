@@ -10,25 +10,37 @@
         >
             <a-textarea v-model="exitReason" placeholder="在此输入退出小组理由..." />
         </a-modal>        
-        <div class="groupNameWrap">
+        <div class="groupNameWrap" v-if="chosedLi.groupType !== 2">
             <span>小组名称：</span>
-            <a-input class="groupName" v-model="groupName" placeholder="请输入小组名称......" />
+            <a-input 
+                :disabled="isAdmin !== 1" 
+                class="groupName" 
+                v-model="groupName" 
+                placeholder="请输入小组名称......" 
+            />
         </div>
         <upload-img 
+             v-if="chosedLi.groupType !== 2"
             :groupImg="groupShowImg" 
             @changeUploadImg="handleChangeImage"
         >
             <span>小组头像：</span>
         </upload-img>
-        <div class="groupDescriptionWrap">
+        <div class="groupDescriptionWrap"  v-if="chosedLi.groupType !== 2">
             <span>小组描述：</span>
-            <a-textarea class="groupDescription" :rows="4" v-model="groupDescription" placeholder="请输入小组描述......" />
+            <a-textarea 
+                :disabled="isAdmin !== 1" 
+                class="groupDescription" 
+                :rows="4" 
+                v-model="groupDescription" 
+                placeholder="请输入小组描述......" 
+            />
         </div>
         <div class="nickNameWrap">
             <span>我在小组的昵称：</span>
             <a-input v-model="groupNickName" placeholder="请输入您在该小组的昵称......" />
         </div>
-        <div class="selectWrap">
+        <div class="selectWrap" v-if="isAdmin === 1 && chosedLi.groupType !== 2">
             <span>添加成员：</span>
             <a-select 
                 style="width: 209px;height:25px;" 
@@ -39,7 +51,7 @@
                 <a-select-option :value="2">仅允许管理员添加小组成员</a-select-option>
             </a-select>
         </div>
-        <div class="selectWrap">
+        <div class="selectWrap" v-if="isAdmin === 1 && chosedLi.groupType !== 2">
             <span>加群方式：</span>
             <a-select 
                 style="width: 209px;height:25px;" 
@@ -50,11 +62,11 @@
                 <a-select-option :value="2">不需要身份验证</a-select-option>
             </a-select>            
         </div>
-        <div class="selectWrap">
+        <div class="selectWrap" v-if="chosedLi.groupType !== 2">
             <span>群主转移：</span>
             <a-tooltip>
                 <template slot="title">
-                    {{ isAdmin !== 1 ? '群主身份才能操作群主转移' : null }}
+                    {{ isAdmin !== 1 ? '群主身份才能操作群主转移' : '群主只能转移给群管理员' }}
                 </template>
                 <a-select 
                     style="width: 209px;height:25px;" 
@@ -81,22 +93,20 @@
             >清除聊天</a-button>
             <a-button 
                 v-if="$myEid === 'ksz'"
-                :disabled="hasClearRight" 
                 size="small" 
                 @click="handleClearTopic"
             >清除话题</a-button>
-            <a-button size="small" @click="handleQuitGroupClick">退出小组</a-button>
-            <a-tooltip>
-                <template slot="title">
-                    {{ isAdmin !== 1 ? '群主身份才能操作解散小组' : null }}
-                </template>
-                <a-button 
-                    size="small" 
-                    @click="handleDismissGroupClick" 
-                    :disabled="isAdmin !== 1" 
-                    v-if="!chosedLi.official"
-                >解散小组</a-button>
-            </a-tooltip>
+            <a-button 
+                size="small" 
+                @click="handleQuitGroupClick"
+                v-if="isAdmin !== 1"
+            >退出小组</a-button>
+            <a-button 
+                size="small" 
+                @click="handleDismissGroupClick" 
+                :disabled="isAdmin !== 1" 
+                v-if="!chosedLi.official || isAdmin === 1"
+            >解散小组</a-button>
         </div>       
         <a-button class="saveBtn greenBtn" @click="handleSaveBtnClick">保存</a-button>
     </div>
@@ -113,7 +123,6 @@ export default {
             groupName: '', // 小组名称
             groupDescription: '', // 小组描述
             groupNickName: '', // 小组昵称
-            hasClearRight: true,
             addMember: '',  // 添加成员方式
             addGroup: '',   // 加群方式
             changeGroupOwner: 0,  // 群主转移
@@ -255,6 +264,7 @@ export default {
             })
             if ( res.data.success ) {
                 this.$message.success('解散小组成功');
+                this.changeGetUserList(2);
             }
             console.log(res);
         },

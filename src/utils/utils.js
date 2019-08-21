@@ -2,7 +2,7 @@ import axios from 'axios'
 import store from '../store/store'
 
 // const uri = 'http://172.26.75.218/moocGroupApi/group'
-const uri = '/group'
+const uri = '/moocGroupApi/group'
 
 /**
  * get方式请求
@@ -181,10 +181,8 @@ export function getLocal( key ){
 /**
  * 处理时间格式的函数
  */
-export function timeFormat(timeStamp) {   
-    
-    let time = new Date(timeStamp);
-    
+export function timeFormat(timeStamp) {      
+    let time = new Date(timeStamp);  
     const year = time.getFullYear();
     const month = time.getMonth() + 1;
     const day = time.getDate();

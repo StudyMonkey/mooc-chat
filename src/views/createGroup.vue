@@ -1,28 +1,35 @@
 <template>
     <div class="createGroupTopWrap">
         <x-prompt>
-            <p v-if="userType === 'maneger'">交流小组并非单位组织的单位
+            <p v-if="userType === 'maneger'">普通学习小组并非单位组织的单位
                 学习小组。如您是单位管理员并未
                 创建单位学习小组请点击下方按钮
                 前往系统后台直接创建单位学习小
                 组。
+                <a-button size="small" type="primary" v-show="user.applyflag">
+                    <router-link tag="a" to="/moocadm/system" target="_blank">
+                        前往创建
+                    <router-link>              
+                </a-button>                
             </p>
             <p v-else>
-                交流小组并非单位组织的单位
+                普通学习小组并非单位组织的单位
                 学习小组。如您还未加入您的单位
                 学习小组，请联系上级申请加入；
                 如您是单位管理员请联系上级或者
                 平台授予管理员身份再前往管理后
                 台创建单位学习小组。
             </p>
-            <a-button size="small" type="primary" v-show="user.applyflag">前往创建</a-button>
         </x-prompt>
         <div class="createRightTop">
             <right-title>
                 <span>创建小组</span>
             </right-title>
             <div class="createBtnWrap">
-                <a-button :class="[ userType !== 'maneger' ? 'bgActive' : '','createChatGroup']" @click="handleCreateGroup('normal')">创建交流小组</a-button>
+                <a-button 
+                    :class="[ userType !== 'maneger' ? 'bgActive' : '','createChatGroup']" 
+                    @click="handleCreateGroup('normal')"
+                >创建普通学习小组</a-button>
                 <a-button 
                     :disabled="!user.applyflag" 
                     :class="userType === 'maneger' ? 'bgActive' : '' "  
@@ -34,7 +41,11 @@
                 <div v-if=" userType!== 'maneger'">
                     <div class="groupNameWrap">
                         <span>小组名称<i>*</i>：</span>
-                        <a-input class="groupName" v-model="groupName" placeholder="请输入想创建的交流小组名称,长度大于6个字符" />
+                        <a-input 
+                            class="groupName" 
+                            v-model="groupName" 
+                            placeholder="请输入想创建的普通学习小组名称,长度大于6个字符" 
+                        />
                     </div>
                     <upload-img @changeUploadImg="handleChangeImage">
                         <span>小组头像：</span>
@@ -48,10 +59,19 @@
                     </div> 
                     <div class="groupDescriptionWrap">
                         <span>小组描述：</span>
-                        <a-textarea class="groupDescription" :rows="4" v-model="groupDescription" placeholder="请输入小组描述......" />
+                        <a-textarea 
+                            class="groupDescription" 
+                            :rows="4" 
+                            v-model="groupDescription" 
+                            placeholder="请输入小组描述......" 
+                        />
                     </div> 
                     <div class="submitBtnWrap">
-                        <a-button class="greenBtn" :disabled="!canCommit" @click="handleCreateBtnClick">提交</a-button> 
+                        <a-button 
+                            class="greenBtn" 
+                            :disabled="!canCommit" 
+                            @click="handleCreateBtnClick"
+                        >提交</a-button> 
                     </div>                    
                 </div>  
                 <div class="partGroupWrap" v-else>
@@ -59,7 +79,9 @@
                         <template slot="title">
                             {{ user.applyflag ? '点击前往后台创建单位学习小组' : '非单位学习小组管理员不可点击' }}
                         </template>
-                        <a-button>前往创建单位学习小组</a-button> 
+                        <a-button>
+                            <router-link tag="a" to="/moocadm/system" target="_blank">前往创建单位学习小组</router-link>
+                        </a-button> 
                     </a-tooltip>   
                 </div>       
                                          
@@ -114,7 +136,7 @@ export default {
             });
             if ( res.data.success ) {
                 this.$message.success('创建交流小组成功');
-                this.$router.push('/main/chat');
+                this.$router.push('/lmgroups/main/chat');
             }
         }
     },

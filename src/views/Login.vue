@@ -27,7 +27,7 @@ export default {
           if ( this.loginEid && this.loginName ) {
             setCookie('loginEid', this.loginEid);
             setCookie('loginName', this.loginName);
-            this.$router.push('/main/chat');
+            this.$router.push('/lmgroups/main/chat');
           }
       }
   },

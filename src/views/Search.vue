@@ -251,9 +251,25 @@ export default {
         /*  
          *  点击添加好友的事件处理
          */
-        handleAddMemberClick(item){
-            this.chosedMember = item;
-            this.memberVisible = true;
+        async handleAddMemberClick(item){
+            this.chosedMember = item; 
+            // 1 || null:无需验证 2:需要验证 3:拒绝任何人加好友          
+            if ( item.personalAuth === 1 || item.personalAuth === null ) {
+                const res = await this.$postData('/applyfriend.do', {
+                    applyContent: this.addMemberReason,
+                    userEid: this.$myEid,
+                    friendEid: this.chosedMember.userEid
+                });          
+                this.memberVisible = false;
+                this.addMemberReason = '';
+                if ( res.data.success === true ) {
+                    this.$message.success(res.data.msg);
+                }
+            } else if ( item.personalAuth === 2 ) {
+                this.memberVisible = true;
+            } else {
+                this.$message.error('此用户设置拒绝任何人添加好友');
+            }
         },
         /**
          * 点击发送添加好友请求

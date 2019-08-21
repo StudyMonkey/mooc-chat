@@ -68,7 +68,7 @@ export default {
         }
     },
     async created() {
-        const res = await this.$postData('/getsystem.do', {
+        const res = await this.$getData('/getsystem.do', {
             eid: this.$myEid
         });
         const { data: { obj } } = res;

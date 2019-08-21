@@ -1,7 +1,10 @@
 <template>
     <div class="messagePageWrap">
-        <a-tabs size="small" type="card" defaultActiveKey="group" @change="handleTabsChange">
-            <a-tab-pane tab="小组消息" key="group">
+        <a-tabs size="small" type="card" defaultActiveKey="group" @change="handleTabsChange">                 
+            <a-tab-pane key="group">
+                <span slot="tab">
+                    <a-badge :count="mesNumObj.applyMsg">小组消息</a-badge> 
+                </span>             
                 <div class="table_area">
                     <table class="limitadm_table1 messageGroupTable">
                         <tbody>
@@ -41,7 +44,11 @@
                     </table>
                 </div>                
             </a-tab-pane>
-            <a-tab-pane tab="个人消息" key="person" forceRender>
+            
+            <a-tab-pane key="person" forceRender>
+                <span slot="tab">
+                    <a-badge :count="mesNumObj.friendCheckMsg">个人消息</a-badge> 
+                </span> 
                 <div class="table_area">
                     <table class="limitadm_table1 messageGroupTable messagePersonTable">
                         <tbody>
@@ -76,11 +83,16 @@
                     </table>
                 </div>                 
             </a-tab-pane>
-            <a-tab-pane tab="系统消息" key="systerm">
+            <a-tab-pane key="systerm">
+                <span slot="tab">
+                    <a-badge :count="mesNumObj.sysMsg"> 
+                        系统消息
+                    </a-badge>
+                </span>                 
                 <div class="table_area systermTableArea">
                     <table class="limitadm_table1">
                         <tbody>
-                            <tr class="h50 tr1">
+                            <tr class="h50 tr1" style="background-color: #fff">
                                 <td class="username">类型</td>
                                 <td class="name">时间</td>
                                 <td style="width:500px;" class="part">事件</td>
@@ -89,24 +101,40 @@
                                 <td>{{item.noticeTitle}}</td>
                                 <td>{{item.noticeTime}}</td>
                                 <td>{{item.noticeContent}}</td>
-                            </tr>                          
+                            </tr>  
+
                         </tbody>
                     </table>
+                    <x-pagination 
+                        v-show =" systermTotal > 10 " 
+                        :total="systermTotal" 
+                        @pageChange="handlePageChange" 
+                    />                    
                 </div>
-                <x-pagination 
-                    v-show =" systermTotal > 10 " 
-                    :total="systermTotal" 
-                    @pageChange="handlePageChange" 
-                />
+
             </a-tab-pane>
         </a-tabs>       
     </div>
 </template>
 
 <script>
+import noticeImg from '@/assets/images/nnn.jpg'
 import XPagination from '@/components/pagination'
 export default {
     name: 'message',
+    data() {
+        return {
+            groupMesList: [],
+            personMesList: [],
+            systermMesList: [],  // 系统消息的列表
+            sysPageNo: 1,  //  系统消息的分页
+            systermTotal: 1,  //  系统消息的总数
+            mesNumObj: this.$store.state.mesNumObj,  // 获取vuex里面消息条数的存储对象            
+            websocket: this.$store.state.ws,
+            user: this.$store.state.user,
+            chosedLi: this.$store.state.chosedLi
+        }
+    },
     components: {
         XPagination
     },
@@ -135,6 +163,10 @@ export default {
             } else if ( key === 'systerm' ) {
                 this.sysPageNo = 1;
                 this.commonGetSystermList(this.sysPageNo);
+                // const res = await this.$getData('/sys/updateStatusByRecipient.action', {
+                //     eid: this.$myEid
+                // });
+                // console.log(res);
             } 
         },
         /**
@@ -180,6 +212,24 @@ export default {
         handleGroupSureBtnClick(item){
             console.log(item);
             this.commonHandleJoinGroup(item, "1");
+
+            // 添加成员成功之后，聊天框发送一条系统通知
+            let newObj = {};
+            console.log('发消息的人', this.user);
+            newObj.fromEid = this.user.eid,
+            newObj.fromEidDept = this.user.displayunitname;
+            newObj.fromPic = noticeImg;
+            newObj.fromName = this.user.username,
+            newObj.time = new Date();
+            newObj.groupId = this.chosedLi.groupId;
+            newObj.groupName = this.chosedLi.name;
+            newObj.groupUrl = this.chosedLi.avatar;                
+            newObj.chatType = 1; // 其他类型的chatType 都为 1
+            newObj.to = '0';
+            newObj.atEids = ''; 
+            newObj.text = `恭喜新成员${item.userName}加群成功`
+            
+            this.websocket.send(JSON.stringify(newObj));            
         },
         /**
          *  拒绝按钮点击事件
@@ -236,17 +286,9 @@ export default {
             })
         }        
     },
-    data() {
-        return {
-            groupMesList: [],
-            personMesList: [],
-            systermMesList: [],  // 系统消息的列表
-            sysPageNo: 1,  //  系统消息的分页
-            systermTotal: 1  //  系统消息的总数
-        }
-    },
     created () {
         this.commonGetMessageList('group');
+        console.log(this.mesNumObj);
     },
 }
 </script>

@@ -8,6 +8,11 @@ import '@/assets/font/iconfont.css'
 import { getData, postData, timeFormat, getCookie } from './utils/utils'
 import { emoji } from './utils/emoji.js'
 import "../http-interceptor"
+import $ from 'jquery' 
+import '@/assets/js/common.js'
+import '@/assets/js/indexNew.js'
+// import '@/assets/js/banner_new.js'
+
 
 Vue.component(Dropdown.name, Dropdown);
 Vue.component(Menu.name, Menu);

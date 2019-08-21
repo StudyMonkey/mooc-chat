@@ -103,7 +103,6 @@ export default {
                 pageNo: this.pageNo
             });
             const { data: { rows } } = res;
-            console.log('通讯录好友列表', rows);
             if ( rows.length < 10 ) {
                 this.showLoadMore = false
             }
@@ -249,7 +248,7 @@ export default {
                     this.$message.success(res.data.msg);
                     // 接收勾选的好友的数组，发送接口创建小组，隐藏并跳转到聊天界面               
                     this.$router.push({
-                        path: '/chat'
+                        path: '/lmgroups/main/chat'
                     })
                 }
             } 

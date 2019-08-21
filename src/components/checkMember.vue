@@ -54,12 +54,34 @@ export default {
             saveCheckMemberList: [], // 暂存请求到的数据
             hasCheckedList: [], // 勾选上的好友列表
             showLoadMore: false,   // 加载更多的控制显示与隐藏
+            saveClearCheckArr: this.clearCheckArr,  //  chat 组件传递过来的值
         }
     },
     props: {
         useType: { // 使用类型分为 1 创建多人聊天小组时使用， 2 发送名片时点击使用
             type: String,
             default: '1'
+        },
+        clearCheckArr: {
+            type: Number,
+            default: 1
+        }
+    },
+    watch: {
+        clearCheckArr: {
+            handler (n, o) {
+                this.saveClearCheckArr = n;
+                if ( n !== o && this.saveClearCheckArr === 2 ) {
+                    console.log('clearCheckArr的值', this.clearCheckArr);
+                    this.checkMemberList.map ( v => {
+                        v.checked = false
+                    })
+                    this.hasCheckedList = [];
+                    this.saveClearCheckArr = 1;
+                    
+                }
+            },
+            deep: true
         }
     },
     components: {
@@ -71,15 +93,12 @@ export default {
         },
         onChange(e, item) {
             console.log('useType', this.useType);
-            console.log(item);
-            console.log(e.target.checked);
             if ( item.is_recommend === 2 || item.friends_auth === 3 ) {
                 this.$message.error('该好友设置不允许推荐/添加好友');
                 item.checked = !e.target.checked;
                 return false;
             }
             item.checked = e.target.checked;
-            console.log(this.hasCheckedList.length);
             const index = this.hasCheckedList.findIndex( v => v === item );
             if ( index === -1 ) {
                 if ( this.useType === '2' && this.hasCheckedList.length > 0 ) {

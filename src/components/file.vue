@@ -18,7 +18,6 @@
                         <tr class="h50 tr1">
                             <td class="checkboxTd" style="width:50px"></td>
                             <td class="groupName">小组名称</td>
-                            <td class="groupNo">小组编号</td>
                             <td class="groupDesc">小组描述</td>
                         </tr>
                     </thead>
@@ -26,13 +25,12 @@
                         <tr v-for="item in searchGroupResult" :key="item.groupId">
                             <td class="checkboxTd" style="width:50px">
                                 <a-checkbox 
-                                    :checked="fileChecked"
+                                    :checked="item.checked"
                                     @change="handleGroupResultCheck($event, item)"
                                 ></a-checkbox>
                             </td>
-                            <td v-text="item.name"></td>
-                            <td v-text="item.groupNo" :title="item.groupNo"></td>
-                            <td v-text="item.description"></td>
+                            <td v-text="item.name" :title="item.name"></td>
+                            <td v-text="item.description ? item.description : '暂无小组描述'"></td>
                         </tr>
                     </tbody>               
                 </table>
@@ -54,50 +52,57 @@
                         <td class="fileDateTime">上传时间</td>
                         <td class="operate">操作</td>
                     </tr>
-                    <tr v-for="(item,index) in fileList" :key="index">
-                        <td class="filename overHidden">
-                            <span class="iconfont iconwenjian1"></span>
-                            <span v-text="item.fileName"></span>
-                        </td>
-                        <td class="fileAuthor overHidden" v-text="item.fileEidName">
-                        </td>
-                        <td class="fileDateTime" v-text="item.createDate"></td>
-                        <td class="operate">                          
-                            <a-tooltip>
-                                <template slot="title">
-                                    下载
-                                </template>
-                                <span 
-                                    class="iconfont iconxiazai"
-                                    @click="handleDownloadFile(item)"
-                                ></span>
-                            </a-tooltip>                            
-                            <a-tooltip>
-                                <template slot="title">
-                                    分享
-                                </template>
-                                <span 
-                                    class="iconfont iconfenxiang"
-                                    @click="handleShareModalShow(item)"
-                                ></span>
-                            </a-tooltip>
-                            <a-tooltip>
-                                <template slot="title">
-                                    删除                                      
-                                </template>  
-                                <span 
-                                    @click="handleDeleteFile(item)" 
-                                    class="iconfont icondelete"
-                                    v-if="memberType === '3' || item.fileEid === $myEid"
-                                ></span>                      
-                            </a-tooltip>                          
-                        </td>
-                    </tr>
+                    <div v-if="fileList.length > 0" style="width: 636px;">
+                        <tr 
+                            
+                            v-for="(item,index) in fileList" 
+                            :key="index"
+                        >
+                            <td class="filename overHidden">
+                                <span class="iconfont iconwenjian1"></span>
+                                <span v-text="item.fileName"></span>
+                            </td>
+                            <td class="fileAuthor overHidden" v-text="item.fileEidName">
+                            </td>
+                            <td class="fileDateTime" v-text="item.createDate"></td>
+                            <td class="operate" style="width: 90px;">                          
+                                <a-tooltip>
+                                    <template slot="title">
+                                        下载
+                                    </template>
+                                    <span 
+                                        class="iconfont iconxiazai"
+                                        @click="handleDownloadFile(item)"
+                                    ></span>
+                                </a-tooltip>                            
+                                <a-tooltip>
+                                    <template slot="title">
+                                        分享
+                                    </template>
+                                    <span 
+                                        class="iconfont iconfenxiang"
+                                        @click="handleShareModalShow(item)"
+                                    ></span>
+                                </a-tooltip>
+                                <a-tooltip>
+                                    <template slot="title">
+                                        删除                                      
+                                    </template>  
+                                    <span                                        
+                                        @click="handleDeleteFile(item)" 
+                                        class="iconfont icondelete"
+                                        v-if="memberType === '3' || item.fileEid === $myEid"
+                                    ></span>                      
+                                </a-tooltip>                          
+                            </td>
+                        </tr>
+                    </div>
+                    <div class="noHaveFile" v-else>暂无任何群文件上传记录</div>
                 </tbody>
             </table>
         </div>
         <x-pagination 
-            v-show="total > 9" 
+            v-show="total > 7" 
             :total="total" 
             @pageChange="handlePageChange" 
         />
@@ -115,10 +120,6 @@ export default {
         },
         total: {
             type: Number,
-            required: true
-        },
-        chosedLi: {
-            type: Object,
             required: true
         }
     },
@@ -185,8 +186,10 @@ export default {
          */
         handleGroupResultCheck(e, item){
             if ( e.target.checked ) {
+                item.checked = true;
                 this.searchResultCheck.push(item);
             } else {
+                item.checked = false;
                 const index = this.searchResultCheck.findIndex( v => v.groupNo === item.groupNo );
                 this.searchResultCheck.splice(index, 1);
             }
@@ -194,13 +197,16 @@ export default {
         /**
          *  全选的checkbox事件处理
          */
-        handleAllCheck(e){
-            this.fileChecked = e.target.checked
+        handleAllCheck(e){           
             if ( e.target.checked ) {
-                this.searchGroupResult.map ( v => {
+                this.searchGroupResult.map ( v => {                 
+                    v.checked = true;                                
                     this.searchResultCheck.push(v)
                 })
             } else {
+                this.searchGroupResult.map ( v => {
+                    v.checked = false;
+                })                
                 this.searchResultCheck = []
             }
         },
@@ -277,6 +283,12 @@ export default {
 </script>
 
 <style lang='less' scoped>
+.noHaveFile{
+    width: 636px;
+    text-align: center;
+    font-size: 14px;
+    padding: 20px 0;
+}
 .fileTopWrap{
     margin-top: 15px;
     width: 638px;
@@ -316,8 +328,9 @@ export default {
                 padding-right: 10px;
             }
             &.operate{
-                width: 76px;
-                text-align: center;                
+                width: 80px;
+                padding-left: 12px;
+                // text-align: center;                
                 position: relative;
                 color: #999999;
                 span{

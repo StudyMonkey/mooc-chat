@@ -1,9 +1,20 @@
 <template>
-    <div class="notClickChat">未点击时显示的内容</div>
+    <div class="notClickChat">
+        <img :src="notClickLogo" alt="">
+    </div>
 </template>
 
 <script>
-    name: 'notClick'
+    import notClickLogo from '@/assets/images/icon.png'
+    export default {
+        name: 'notClick',
+        data(){
+            return{
+                notClickLogo
+            }
+        }
+
+    }   
 </script>
 
 <style scoped>
@@ -16,5 +27,9 @@
     font-size: 20px;
     font-weight: bold;
     background: #ffffff;
+}
+.notClickChat img{
+    width: 120px;
+    height: 176px;
 }
 </style>
