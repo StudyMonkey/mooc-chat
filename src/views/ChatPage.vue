@@ -15,7 +15,8 @@
                     <span :class="[ chosedChat.groupType === 1 ? 'iconqunliao' : 'iconsiliao', 'iconfont' ]"></span>
                     <p v-text="chosedChat.groupName"><span></span></p>
                 </div>
-                <p class="chatGroupNum">小组编号：<span>{{chosedChat.groupNo}}</span></p>
+                <!-- 私聊不显示小组编号 -->
+                <p class="chatGroupNum" v-if="chosedLi.groupType !== 2">小组编号：<span>{{chosedChat.groupNo}}</span></p>
                 <div class="card-container">
                     <a-tabs type="card" @change="handleTabsChange" v-model="tabStr"  defaultActiveKey="chatMain">
                         <a-tab-pane tab="聊天" key="chatMain">
@@ -232,7 +233,13 @@ export default {
                 line-height: 21px;
             }
             p{
+                max-width: 800px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
                 margin-left: 4px;
+                line-height: 20px;
+                margin-top: -6px;
             }
         }
         .card-container {

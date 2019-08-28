@@ -66,7 +66,7 @@ import LoadMore from '@/components/loadMore'
 import NotClick from '@/components/notClick'
 import CheckMember from '@/components/checkMember'
 import axios from 'axios'
-import { matchChangeColor, clearMatchColor } from '../utils/utils'
+import { matchChangeColor, clearMatchColor, clearTextColor } from '../utils/utils'
 import { mapMutations } from 'vuex'
 export default {
     name: 'member',
@@ -79,6 +79,7 @@ export default {
             oneUser: '',
             searchNoResult: false, // 搜索好友的结果显示
             showLoadMore: true, // 加载更多组件的显示与隐藏
+            searchVal: '',      // 搜索框输入的姓名值
             quickCreateGroup: true,
             inputSearchVal: '', // 接收搜索通讯录好友传递过来的值
         }
@@ -96,14 +97,17 @@ export default {
         this.commonGetAddressList(false);
     },
     methods: {
-        async commonGetAddressList(obj){
+        async commonGetAddressList(obj, page=false){
+            // 修改备注名时，重新获取列表，pageNo可能在不等于的情况，所以将其还原为1
             obj === false ? this.pageNo : this.pageNo++
+            page ? this.pageNo = 1 : null
             const res = await this.$getData('/myFriends.do', {
                 eid: this.$myEid, 
+                name: this.searchVal,
                 pageNo: this.pageNo
             });
-            const { data: { rows } } = res;
-            if ( rows.length < 10 ) {
+            const { data: { rows,count,code } } = res;
+            if ( rows.length < count ) {
                 this.showLoadMore = false
             }
             if ( obj === false ) {
@@ -125,6 +129,7 @@ export default {
             console.log(item);
             this.hasChosed = false;
             this.oneUser = item;
+            this.oneUser.remark = clearTextColor(this.oneUser.remark) 
         },
         /**
          * 删除好友操作处理
@@ -199,12 +204,12 @@ export default {
          *  接受searchWrap子组件传递过来的搜索的值
          */
         async handleChangeSearchVal(searchVal){
-            console.log(searchVal);
             if ( searchVal !== '' ) {
+                this.searchVal = searchVal;
                 clearMatchColor(this.addressUserList, 'remark'); 
                 const res = await this.$getData('/myFriends.do', {
                     eid: this.$myEid,
-                    name: searchVal,
+                    name: this.searchVal,
                     pageNo: 1
                 });
                 const { data: { rows } } = res;
@@ -275,7 +280,7 @@ export default {
          *  接收子组件修改备注名的点击传递事件
          */        
         handleSaveMemoName(){
-            this.commonGetAddressList(false);
+            this.commonGetAddressList(false, true);
         }
     },
 }

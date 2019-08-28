@@ -53,6 +53,13 @@ export default {
         XPrompt,
         RightTitle
     },
+    watch: {
+        selectFriend(n, o){
+            if ( n === 3 ) {
+                this.selectRecommand = 2
+            }
+        }
+    },
     methods: {
         async handleSubmit(){
             console.log(this.selectFriend, this.selectGroup, this.selectRecommand);

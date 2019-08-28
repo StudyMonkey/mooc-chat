@@ -5,9 +5,9 @@
                 <span slot="tab">
                     <a-badge :count="mesNumObj.applyMsg">小组消息</a-badge> 
                 </span>             
-                <div class="table_area">
+                <div class="table_area fisrtGroupWrap lm_scroll">
                     <table class="limitadm_table1 messageGroupTable">
-                        <tbody>
+                        <thead>
                             <tr class="h50 tr1">
                                 <td class="username">用户名</td>
                                 <td class="name">姓名</td>
@@ -16,7 +16,9 @@
                                 <td class="joinReason">申请理由</td>
                                 <td class="time">申请时间</td>
                                 <td class="operate">处理方法</td>
-                            </tr>
+                            </tr>                            
+                        </thead>
+                        <tbody class="lm_scroll scrollTbody">
                             <tr v-for="(item,index) in groupMesList" :key="index">
                                 <td class="username" v-text="item.userEid"></td>
                                 <td class="name" v-text="item.userName"></td>
@@ -123,7 +125,7 @@ import XPagination from '@/components/pagination'
 export default {
     name: 'message',
     data() {
-        return {
+        return {       
             groupMesList: [],
             personMesList: [],
             systermMesList: [],  // 系统消息的列表
@@ -132,7 +134,39 @@ export default {
             mesNumObj: this.$store.state.mesNumObj,  // 获取vuex里面消息条数的存储对象            
             websocket: this.$store.state.ws,
             user: this.$store.state.user,
-            chosedLi: this.$store.state.chosedLi
+            chosedLi: this.$store.state.chosedLi,
+            columns: [
+                {
+                    title: '用户名',
+                    dataIndex: 'userEid',
+                    width: 105
+                }, {
+                    title: '姓名',
+                    dataIndex: 'userName',
+                    width: 70
+                }, {
+                    title: '单位',
+                    dataIndex: 'deptName',
+                    width: 200
+                }, {
+                    title: '申请加入的群',
+                    dataIndex: 'groupName',
+                    width: 170
+                }, {
+                    title: '申请理由',
+                    dataIndex: 'applyContent',
+                    width: 137
+                }, {
+                    title: '申请时间',
+                    dataIndex: 'applyTime',
+                    width: 100
+                }, {
+                    title: '处理方法',
+                    dataIndex: 'operation',
+                    width: 100,
+                    scopedSlots: { customRender: 'operation' }
+                }
+            ]            
         }
     },
     components: {
@@ -155,7 +189,6 @@ export default {
          *   调用了vuex里面的changeShowLoad方法，改变遮蔽层显示隐藏
          */
         async handleTabsChange(key) {
-            console.log(key);
             if ( key === 'group' ) {
                 this.commonGetMessageList(key);
             } else if ( key === 'person'  ) {
@@ -163,10 +196,6 @@ export default {
             } else if ( key === 'systerm' ) {
                 this.sysPageNo = 1;
                 this.commonGetSystermList(this.sysPageNo);
-                // const res = await this.$getData('/sys/updateStatusByRecipient.action', {
-                //     eid: this.$myEid
-                // });
-                // console.log(res);
             } 
         },
         /**
@@ -200,7 +229,6 @@ export default {
                 acceptEid: this.$myEid,
                 type
             });
-            console.log(res);
             if ( res.data.success ) {
                 this.$message.success('操作成功');
             }
@@ -210,12 +238,10 @@ export default {
          *  同意按钮点击事件
          */
         handleGroupSureBtnClick(item){
-            console.log(item);
             this.commonHandleJoinGroup(item, "1");
 
             // 添加成员成功之后，聊天框发送一条系统通知
             let newObj = {};
-            console.log('发消息的人', this.user);
             newObj.fromEid = this.user.eid,
             newObj.fromEidDept = this.user.displayunitname;
             newObj.fromPic = noticeImg;
@@ -256,7 +282,6 @@ export default {
                 acceptEid: this.$myEid,
                 optype: type
             });
-            console.log(res);
             if ( res.data.success ) {
                 this.$message.success('操作成功');
             }
@@ -288,7 +313,6 @@ export default {
     },
     created () {
         this.commonGetMessageList('group');
-        console.log(this.mesNumObj);
     },
 }
 </script>
@@ -312,6 +336,10 @@ export default {
             line-height: 35px !important;
             margin-top: 5px !important;
         }
+    }
+    .fisrtGroupWrap{
+        height: 660px;
+        overflow: auto;
     }
     .messageGroupTable{
         tr{

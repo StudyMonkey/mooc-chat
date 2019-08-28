@@ -12,6 +12,7 @@
 </template>
 
 <script>
+import { clearTextColor } from '../utils/utils'
 export default {
     name: 'memoName',
     props: {

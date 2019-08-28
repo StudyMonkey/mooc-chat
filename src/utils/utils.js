@@ -107,6 +107,15 @@ export function clearMatchColor(arr, obj1, obj2=''){
     // return arr;    
 }
 
+/* 
+ * 清除单个文本匹配的变色样式
+ * @params text   传递进来的数组
+*/
+export function clearTextColor(text){
+    let replaceReg = new RegExp('<span class="searchText">(.*?)<\/span>', 'g');
+    return text.replace(replaceReg, '$1')
+}
+
 /**
  * 公用的获取数据的方法
  * @param {*获取数据的url} url 

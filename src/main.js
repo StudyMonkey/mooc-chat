@@ -39,7 +39,6 @@ Vue.component(Modal.name, Modal); // 上传文件
 Vue.component(Radio.Group.name, Radio.Group); // 单选按钮组
 Vue.component(Radio.name, Radio);
 
-
 Vue.prototype.$getData = getData;
 Vue.prototype.$postData = postData;
 Vue.prototype.$timeFormat = timeFormat;

@@ -9,7 +9,7 @@
                 <a-button size="small" type="primary" v-show="user.applyflag">
                     <router-link tag="a" to="/moocadm/system" target="_blank">
                         前往创建
-                    <router-link>              
+                    </router-link>              
                 </a-button>                
             </p>
             <p v-else>
@@ -110,7 +110,7 @@ export default {
     },
     computed: {
         canCommit(){
-            return this.groupName.length > 6
+            return this.groupName.length > 5
         }
     },
     components: {
@@ -139,11 +139,7 @@ export default {
                 this.$router.push('/lmgroups/main/chat');
             }
         }
-    },
-    created(){
-        console.log(this.user.applyflag);
     }
-
 }
 </script>
 

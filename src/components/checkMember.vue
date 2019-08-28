@@ -2,14 +2,23 @@
     <div class="checkMemberTopWrap">
         <div class="checkSearchWarap">
             <slot></slot>
-            <a-input placeholder="搜索" v-model="searchVal" ref="userNameInput">
+            <a-input 
+                placeholder="搜索" 
+                v-model="searchVal" 
+                ref="userNameInput"
+            >
                 <a-icon slot="prefix" type="search" />
-                <a-icon v-if="searchVal" slot="suffix" type="close-circle" @click="emitEmpty" />
+                <a-icon 
+                    v-if="searchVal" 
+                    slot="suffix" 
+                    type="close-circle" 
+                    @click="emitEmpty" 
+                />
             </a-input>
             <span class="iconfont icondelete" @click="handleCloseClick"></span>
         </div>
-        <div :class="[showLoadMore ? 'height600' : 'height628', 'lm_scroll listUserUlWrap']">
-            <ul>
+        <div class="height628 lm_scroll listUserUlWrap">
+            <ul :class="[showLoadMoreBtn ? 'height560' : 'height588', 'lm_scroll']">
                 <li 
                     v-for="item in checkMemberList" 
                     :key="item.id"
@@ -21,6 +30,7 @@
                     </div>            
                 </li>
             </ul>
+            <load-more v-show="showLoadMoreBtn" @loadMoreBtnClick="handleLoadMore"  />
             <div class="searchNoResult" v-show="checkMemberList.length < 1">
                 <span class="searchBg iconfont iconsousuo-copy"></span>
                 <div>
@@ -43,6 +53,7 @@
 <script>
 // import ListUser from '@/components/listUser'
 import XAvatar from '@/components/avatar'
+import LoadMore from '@/components/loadMore'
 import { debounce, matchChangeColor, clearMatchColor } from '@/utils/utils'
 export default {
     name: 'checkMember',
@@ -53,8 +64,7 @@ export default {
             checkMemberList: [],
             saveCheckMemberList: [], // 暂存请求到的数据
             hasCheckedList: [], // 勾选上的好友列表
-            showLoadMore: false,   // 加载更多的控制显示与隐藏
-            saveClearCheckArr: this.clearCheckArr,  //  chat 组件传递过来的值
+            showLoadMoreBtn: true // 加载更多的控制显示与隐藏
         }
     },
     props: {
@@ -70,29 +80,37 @@ export default {
     watch: {
         clearCheckArr: {
             handler (n, o) {
-                this.saveClearCheckArr = n;
-                if ( n !== o && this.saveClearCheckArr === 2 ) {
-                    console.log('clearCheckArr的值', this.clearCheckArr);
+                // 从chat组件传递过来的2，表示已经发送完名片
+                if ( n === 2 ) {
                     this.checkMemberList.map ( v => {
                         v.checked = false
                     })
                     this.hasCheckedList = [];
-                    this.saveClearCheckArr = 1;
-                    
+                    this.clearCheckArr = 1;                
                 }
             },
+            deep: true
+        },
+        checkMemberList: {
+            handler(n, o) {
+                if ( n !== o ) {
+                    if ( n.length === 0 ) {
+                        this.showLoadMoreBtn = false
+                    }
+                }
+            }, 
             deep: true
         }
     },
     components: {
-        XAvatar
+        XAvatar,
+        LoadMore
     },
     methods: {
         emitEmpty(){
             this.searchVal = ''
         },
         onChange(e, item) {
-            console.log('useType', this.useType);
             if ( item.is_recommend === 2 || item.friends_auth === 3 ) {
                 this.$message.error('该好友设置不允许推荐/添加好友');
                 item.checked = !e.target.checked;
@@ -138,23 +156,43 @@ export default {
          *  点击确定按钮传递给父组件所勾选的好友和隐藏状态
          */
         checkMemberSureBtn(){
-            console.log(this.hasCheckedList);
             this.$emit('checkMemberSureBtn', this.hasCheckedList);
+        },
+        handleLoadMore(obj){
+            this.commonGetFriends(obj)
+        },
+        async commonGetFriends(obj){
+            obj === false ? this.pageNo : this.pageNo++
+            const res = await this.$getData('/myFriends.do', {
+                eid: this.$myEid, 
+                name: this.searchVal,
+                pageNo: this.pageNo
+            });
+            const { data: { rows,count,code } } = res;
+            if ( rows.length < count ) {
+                this.showLoadMoreBtn = false
+            }
+            if ( obj === false ) {
+                this.checkMemberList = rows;
+            } else {
+                this.checkMemberList = this.checkMemberList.concat(rows);
+            }          
+            this.saveCheckMemberList = this.checkMemberList;             
         }
     },
     async created() {
-        const res = await this.$getData('/myFriends.do', {eid: this.$myEid, pageNo: this.pageNo});
-        console.log(res);
-        const { data: { rows } } = res;
-        this.checkMemberList = rows;
-        this.checkMemberList.map ( v => v.checked = false );
-        this.saveCheckMemberList = this.checkMemberList;
+        // const res = await this.$getData('/myFriends.do', {eid: this.$myEid, pageNo: this.pageNo});
+        // const { data: { rows } } = res;
+        // this.checkMemberList = rows;
+        // this.checkMemberList.map ( v => v.checked = false );
+        // this.saveCheckMemberList = this.checkMemberList;
+        this.commonGetFriends(false)
 
         // 节流操作
         this.$watch('searchVal', debounce(async (newQuery) => {
             // newQuery为输入的值
-            console.log(newQuery) 
             if ( newQuery !== '' ) {
+                this.searchVal = newQuery;  // 搜索值赋值给 searchVal 点击加载更多的时候需要带上这个查询值
                 this.checkMemberList = this.checkMemberList.filter( v => v.remark.indexOf(newQuery) > -1);
                 this.checkMemberList = matchChangeColor(this.checkMemberList, newQuery, 'remark');
                 this.$emit('changeSearchVal', newQuery); 
@@ -169,11 +207,10 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.height600{height: 600px;}
 .height628{height: 628px;}
 .listUserUlWrap{
-    overflow-y: auto;
     ul{
+        overflow-y: auto;
         li{
             display: flex;
             padding: 10px 20px 10px 10px;
@@ -193,6 +230,8 @@ export default {
         }
     }
     .searchNoResult{
+        position: absolute;
+        top: 70px;
         display: flex;
         padding: 10px;
         .searchBg{
@@ -211,6 +250,9 @@ export default {
             }
         }
     }    
+    .loadMoreBtn{
+        bottom: 40px
+    }
 }
 .checkMemberTopWrap{
     width: 250px;
@@ -236,10 +278,16 @@ export default {
         }
     }
     ul{
-        height: 588px;
+        &.height588{
+            height: 588px;
+        }
+        &.height560{
+            height: 558px;
+        }        
     }
     .chosedNumWrap{
         height: 40px;
+        border-top: 1px solid #ffffff;
         background-color: #dddddd;
         display: flex;
         padding: 8px 8px 7px 17px;

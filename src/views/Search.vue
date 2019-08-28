@@ -4,6 +4,7 @@
             class="searchModalWrap"
             v-model="groupVisible"
             :footer="null"
+            :style="{width: '520px'}"
         >
             <div class="modalHeaderWarap">
                 <x-avatar :imgUrl="chosedGroup.groupImgUrl" />
@@ -91,8 +92,8 @@
                         :total="groupTotal" 
                         @pageChange="handlePageChange" 
                     />
-                    <div  v-show="groupList.length < 0">未搜索到任何有关
-                        <span v-show="groupName">{{ '小组名称为'+ groupName}}</span>
+                    <div  v-show="groupList.length == 0">未搜索到任何有关
+                        <span v-show="groupName">{{ '小组名称为'+ saveGroupName}}</span>
                         <span v-show="groupNum">{{',小组编号为'+groupNum }}</span>的内容
                     </div>
                 </div>
@@ -112,10 +113,10 @@
                                     <td class="part" v-text="item.userDepartment"></td>
                                     <td>
                                         <a-button 
-                                            :disabled="item.friend || item.userEid === $myEid"
+                                            :disabled="item.friend || item.userEid === $myEid || item.personalAuth === 3"
                                             size="small"
                                             @click="handleAddMemberClick(item)"
-                                        >{{ item.friend ? '已是好友': '添加好友' && item.userEid === $myEid ? '本人' : '添加好友'}}</a-button>
+                                        >{{ returnWord(item) }}</a-button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -127,8 +128,8 @@
                         :total="memberTotal" 
                         @pageChange="handleUserPageChange" 
                     />                   
-                    <div v-show="memberList.length < 0">未搜索到任何有关
-                        <span v-show="searchMember">{{'用户名为'+ searchMember}}</span>
+                    <div v-show="memberList.length == 0">未搜索到任何有关
+                        <span v-show="searchMember">{{'用户名为'+ saveSearchMember}}</span>
                     </div>                    
                 </div>
             </div>           
@@ -148,6 +149,7 @@ export default {
             groupVisible: false,  // 小组加入的modal框显示
             memberVisible: false, // 添加好友的modal框显示
             searchMember: '', // 搜索用户名输入内容
+            saveSearchMember: '', // 暂存搜索用户名的输入内容
             groupList: [],  // 查询的小组列表
             memberList: [],  // 查询的用户列表
             chosedGroup: '',  // 所点击的小组对象
@@ -156,6 +158,7 @@ export default {
             addMemberReason: '', // 添加好友的理由
             groupNum: '',
             groupName: '',
+            saveGroupName: '', // 暂存搜索小组名称
             groupTotal: 0,  // 搜索小组的结果总条数
             groupPageSize: 6, // 小组的每页显示条数
             changePage: 0,   // 切换小组和用户显示时，需将 current 置为1 
@@ -168,6 +171,24 @@ export default {
         RightTitle,
         XPagination,
         NotClick
+    },
+    computed: {
+        returnWord(item) {
+            return function(item){
+                if ( item.friend ) {
+                    return '已是好友'
+                } else {
+                    if ( item.personalAuth === 3 ) {
+                        return '拒绝添加'
+                    } else {
+                        return '添加好友'
+                    }
+                }
+                if ( item.userEid === this.$myEid ) {
+                    return '本人账号'
+                }
+            }
+        }
     },
     methods: {
         /**  通用的获取数据方法
@@ -193,9 +214,14 @@ export default {
                 this.groupList = [];
                 this.hasResult = false;
                 this.groupNum = '';
-                this.groupName = '';                
+                this.groupName = ''; 
+                this.saveSearchMember = this.searchMember               
                 // this.searchMember = '';
-                this.$message.success('搜索用户成功');
+                if ( this.memberList.length > 0 ) {
+                    this.$message.success('搜索用户成功');
+                } else {
+                    this.$message.info('未搜索到任何用户');
+                }           
             } else {
                 this.$message.error('请输入需要查找的用户名');
             }
@@ -211,11 +237,15 @@ export default {
                     groupNo: this.groupNum
                 });
                 this.changePage = 2;
-                console.log(this.groupList);
                 this.memberList = [];
                 this.hasResult = false;
                 this.searchMember = '';
-                this.$message.success('搜索小组成功');  
+                this.saveGroupName = this.groupName;
+                if ( this.groupList.length > 0 ) {
+                    this.$message.success('搜索小组成功');
+                } else {
+                    this.$message.info('未搜索到任何小组');
+                }                
             } else {
                 this.$message.error('请输入需要查找的小组编号或名称');
             }
@@ -264,6 +294,7 @@ export default {
                 this.addMemberReason = '';
                 if ( res.data.success === true ) {
                     this.$message.success(res.data.msg);
+                    item.friend = true
                 }
             } else if ( item.personalAuth === 2 ) {
                 this.memberVisible = true;
@@ -311,7 +342,6 @@ export default {
 </script>
 
 <style lang="less" scoped>
-
 .searchModalWrap{
     .modalHeaderWarap{
         display: flex;
@@ -436,6 +466,7 @@ export default {
                         padding: 0 10px;
                         font-size: 13px;
                         color: #7a7a7a;
+                        word-break: break-all;
                     }
                     .groupBtnWrap{
                         display: flex;
@@ -461,7 +492,9 @@ export default {
         .MemberResultWrap{
             width: 638px;
             height: 632px;
-            border: 1px solid #e5e5e5;
+            line-height: 632px;
+            text-align: center;
+            font-size: 20px;
             margin: 15px;
             position: relative;
             .limitadm_table1{

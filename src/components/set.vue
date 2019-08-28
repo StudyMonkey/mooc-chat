@@ -13,6 +13,7 @@
         <div class="groupNameWrap" v-if="chosedLi.groupType !== 2">
             <span>小组名称：</span>
             <a-input 
+                maxlength="150"
                 :disabled="isAdmin !== 1" 
                 class="groupName" 
                 v-model="groupName" 
@@ -33,12 +34,13 @@
                 class="groupDescription" 
                 :rows="4" 
                 v-model="groupDescription" 
+                maxlength="100"
                 placeholder="请输入小组描述......" 
             />
         </div>
         <div class="nickNameWrap">
             <span>我在小组的昵称：</span>
-            <a-input v-model="groupNickName" placeholder="请输入您在该小组的昵称......" />
+            <a-input maxlength="20" v-model="groupNickName" placeholder="请输入您在该小组的昵称......" />
         </div>
         <div class="selectWrap" v-if="isAdmin === 1 && chosedLi.groupType !== 2">
             <span>添加成员：</span>

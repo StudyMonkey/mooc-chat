@@ -59,6 +59,7 @@ export default {
             chosedLi: {},   //  所点击选择的对象
             chatList: [],   // 请求到聊天记录的数组
             aiteShow: false,   //  被艾特时显示
+            heartCheck: {}     // websocket 心跳对象
         }
     },
     components: {
@@ -146,7 +147,6 @@ export default {
                 }
             })
             this.chatList = obj.chatList;
-            console.log('点击改变的groupId', item.groupId);
             this.handleChosedLi(item);   // 将所选中的左侧列表存到vuex里面，还有其他的组件需要用到
             this.changeGroupId(item.groupId);
             this.changeMemberType(obj.groupMemberType);
@@ -161,13 +161,11 @@ export default {
             init ? this.pageNo++ : this.pageNo;
             // 由通讯录好友点到我加入的小组时，isGroup为false请求到了聊天列表的数据
             this.isGroup = this.$route.path === '/lmgroups/main/group' ? true : false;
-            console.log('getUserList里面', this.isGroup);
             const res = await this.$getData('/leftHotGroups.do', { 
                 eid: this.$myEid, 
                 pageNo: this.pageNo, 
                 isGroup: this.isGroup 
             });
-            console.log(res);
             let { data: { rows,user,vo } } = res;
             this.changeUser(user);
             this.changeMesObjNum(vo);
@@ -176,13 +174,12 @@ export default {
             } else {
                 this.showLoadMore = true
             }
-            init ? this.messageList = this.messageList.concat(rows) : this.messageList = rows;
+            this.messageList = init ? this.messageList.concat(rows) : rows;
             this.saveMessageList = this.messageList;
             if ( isGroupId ) {  
                 // 监测到 groupId 改变，过滤出来匹配到的列表，触发列表的点击事情
                 // 通讯录点私聊传递过来一个 groupId,匹配到相应的触发点击事件
                 const item = this.messageList.filter( v => v.groupId === this.$store.state.groupId );
-                console.log(item[0]);
                 this.handleLiClick(item[0]);
             }
             // 存储到vuex
@@ -221,7 +218,6 @@ export default {
                     isGroup
                 });
                 const { data: { rows } } = res;
-                console.log('查询的结果', rows);
                 if ( rows.length > 0 ) {
                     this.messageList = matchChangeColor(rows, searchVal, 'name');
                 } else {
@@ -253,7 +249,6 @@ export default {
             // ${this.getBaseIPPort()}
             const wsUrl = `ws://${this.getBaseIPPort()}/moocGroupApi/ws?uid=${this.$myEid}`; 
             console.log('wsUrl', wsUrl)
-            // this.websocket = new WebSocket(wsUrl);
             if('WebSocket' in window){
                 this.websocket = new WebSocket(wsUrl);
             }else if('MozWebSocket' in window){ 
@@ -267,12 +262,13 @@ export default {
         },
         websocketonopen(){
             this.heartCheck.reset().start();
-            console.log('Websocket 连接成功');       
+            this.$message.success('Websocket 连接成功');
+            // console.log('Websocket 连接成功');       
         },
         websocketonerror(){
             this.initWebsocket()
         },
-        websocketonmessage(e){
+        async websocketonmessage(e){
             const reData = JSON.parse(e.data);
             let atEidsArr = reData.atEids.split(',');       
             // if ( atEidsArr.findIndex( v => v === this.$myEid ) > -1 || atEidsArr.findIndex( v => v === 'all' ) > -1 ) {
@@ -330,18 +326,42 @@ export default {
             } else {
                 this.$store.commit('changeGetUserList', 2);
             }
-
-            if ( JSON.stringify(this.chosedLi) === '{}' ) {
-                this.messageList.filter( v => {
-                    if ( v.groupId === reData.groupId ) {
-                        v.unReadNumber++
-                    }
-                });
-                console.log('未点击，未读消息加1')
+            console.log('this.chosedLi', this.chosedLi)
+            console.log('reData', reData)
+            if ( JSON.stringify(this.chosedLi) == '{}' ) {
+                // 聊天列表在左边存在/不存在，但未选中
+                const newArr = this.messageList.filter( v => v.groupId === reData.groupId )
+                if ( newArr.length === 0 ) {
+                    // 聊天列表在左边不存在，则请求一次左侧列表，并且把未读消息改为1
+                    console.log('聊天列表在左边存在/不存在, 数组为0')
+                    const res = await this.$getData('/leftHotGroups.do', { 
+                        eid: this.$myEid, 
+                        pageNo: 1, 
+                        isGroup: false
+                    });
+                    const { data: { rows } } = res;
+                    this.messageList = rows;
+                    console.log('this.messageList', this.messageList)
+                    this.messageList.filter( v => {
+                        if ( v.groupId === reData.groupId ) {
+                            v.unReadNumber = 1
+                        }
+                    });                    
+                } else {
+                    console.log('聊天列表在左边存在/不存在, 数组不为0')
+                    this.messageList.filter( v => {
+                        if ( v.groupId === reData.groupId ) {
+                            v.unReadNumber++
+                        }
+                    });
+                }              
             } else {
+                // 聊天列表在左边存在，选中，则将消息push到chatList中
                 if ( reData.groupId === this.chosedLi.groupId ) {
+                    console.log('选中了push到消息中');
                     this.chatList.push(reData);
                 } else {
+                    console.log('未选中且不存在');
                     this.messageList.filter( v => {
                         if ( v.groupId === reData.groupId ) {
                             v.unReadNumber++
@@ -363,15 +383,17 @@ export default {
     created () { 
         let _this = this;
         var heartCheck = {
-            timeout: 5000,        //5秒发一次心跳
+            timeout: 2000,        //5秒发一次心跳
             timeoutObj: null,
             serverTimeoutObj: null,
             reset: function(){
+                console.log('reset调用')
                 clearTimeout(this.timeoutObj);
                 clearTimeout(this.serverTimeoutObj);
                 return this;
             },
             start: function(){
+                console.log('start调用')
                 var self = this;
                 this.timeoutObj = setTimeout(function(){
                     //这里发送一个心跳，后端收到后，返回一个心跳消息，
